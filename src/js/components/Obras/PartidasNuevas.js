@@ -185,7 +185,6 @@ class PartidasNuevas extends Component {
     }
 
     PlanillaMetrados(){
-        const { Data1 } = this.state
         const input = document.getElementById('input2')
         input.addEventListener('change', () => {
             readXlsxFile(input.files[0]).then((rows ) => {
@@ -234,7 +233,7 @@ class PartidasNuevas extends Component {
                             cantcols++
                         }
                     }
-
+                     console.info('log>',rows[index])
                     // TITULOS
                     if(cantcols === 2){
                         data2.push(obPlanilla)
@@ -455,18 +454,16 @@ class PartidasNuevas extends Component {
         return (
             <div>
                 <Card>
-                    <CardHeader className="p-1">
-                        <div className="clearfix p-0">
-                            <label className="float-left mb-0">Ingreso de Partidas a la obra con id:  <strong>{ sessionStorage.getItem('idObra') }</strong></label>
+                    <CardHeader className="p-2">
+                            Ingreso de Partidas a la obra con id:  <strong>{ sessionStorage.getItem('idObra') }</strong>
                             <label className="float-right  mb-0">
                                 <select className="form-control form-control-sm" onChange={this.inputSelecValue} name="DataInputSelect" value={ DataInputSelect }>
-                                    <option value={DataInputSelect} disabled>Componentes</option>
+                                    <option>Componentes</option>
                                     {DataComponentes.length === undefined ? '': DataComponentes.map((componete,i)=>
                                         <option value={ componete.id_componente} key={i}>( {componete.numero} ) {componete.nombre}</option>
                                     )}
                                 </select>
                             </label>
-                        </div>
                     </CardHeader>
                     {DataInputSelect === 'S' ? <h1 className="text-center ">Seleccione Un compomente</h1>:
                         <CardBody>

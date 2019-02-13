@@ -8,25 +8,35 @@ class ObraNueva extends Component {
     constructor(){
         super()
         this.state = {
-            DatosObras:[],
-            statusRes:''
+            DatosObras:{},
+            statusRes:'',
+            DataListaEstados:[],
+            IdEstadoObra:''
         }
         this.CargaDatosExcelObra = this.CargaDatosExcelObra.bind(this)
         this.handleSubmit = this.handleSubmit.bind(this)
     }
+
+    componentWillMount(){
+        axios.get(`${UrlServer}/listaEstados`)
+        .then((res)=>{
+            console.info('dataEstados',res.data)
+            this.setState({
+                DataListaEstados:res.data
+            })
+        })
+        .catch((error)=>
+            console.error('falló al obtener los datos del servidor', error)
+        )
+    }
+
     CargaDatosExcelObra(){
         
         const input = document.getElementById('inputDatosObra')
         input.addEventListener('change', () => {
             readXlsxFile(input.files[0]).then((rows ) => {
-                console.log('><<', rows)
-                var dataArray = []
+                // console.log('><<', rows)
                 var ObrasEstructurado = {}
-
-
-                // for (let index = 0; index < rows.length; index++) {
-                
-                    // console.log('rows[index][i]', rows[index][1]);
 
                     ObrasEstructurado.codigo = rows[0][1]
                     ObrasEstructurado.fecha_inicial = rows[1][1]
@@ -50,15 +60,15 @@ class ObraNueva extends Component {
                     ObrasEstructurado.f_entidad_ejec = rows[19][1]
                     ObrasEstructurado.tiempo_ejec = rows[20][1]
                     ObrasEstructurado.modalidad_ejec = rows[21][1]
+                    ObrasEstructurado.id_estado = this.state.IdEstadoObra
                         
                 // }
-                dataArray.push(ObrasEstructurado)
 
-                console.log('ObrasEstructurado', ObrasEstructurado);
+                // console.log('ObrasEstructurado', ObrasEstructurado);
                 // console.log('ObrasEstructurado', dataArray);
                 
                 this.setState({
-                    DatosObras:dataArray
+                    DatosObras:ObrasEstructurado
                 })
             })
             .catch((error)=>{
@@ -69,43 +79,55 @@ class ObraNueva extends Component {
     }
     handleSubmit(e){
         e.preventDefault()
-        console.log('funcionando')
           axios.post(`${UrlServer}/nuevaObra`,
               this.state.DatosObras
           ) 
           .then((res)=> {
-              console.log('enviado con exito', res);
-              if(res.data === 1){
-                  alert('datos de la obra ingresados al sistema de manera existosa codigo '+res.status)
+              if(res.data){
+                alert('datos de la obra ingresados al sistema de manera existosa codigo '+res.status)
+                console.info('enviado con exito', res);
+
               }
               this.setState({
-                  status:res.data
+                statusRes:res.data
               })
               sessionStorage.setItem('idObra',res.data)
           })
           .catch((error)=> {
-              console.log(error);
+              console.error('ALGO SALIO MAN AL INGRESAR LOS DATOS DE LA OBRA',error);
           });
     }
 
     render() {
-        const { DatosObras } = this.state
+        const { DatosObras, DataListaEstados,IdEstadoObra } = this.state
         return (
             <div>
                 
                 <Card>
-                    <CardHeader>Ingreso de obra Nueva</CardHeader>
-                    <CardBody>
-                        <fieldset>
-                            <legend><b>Cargar archivo excel con datos de la obra</b></legend>
-                            <input type="file" id="inputDatosObra"  onClick={this.CargaDatosExcelObra}  />
-                            <code>
-                                <pre> {JSON.stringify(DatosObras, null , ' ')}</pre>
-                            </code>
-                            <button onClick={(e)=>this.handleSubmit(e)} className="btn btn-outline-success">  <Spinner color="primary"/>Guardar datos</button>
-                        </fieldset>
-                    </CardBody>
-                    <CardFooter>___</CardFooter>
+                    <CardHeader>
+                        Ingreso de obra Nueva 
+                        <div className="float-right">
+                            <select className="form-control form-control-sm m-0" onChange={e =>this.setState({IdEstadoObra:e.target.value })}>
+                                <option>Selecione</option>
+                                {DataListaEstados.map((EstadosObra, i)=>
+                                    <option key={ i } value={ EstadosObra.id_Estado }>{ EstadosObra.nombre}</option>
+                                )}
+                            </select>
+                        </div>
+                    </CardHeader>
+                    {IdEstadoObra === ''?<span className="text-danger h4 text-center p-2">Selecione el estado actual de la obra</span>:
+                        <CardBody>
+                            <fieldset>
+                                <legend><b>Cargar archivo excel con datos de la obra</b></legend>
+                                <input type="file" id="inputDatosObra"  onClick={this.CargaDatosExcelObra}  />
+                                <b>{IdEstadoObra}</b>
+                                <code>
+                                    <pre> {JSON.stringify(DatosObras, null , ' ')}</pre>
+                                </code>
+                                <button onClick={(e)=>this.handleSubmit(e)} className="btn btn-outline-success">  <Spinner color="primary"/>Guardar datos</button>
+                            </fieldset>
+                        </CardBody>
+                    }
                 </Card>
             </div>
         );
