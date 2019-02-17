@@ -13,13 +13,13 @@ class ComponentesNuevos extends Component {
             AvisoError:''
             
         }
-        this.ExcelFunction = this.ExcelFunction.bind(this)
+        this.CargaDatosExcelComponentes = this.CargaDatosExcelComponentes.bind(this)
         this.GuardarComponentes = this.GuardarComponentes.bind(this)
     }
 
-    ExcelFunction(){
+    CargaDatosExcelComponentes(){
         
-        const input = document.getElementById('input')
+        const input = document.getElementById('inputComponentes')
         input.addEventListener('change', () => {
             readXlsxFile(input.files[0]).then((rows ) => {
                 var dataArray = []
@@ -30,10 +30,6 @@ class ComponentesNuevos extends Component {
                 this.setState({
                     Data:dataArray
                 })
-
-                // sessionStorage.setItem('componentes',JSON.stringify(dataArray), null, '\t')
-                // console.log('array> ',dataArray);
-
             })
             .catch((error)=>{
                 alert('algo salió mal')
@@ -75,7 +71,7 @@ class ComponentesNuevos extends Component {
                     <CardBody>
                         <fieldset>
                             <legend><b>Cargar archivo excel componentes de la obra</b></legend>
-                            <input type="file" id="input" onClick={this.ExcelFunction} />
+                            <input type="file" id="inputComponentes" onClick={this.CargaDatosExcelComponentes} />
                             <div className="row">                
                                 <div className="col-md-10">
                                     <table className="table table-bordered table-sm small" border="1">

@@ -17,7 +17,9 @@ class PartidasNuevas extends Component {
             erroresEncontrado:'',
             DataFinal:[],
             DataInputSelect:'S',
-            DataPlanilla:[]
+            DataPlanilla:[],
+            IdObra:'',
+            idPresupuesto:''
             
         }
         this.CostosUnitarios = this.CostosUnitarios.bind(this)
@@ -29,19 +31,17 @@ class PartidasNuevas extends Component {
     }
 
     componentWillMount(){
-        axios.post(`${UrlServer}/listaComponentesPorId`,{
-            "id_ficha": sessionStorage.getItem("idObra")
+        var dataObra = sessionStorage.getItem("datosObras")
+        dataObra = JSON.parse(dataObra) 
+        console.log('datoss>', dataObra)
+        // sessionStorage.getItem("datosObras")
+
+        this.setState({
+            DataComponentes:dataObra.componentes,
+            IdObra:dataObra.id_ficha,
+            idPresupuesto:dataObra.idPresupuesto
         })
-        .then((res)=>{
-            console.log(res);
-            
-            this.setState({
-                DataComponentes:res.data
-            })
-        })
-        .catch((error)=>{
-            console.log('los componentes no estan bien ')
-        })
+
     }
 
     CostosUnitarios(){
@@ -337,7 +337,7 @@ class PartidasNuevas extends Component {
     }
     
     verificarDatos(){
-        const { Data1, Data2, DataInputSelect, DataPlanilla } = this.state
+        const { Data1, Data2, DataInputSelect, DataPlanilla, idPresupuesto } = this.state
         
         var Errores = 0
         var ErroresArray1 = []
@@ -410,6 +410,7 @@ class PartidasNuevas extends Component {
                     indexData1++
                 }
                 DataPlanilla[i].componentes_id_componente = DataInputSelect
+                DataPlanilla[i].presupuestos_id_presupuesto = idPresupuesto
                 
 
             }
@@ -450,17 +451,17 @@ class PartidasNuevas extends Component {
         this.setState({ [event.target.name]: event.target.value });
     }
     render() {
-        const { Data1, Data2, Errores1, Errores2, DataFinal, DataComponentes, DataInputSelect } = this.state
+        const { Data1, Data2, Errores1, Errores2, DataFinal, DataComponentes, DataInputSelect, IdObra, idPresupuesto } = this.state
         return (
             <div>
                 <Card>
                     <CardHeader className="p-2">
-                            Ingreso de Partidas a la obra con id:  <strong>{ sessionStorage.getItem('idObra') }</strong>
+                            Ingreso de Partidas a la obra con id:  <strong>{ `${IdObra} ID PRESUPUESTO :${ idPresupuesto }`}</strong>
                             <label className="float-right  mb-0">
                                 <select className="form-control form-control-sm" onChange={this.inputSelecValue} name="DataInputSelect" value={ DataInputSelect }>
                                     <option>Componentes</option>
                                     {DataComponentes.length === undefined ? '': DataComponentes.map((componete,i)=>
-                                        <option value={ componete.id_componente} key={i}>( {componete.numero} ) {componete.nombre}</option>
+                                        <option value={ componete.idComponente} key={i}>( {componete.numero} ) {componete.nombre}</option>
                                     )}
                                 </select>
                             </label>
