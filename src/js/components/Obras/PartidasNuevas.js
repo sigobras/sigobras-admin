@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import readXlsxFile from 'read-excel-file'
-import { Card, Button, CardHeader, CardFooter, CardBody, CardTitle, CardText, Spinner, Row, Col} from 'reactstrap';
+import { Card, Button, CardHeader, CardFooter, CardBody, CardTitle, CardText, Spinner, Row, Col, UncontrolledPopover, PopoverBody } from 'reactstrap';
 import axios from 'axios'
 import { UrlServer } from '../Utils/ServerUrlConfig'
 import ReactJson from 'react-json-view'
@@ -16,17 +16,17 @@ class PartidasNuevas extends Component {
             Errores2:[],
             erroresEncontrado:'',
             DataFinal:[],
-            DataInputSelect:'S',
             DataPlanilla:[],
             IdObra:'',
-            idPresupuesto:''
+            idPresupuesto:'',
+            idComponente:''
             
         }
         this.CostosUnitarios = this.CostosUnitarios.bind(this)
         this.PlanillaMetrados = this.PlanillaMetrados.bind(this)
         this.verificarDatos = this.verificarDatos.bind(this)
         this.EnviarDatos = this.EnviarDatos.bind(this)
-        this.inputSelecValue = this.inputSelecValue.bind(this)
+        this.clickSelect = this.clickSelect.bind(this)
 
     }
 
@@ -38,8 +38,7 @@ class PartidasNuevas extends Component {
 
         this.setState({
             DataComponentes:dataObra.componentes,
-            IdObra:dataObra.id_ficha,
-            idPresupuesto:dataObra.idPresupuesto
+            IdObra:dataObra.id_ficha
         })
 
     }
@@ -233,7 +232,6 @@ class PartidasNuevas extends Component {
                             cantcols++
                         }
                     }
-                     console.info('log>',rows[index])
                     // TITULOS
                     if(cantcols === 2){
                         data2.push(obPlanilla)
@@ -337,7 +335,7 @@ class PartidasNuevas extends Component {
     }
     
     verificarDatos(){
-        const { Data1, Data2, DataInputSelect, DataPlanilla, idPresupuesto } = this.state
+        const { Data1, Data2, idComponente, DataPlanilla, idPresupuesto } = this.state
         
         var Errores = 0
         var ErroresArray1 = []
@@ -362,7 +360,7 @@ class PartidasNuevas extends Component {
                  var encontrado = false
                 for (let j = 0; j < Data2.length; j++) {
                     if(data.item === Data2[j].item){
-                        // console.log('<>>', data[0] === Data2[j][0])
+                        console.log('<>>', data[0] === Data2[j][0])
                         encontrado = true
                         break
                     }                   
@@ -409,7 +407,7 @@ class PartidasNuevas extends Component {
                     
                     indexData1++
                 }
-                DataPlanilla[i].componentes_id_componente = DataInputSelect
+                DataPlanilla[i].componentes_id_componente = idComponente
                 DataPlanilla[i].presupuestos_id_presupuesto = idPresupuesto
                 
 
@@ -446,29 +444,38 @@ class PartidasNuevas extends Component {
         }
     }
 
-    inputSelecValue(event){
-        
-        this.setState({ [event.target.name]: event.target.value });
+    clickSelect(idComponente, idPresupuesto){
+        console.log('idComponente>', idComponente, 'idPresupuesto>', idPresupuesto);
+        this.setState({
+            idComponente:idComponente,
+            idPresupuesto:idPresupuesto
+        })
     }
     render() {
-        const { Data1, Data2, Errores1, Errores2, DataFinal, DataComponentes, DataInputSelect, IdObra, idPresupuesto } = this.state
+        const { Data1, Data2, Errores1, Errores2, DataFinal, DataComponentes, idComponente, IdObra, idPresupuesto } = this.state
         return (
             <div>
                 <Card>
                     <CardHeader className="p-2">
                             Ingreso de Partidas a la obra con id:  <strong>{ `${IdObra} ID PRESUPUESTO :${ idPresupuesto }`}</strong>
                             <label className="float-right  mb-0">
-                                <select className="form-control form-control-sm" onChange={this.inputSelecValue} name="DataInputSelect" value={ DataInputSelect }>
-                                    <option>Componentes</option>
-                                    {DataComponentes.length === undefined ? '': DataComponentes.map((componete,i)=>
-                                        <option value={ componete.idComponente} key={i}>( {componete.numero} ) {componete.nombre}</option>
-                                    )}
-                                </select>
+                                
+                                <Button id="PopoverClick" type="button">selecione </Button>
+                                <UncontrolledPopover trigger="legacy" placement="bottom" target="PopoverClick">
+                                    <PopoverBody>
+                                        {DataComponentes.length === undefined ? '': DataComponentes.map((componete,i)=>
+                                            <div key={i}>
+                                                <a href="#" onClick={e=>this.clickSelect(componete.idComponente, componete.idPresupuesto)}>N° Comp( {componete.numero} )</a>
+                                                <div className="divider"></div>
+                                            </div>
+                                        )}
+                                    </PopoverBody>
+                                </UncontrolledPopover>
                             </label>
                     </CardHeader>
-                    {DataInputSelect === 'S' ? <h1 className="text-center ">Seleccione Un compomente</h1>:
+                    {idComponente === '' ? <h1 className="text-center ">Seleccione Un compomente</h1>:
                         <CardBody>
-                            <label> Numero de componete selecionado: { DataInputSelect }</label>
+                            <label> Numero de componete selecionado: { idComponente }</label>
                             <Row>
                                 <Col sm="4">
                                     <fieldset>

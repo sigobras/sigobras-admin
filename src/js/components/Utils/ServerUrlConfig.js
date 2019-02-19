@@ -2,6 +2,7 @@ const axios = require('axios')
 
 const UrlServer = "https://sigobrasbeta.herokuapp.com";
 // const UrlServer = "http://localhost:14000";
+// const UrlServer = "http://192.168.1.59:9000";
 const Token = axios.defaults.headers.common['Authorization'] = `bearer ${sessionStorage.getItem('TuToken')}`;
 
 
