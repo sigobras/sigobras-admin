@@ -36,12 +36,12 @@ class Login extends Component {
           password: this.state.pass
       })
       .then((response)=> {
-      console.log(response.data[0])
+      console.log(response.data)
 
-    if(response.data[0].nombre_usuario){
-      sessionStorage.setItem("cargo", response.data[0].nombre_cargo);
-      sessionStorage.setItem("nombre", response.data[0].nombre_usuario);
-      sessionStorage.setItem("idacceso", response.data[0].id_acceso);			
+    if(response.data.nombre_usuario){
+      sessionStorage.setItem("cargo", response.data.nombre_cargo);
+      sessionStorage.setItem("nombre", response.data.nombre_usuario);
+      sessionStorage.setItem("idacceso", response.data.id_acceso);			
       // setTimeout(()=>{ 	
             
       //   window.location.href = '/inicio'
