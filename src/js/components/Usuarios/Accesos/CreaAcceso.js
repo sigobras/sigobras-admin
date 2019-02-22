@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Button, Form, FormGroup, Label, Input, FormText, CustomInput } from 'reactstrap';
 import axios from 'axios'
-import {DebounceInput} from 'react-debounce-input';
+import { DebounceInput } from 'react-debounce-input';
 
 import { UrlServer } from '../../Utils/ServerUrlConfig'
 

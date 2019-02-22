@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
 import axios from 'axios'
-import { Card, Button, CardHeader, CardFooter, CardBody, CardTitle, CardText, Spinner, UncontrolledTooltip, Modal, ModalHeader, ModalBody, ModalFooter} from 'reactstrap';
+import { Card, Button, CardHeader, CardBody, CardText, Spinner, UncontrolledTooltip, Modal, ModalHeader, ModalBody, ModalFooter, Form, FormGroup, Label } from 'reactstrap';
 import classNames from 'classnames'
 import { UrlServer } from '../Utils/ServerUrlConfig'
 
 import CreaAcceso from './Accesos/CreaAcceso'
+import { DebounceInput } from 'react-debounce-input';
 
 class ListaUsuarios extends Component {
     constructor(){
@@ -12,10 +13,20 @@ class ListaUsuarios extends Component {
         this.state = {
             listaUsuarios:[],
             modal: false,
-            idUser:''
+            modalNuevoUser: false,
+            idUser:'',
+            nombre:'',
+            apellido_Paterno:'',
+            apellido_Materno:'',
+            dni:'',
+            direccion:'',
+            email:'',
+            cpt:'',
         }
         this.modalA = this.modalA.bind(this)
         this.IdUser = this.IdUser.bind(this)
+        this.modalNUsuario = this.modalNUsuario.bind(this)
+        this.enviarDatosUsuarios = this.enviarDatosUsuarios.bind(this)
     }
     componentWillMount(){
         axios.get(`${UrlServer}/listaUsuarios`)
@@ -34,21 +45,52 @@ class ListaUsuarios extends Component {
           modal: !prevState.modal
         }));
     }
+
+    modalNUsuario() {
+        this.setState(prevState => ({
+            modalNuevoUser: !prevState.modalNuevoUser
+        }));
+    }
    
     IdUser(id){
-        console.log(id);
+        // console.log(id);
         
         this.setState({
             idUser:id
         })
         this.modalA()
     }
+    enviarDatosUsuarios(event){
+        event.preventDefault()
+        console.info('funcionando')
+        const { nombre, apellido_Paterno, apellido_Materno, dni, direccion, email, cpt } = this.state
+        axios.post(`${UrlServer}/nuevoUsuario`,{
+            nombre: nombre,
+            apellido_Paterno: apellido_Paterno,
+            apellido_Materno: apellido_Materno,
+            dni: dni,
+            direccion: direccion,
+            email: email,
+            cpt: cpt,
+        })
+        .then((res)=>{
+            alert('exito ')
+            console.log('errr', res)
+        })
+        .catch((err)=>{
+            alert('errores al ingresar el usuario')
+            console.log(err)
+        })
+    }
     render() {
-        const { listaUsuarios } = this.state
+        const { listaUsuarios, modalNuevoUser } = this.state
         return (
             <div>
                 <Card>
-                    <CardHeader>Lista de obras</CardHeader>
+                    <CardHeader>
+                        Lista de obras
+                        <button className="btn btn-outline-primary btn-sm float-right" onClick={ this.modalNUsuario }>Nuevo Usuario</button>
+                    </CardHeader>
                     <CardBody>
                         <table className="table table-bordered table-hover table-sm">
                             <thead>
@@ -76,7 +118,7 @@ class ListaUsuarios extends Component {
                                         <td>
                                             <button className="btn btn-outline-secondary btn-xs" id={`e${index}`} onClick={ e => this.IdUser(usuario.id_usuario)}>crear acceso </button>
                                             <UncontrolledTooltip placement="bottom" target={`e${index}`}>
-                                                crear acceso- {usuario.id_usuario }
+                                                crear acceso
                                             </UncontrolledTooltip> 
                                         </td>
                                     </tr>
@@ -85,7 +127,6 @@ class ListaUsuarios extends Component {
                             </tbody>
                         </table>
                     </CardBody>
-                    <CardFooter>----</CardFooter>
                 </Card>
                 
 
@@ -100,6 +141,57 @@ class ListaUsuarios extends Component {
                         <Button color="danger" onClick={this.modalA}>Cerrar / cancelar</Button>
                     </ModalFooter> */}
                 </Modal>
+
+                <Modal isOpen={ modalNuevoUser } fade={false} toggle={this.modalNUsuario} className={this.props.className}>
+                    <Form onSubmit={this.enviarDatosUsuarios}>
+
+                        <ModalBody>
+
+                                <FormGroup>
+                                    <Label for="nombre">nombre</Label>
+                                    <DebounceInput  className="form-control" id="nombre" placeholder="nombre" onChange={e => this.setState({nombre: e.target.value}) } debounceTimeout={300}/>
+                                </FormGroup>
+
+                                <FormGroup>
+                                    <Label for="apellido_Paterno">apellido_Paterno</Label>
+                                    <DebounceInput className="form-control" id="apellido_Paterno" placeholder="apellido_Paterno" onChange={e => this.setState({apellido_Paterno: e.target.value})} debounceTimeout={300}/>
+                                </FormGroup>
+
+                                <FormGroup>
+                                    <Label for="apellido_Materno">apellido_Materno</Label>
+                                    <DebounceInput className="form-control" id="apellido_Materno" placeholder="apellido_Materno" onChange={e => this.setState({apellido_Materno: e.target.value})} debounceTimeout={300}/>
+                                </FormGroup>
+
+                                <FormGroup>
+                                    <Label for="dni">dni</Label>
+                                    <DebounceInput className="form-control" id="dni" placeholder="dni" onChange={e => this.setState({dni: e.target.value})} debounceTimeout={300}/>
+                                </FormGroup>
+
+                                <FormGroup>
+                                    <Label for="direccion">direccion</Label>
+                                    <DebounceInput className="form-control" id="direccion" placeholder="direccion" onChange={e => this.setState({direccion: e.target.value})} debounceTimeout={300}/>
+                                </FormGroup>
+
+                                <FormGroup>
+                                    <Label for="email">Email</Label>
+                                    <DebounceInput className="form-control" id="email" placeholder="email" onChange={e => this.setState({email: e.target.value})} debounceTimeout={300}/>
+                                </FormGroup>
+
+                                <FormGroup>
+                                    <Label for="cpt">cpt</Label>
+                                    <DebounceInput className="form-control"  id="cpt" placeholder="cpt" onChange={e => this.setState({cpt: e.target.value})} debounceTimeout={300}/>
+                                </FormGroup>
+
+                        
+                            
+                        </ModalBody>
+                        <ModalFooter>
+                            <Button color="primary" type="submit">Guardar datos de usuario</Button>{' '}
+                            <Button color="danger" onClick={this.modalNUsuario}>Cerrar / cancelar</Button>
+                        </ModalFooter>
+                    </Form>
+                </Modal>
+
 
             </div>
         );
