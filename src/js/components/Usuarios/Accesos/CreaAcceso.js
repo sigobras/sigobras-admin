@@ -8,6 +8,7 @@ import { UrlServer } from '../../Utils/ServerUrlConfig'
 class CreaAcceso extends Component {
     constructor(props){
         super(props);
+
         this.state = {
             DataListaCargos:[],
             IdCargo:'',
@@ -20,7 +21,7 @@ class CreaAcceso extends Component {
     componentWillMount(){
         axios.get(`${UrlServer}/listaCargos`)
         .then((res)=>{
-            console.log('sasasa',res.data)
+            // console.log('sasasa',res.data)
             this.setState({
                 DataListaCargos:res.data
             })
@@ -31,18 +32,23 @@ class CreaAcceso extends Component {
         })
     }
 
-    enviarDatos(){
+    enviarDatos(event){
+        event.preventDefault()
         const {IdCargo, usuario, password, estado } = this.state
         axios.post(`${UrlServer}/nuevoAcceso`,{
             "usuario": usuario,
             "password": password,
             "estado": estado,
             "cargos_id_cargo":IdCargo,
-            "Usuarios_id_usuario":this.props.idUser
+            "Usuarios_id_usuario":this.props.idUsuario
         })
         .then((res)=>
-            console.log('estado')
+            console.log('estado',res)
         )
+        .catch((err)=>{
+            console.error(err);
+            
+        })
     }
     render(){
         const { DataListaCargos } = this.state
@@ -59,7 +65,7 @@ class CreaAcceso extends Component {
                     </FormGroup>
                     
                     <FormGroup>
-                        <Label for="cargos">Cargos {this.state.this.props.idUser } </Label>
+                        <Label for="cargos">Cargos {this.props.idUsuario } </Label>
                         <Input type="select" id="cargos" onChange={e=> this.setState({IdCargo: e.target.value})}>
                             <option>seleccione</option>
                             {DataListaCargos.map((cargos, i)=>

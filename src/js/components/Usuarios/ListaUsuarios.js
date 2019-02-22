@@ -5,6 +5,7 @@ import classNames from 'classnames'
 import { UrlServer } from '../Utils/ServerUrlConfig'
 
 import CreaAcceso from './Accesos/CreaAcceso'
+
 class ListaUsuarios extends Component {
     constructor(){
         super()
@@ -14,7 +15,7 @@ class ListaUsuarios extends Component {
             idUser:''
         }
         this.modalA = this.modalA.bind(this)
-        this.idUser = this.idUser.bind(this)
+        this.IdUser = this.IdUser.bind(this)
     }
     componentWillMount(){
         axios.get(`${UrlServer}/listaUsuarios`)
@@ -34,7 +35,9 @@ class ListaUsuarios extends Component {
         }));
     }
    
-    idUser(id){
+    IdUser(id){
+        console.log(id);
+        
         this.setState({
             idUser:id
         })
@@ -71,7 +74,7 @@ class ListaUsuarios extends Component {
                                         <td>{usuario.email}</td>
                                         <td>{usuario.cpt}</td>
                                         <td>
-                                            <button className="btn btn-outline-secondary btn-xs" id={`e${index}`} onClick={this.modalA}>crear acceso </button>
+                                            <button className="btn btn-outline-secondary btn-xs" id={`e${index}`} onClick={ e => this.IdUser(usuario.id_usuario)}>crear acceso </button>
                                             <UncontrolledTooltip placement="bottom" target={`e${index}`}>
                                                 crear acceso- {usuario.id_usuario }
                                             </UncontrolledTooltip> 
@@ -90,12 +93,12 @@ class ListaUsuarios extends Component {
 
                 <Modal isOpen={this.state.modal} fade={false} toggle={this.modalA} className={this.props.className}>
                     <ModalBody>
-                        <CreaAcceso idUser={this.state.idUser }/>
+                        <CreaAcceso idUsuario={this.state.idUser }/>
                     </ModalBody>
-                    <ModalFooter>
+                    {/* <ModalFooter>
                         <Button color="primary" onClick={this.modalA}>Guardar cambios</Button>{' '}
                         <Button color="danger" onClick={this.modalA}>Cerrar / cancelar</Button>
-                    </ModalFooter>
+                    </ModalFooter> */}
                 </Modal>
 
             </div>

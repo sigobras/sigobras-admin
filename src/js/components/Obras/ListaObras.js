@@ -37,6 +37,7 @@ class ListaObras extends Component {
                                     <th>Presupuesto </th>
                                     <th>% Ejecución </th>
                                     <th>Usuarios </th>
+                                    <th>Asignar Acceso a usuario</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -47,13 +48,15 @@ class ListaObras extends Component {
                                         <td>-</td>
                                         <td>-</td>
                                         <td>-</td>
+                                        <td>
+                                            <button className="btn btn-outline-success"> Dar acceso</button>
+                                        </td>
                                     </tr>
                                 )}
                                 
                             </tbody>
                         </table>
                     </CardBody>
-                    <CardFooter>----</CardFooter>
                 </Card>
                 
             </div>
