@@ -62,7 +62,7 @@ class ListaUsuarios extends Component {
     }
     enviarDatosUsuarios(event){
         event.preventDefault()
-        console.info('funcionando')
+        this.modalNUsuario()
         const { nombre, apellido_Paterno, apellido_Materno, dni, direccion, email, cpt } = this.state
         axios.post(`${UrlServer}/nuevoUsuario`,{
             nombre: nombre,
@@ -148,27 +148,27 @@ class ListaUsuarios extends Component {
                         <ModalBody>
 
                                 <FormGroup>
-                                    <Label for="nombre">nombre</Label>
+                                    <Label for="nombre">NOMBER</Label>
                                     <DebounceInput  className="form-control" id="nombre" placeholder="nombre" onChange={e => this.setState({nombre: e.target.value}) } debounceTimeout={300}/>
                                 </FormGroup>
 
                                 <FormGroup>
-                                    <Label for="apellido_Paterno">apellido_Paterno</Label>
+                                    <Label for="apellido_Paterno">APELLIDO MATERNO</Label>
                                     <DebounceInput className="form-control" id="apellido_Paterno" placeholder="apellido_Paterno" onChange={e => this.setState({apellido_Paterno: e.target.value})} debounceTimeout={300}/>
                                 </FormGroup>
 
                                 <FormGroup>
-                                    <Label for="apellido_Materno">apellido_Materno</Label>
+                                    <Label for="apellido_Materno">APELLIDO PATERNO</Label>
                                     <DebounceInput className="form-control" id="apellido_Materno" placeholder="apellido_Materno" onChange={e => this.setState({apellido_Materno: e.target.value})} debounceTimeout={300}/>
                                 </FormGroup>
 
                                 <FormGroup>
-                                    <Label for="dni">dni</Label>
+                                    <Label for="dni">DNI</Label>
                                     <DebounceInput className="form-control" id="dni" placeholder="dni" onChange={e => this.setState({dni: e.target.value})} debounceTimeout={300}/>
                                 </FormGroup>
 
                                 <FormGroup>
-                                    <Label for="direccion">direccion</Label>
+                                    <Label for="direccion">Direccion</Label>
                                     <DebounceInput className="form-control" id="direccion" placeholder="direccion" onChange={e => this.setState({direccion: e.target.value})} debounceTimeout={300}/>
                                 </FormGroup>
 
@@ -178,7 +178,7 @@ class ListaUsuarios extends Component {
                                 </FormGroup>
 
                                 <FormGroup>
-                                    <Label for="cpt">cpt</Label>
+                                    <Label for="cpt">Codigo de colegiatura</Label>
                                     <DebounceInput className="form-control"  id="cpt" placeholder="cpt" onChange={e => this.setState({cpt: e.target.value})} debounceTimeout={300}/>
                                 </FormGroup>
 
