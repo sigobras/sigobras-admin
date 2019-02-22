@@ -10,9 +10,11 @@ class ListaUsuarios extends Component {
         super()
         this.state = {
             listaUsuarios:[],
-            modal: false
+            modal: false,
+            idUser:''
         }
         this.modalA = this.modalA.bind(this)
+        this.idUser = this.idUser.bind(this)
     }
     componentWillMount(){
         axios.get(`${UrlServer}/listaUsuarios`)
@@ -30,8 +32,14 @@ class ListaUsuarios extends Component {
         this.setState(prevState => ({
           modal: !prevState.modal
         }));
-      }
+    }
    
+    idUser(id){
+        this.setState({
+            idUser:id
+        })
+        this.modalA()
+    }
     render() {
         const { listaUsuarios } = this.state
         return (
@@ -63,9 +71,9 @@ class ListaUsuarios extends Component {
                                         <td>{usuario.email}</td>
                                         <td>{usuario.cpt}</td>
                                         <td>
-                                            <button className="btn btn-outline-secondary btn-xs" id={`e${index}`} onClick={this.modalA}>editar </button>
+                                            <button className="btn btn-outline-secondary btn-xs" id={`e${index}`} onClick={this.modalA}>crear acceso </button>
                                             <UncontrolledTooltip placement="bottom" target={`e${index}`}>
-                                                editar- {usuario.id_usuario }
+                                                crear acceso- {usuario.id_usuario }
                                             </UncontrolledTooltip> 
                                         </td>
                                     </tr>
@@ -82,7 +90,7 @@ class ListaUsuarios extends Component {
 
                 <Modal isOpen={this.state.modal} fade={false} toggle={this.modalA} className={this.props.className}>
                     <ModalBody>
-                        <CreaAcceso />
+                        <CreaAcceso idUser={this.state.idUser }/>
                     </ModalBody>
                     <ModalFooter>
                         <Button color="primary" onClick={this.modalA}>Guardar cambios</Button>{' '}

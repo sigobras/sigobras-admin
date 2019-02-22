@@ -145,11 +145,30 @@ class ObraNueva extends Component {
                         <CardBody>
 
                             <fieldset>
-                                <legend><b>Datos de comonentes</b></legend>
+                                <legend><b>Datos de componentes</b></legend>
                                 <input type="file" id="inputComponentes" onClick={this.CargaDatosExcelComponentes} />
-                                <code>
+                                <table className="table table-bordered table-sm small">
+                                    <thead>
+                                        <tr>
+                                        <th> N° de componente</th>
+                                        <th> Nombre de componente</th>
+                                        <th> presupuesto de componente</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        { DataComponentes.map((Fila1, FilaIndex)=>
+                                            <tr key={FilaIndex}>
+                                                <td><b>{ Fila1[0] }</b></td>
+                                                <td>{Fila1[1] }</td>
+                                                <td>{Fila1[2] }</td>
+                                                {/* <td>{Fila1.idObra }</td> */}
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                                {/* <code>
                                     <pre> {JSON.stringify(DataComponentes, null , ' ')}</pre>
-                                </code>
+                                </code> */}
                             </fieldset>
 
                             <fieldset>

@@ -74,7 +74,7 @@ class ComponentesNuevos extends Component {
                             <input type="file" id="inputComponentes" onClick={this.CargaDatosExcelComponentes} />
                             <div className="row">                
                                 <div className="col-md-10">
-                                    <table className="table table-bordered table-sm small" border="1">
+                                    <table className="table table-bordered table-sm small">
                                         <tbody>
                                             { Data.map((Fila1, FilaIndex)=>
                                                 <tr key={FilaIndex}>
