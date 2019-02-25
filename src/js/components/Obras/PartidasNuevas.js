@@ -446,7 +446,7 @@ class PartidasNuevas extends Component {
                 Errores1: ErroresArray1,
                 Errores2: ErroresArray2,
                 erroresEncontrado:'Errores encontrados : '+Errores,
-                DataFinal: DataPlanilla
+                DataFinal: Errores =='tamaños diferentes' ? ErroresArray1:DataPlanilla 
 
             }
         )
