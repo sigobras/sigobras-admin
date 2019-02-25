@@ -75,7 +75,7 @@ class ListaUsuarios extends Component {
         })
         .then((res)=>{
             alert('exito ')
-            console.log('errr', res)
+            console.log('exito', res)
         })
         .catch((err)=>{
             alert('errores al ingresar el usuario')
@@ -148,7 +148,7 @@ class ListaUsuarios extends Component {
                         <ModalBody>
 
                                 <FormGroup>
-                                    <Label for="nombre">NOMBER</Label>
+                                    <Label for="nombre">NOMBRE</Label>
                                     <DebounceInput  className="form-control" id="nombre" placeholder="nombre" onChange={e => this.setState({nombre: e.target.value}) } debounceTimeout={300}/>
                                 </FormGroup>
 
