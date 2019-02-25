@@ -191,166 +191,174 @@ class PartidasNuevas extends Component {
         var tipo = ""
         var obPlanilla = {}
         input.addEventListener('change', () => {
-            readXlsxFile(input.files[0]).then((rows ) => {
-                // console.log('rows>> ', rows)
-                var fila = 0
-                var columna = 0
-                // UBICANDO LA POSICION DE LA PALABRA ITEM
-                for (let index = 0; index < rows.length; index++) {
+            console.log('input', input.files[0].type)
+            if(input.files[0].type ==='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'){
+                readXlsxFile(input.files[0]).then((rows ) => {
+                    // console.log('rows>> ', rows)
+                    var fila = 0
+                    var columna = 0
+                    // UBICANDO LA POSICION DE LA PALABRA ITEM
+                    for (let index = 0; index < rows.length; index++) {
 
-                    for (let i = 0; i < rows[index].length; i++) {
-                        // console.log(rows[index][i])
+                        for (let i = 0; i < rows[index].length; i++) {
+                            // console.log(rows[index][i])
 
-                        var item = rows[index][i]
-                        if (typeof item === 'string') {
-                      
-                          item = item.toLowerCase()  
-                        }
-
-                        // console.log('item', item)
+                            var item = rows[index][i]
+                            if (typeof item === 'string') {
                         
-                        if(item === 'item' || item === 'Partida'){
-                            fila = index 
-                            columna = i
-                            console.log('item >', index , '>' , i)
+                            item = item.toLowerCase()  
+                            }
 
-                            break
+                            // console.log('item', item)
+                            
+                            if(item === 'item' || item === 'Partida'){
+                                fila = index 
+                                columna = i
+                                console.log('item >', index , '>' , i)
+
+                                break
+                            }
                         }
-                    }
-                    
-                }
-
-                
-                
-                var activo = false
-
-                // CREAMOS EL DATA DE PLANILLA DE METRADOS
-                
-                for (let index = fila+2; index < rows.length; index++) {
-                    temp = rows[index]
-                    var cantcols = 0
-                    // console.log('index ', index);
-                    
-                    for (let l = 0; l < rows[index].length; l++) {
-                        const celda = rows[index][l];
-                        if(celda !== null ){
-                            cantcols++
-                        }
-                    }
-                    
-                    if((rows[index][columna+6] !== null ||rows[index][columna+7] !== null) && rows[index][columna] !== null ){
-                        tipo = "partida"
-                        // si la columna total tiene un valor
-                        data2.push(obPlanilla)
-                        obPlanilla = {}
-                        obPlanilla.tipo = "partida"
-                        obPlanilla.item =  rows[index][columna]
-                        obPlanilla.descripcion =  rows[index][columna+1]
-                        obPlanilla.actividades = []
-                        obPlanilla.veces = rows[index][columna+2]
-                        obPlanilla.largo = rows[index][columna+3]
-                        obPlanilla.ancho = rows[index][columna+4]
-                        obPlanilla.alto = rows[index][columna+5]
-                        obPlanilla.parcial = rows[index][columna+6]
-                        obPlanilla.metrado = rows[index][columna+7]
-                    }else if(rows[index][columna] === null &&rows[index][columna+1] !== null && rows[index][columna+6] !== null){
-                        tipo = "actividad"
-                        var obActividades = []
-                        // nombre
-                        obActividades.push(rows[index][columna+1])
-                        // veces
-                        obActividades.push(rows[index][columna+2])
-                        // largo
-                        obActividades.push(rows[index][columna+3])
-                        // ancho
-                        obActividades.push(rows[index][columna+4])
-                        // alto
-                        obActividades.push(rows[index][columna+5])
-                        // parcial
-                        obActividades.push(rows[index][columna+6])
- 
-                        obPlanilla.actividades.push(obActividades)
-                    }else if(cantcols === 2 &&rows[index][columna] !== null&&rows[index][columna+1] !== null){
-                        // TITULOS
-                        tipo = "titulo"
-                        data2.push(obPlanilla)
-                        obPlanilla = {}
-                        obPlanilla.tipo = "titulo"
-                        obPlanilla.item =  rows[index][columna]
-                        obPlanilla.descripcion =  rows[index][columna+1]
-                        obPlanilla.veces = null
-                        obPlanilla.largo = null
-                        obPlanilla.ancho = null
-                        obPlanilla.alto = null
-                        obPlanilla.parcial = null
-                        obPlanilla.metrado = null
-                        obPlanilla.unidad_medida = null
-                        obPlanilla.costo_unitario = null
-                        obPlanilla.equipo = null
-                        obPlanilla.rendimiento = null
-                        // obPlanilla.actividades = []
-                    }
-                    
-                }
-                data2.push(obPlanilla)
-                data2 = data2.slice(1,data2.length)
-
-
-                    // insertando actividades unicas
-                for (let j = 0; j < data2.length; j++) {
-                    tipo = "actividades unicas"
-                    if(typeof data2[j].actividades !== 'undefined' && data2[j].actividades.length === 0 ){
-                        var obActividades = []
-                        // convertimos variable si no es null
-                        var veces = data2[j].veces
-                        var largo = data2[j].largo
-                        var alto = data2[j].alto
-                        var ancho = data2[j].ancho
-                        var metrado = data2[j].metrado
-
-                        veces = (veces === null) ? veces  : parseFloat( veces).toFixed(3)
-                        largo = (largo === null )? largo : parseFloat( largo).toFixed(3)
-                        alto = (alto === null )? alto : parseFloat( alto).toFixed(3)
-                        ancho = (ancho === null )? ancho : parseFloat( ancho).toFixed(3)
-                        metrado = (metrado === null )? metrado : parseFloat( metrado).toFixed(3)
-
-                        // console.log('verifica >', typeof veces ,'>' , veces)
-
                         
-
-                        obActividades.push("Actividad unica")
-                        obActividades.push(veces)
-                        obActividades.push(largo)
-                        obActividades.push(alto)
-                        obActividades.push(ancho)
-                        obActividades.push(metrado)
-
-                        data2[j].actividades.push(obActividades)
                     }
-                }
-                // console.log('data2>>', data2)
-                this.setState({
-                    Data2:data2,
-                    DataPlanilla:[...data2]
+
+                    
+                    
+                    var activo = false
+
+                    // CREAMOS EL DATA DE PLANILLA DE METRADOS
+                    
+                    for (let index = fila+2; index < rows.length; index++) {
+                        temp = rows[index]
+                        var cantcols = 0
+                        // console.log('index ', index);
+                        
+                        for (let l = 0; l < rows[index].length; l++) {
+                            const celda = rows[index][l];
+                            if(celda !== null ){
+                                cantcols++
+                            }
+                        }
+                        
+                        if((rows[index][columna+6] !== null ||rows[index][columna+7] !== null) && rows[index][columna] !== null ){
+                            tipo = "partida"
+                            // si la columna total tiene un valor
+                            data2.push(obPlanilla)
+                            obPlanilla = {}
+                            obPlanilla.tipo = "partida"
+                            obPlanilla.item =  rows[index][columna]
+                            obPlanilla.descripcion =  rows[index][columna+1]
+                            obPlanilla.actividades = []
+                            obPlanilla.veces = rows[index][columna+2]
+                            obPlanilla.largo = rows[index][columna+3]
+                            obPlanilla.ancho = rows[index][columna+4]
+                            obPlanilla.alto = rows[index][columna+5]
+                            obPlanilla.parcial = rows[index][columna+6]
+                            obPlanilla.metrado = rows[index][columna+7]
+                        }else if(rows[index][columna] === null &&rows[index][columna+1] !== null && rows[index][columna+6] !== null){
+                            tipo = "actividad"
+                            var obActividades = []
+                            // nombre
+                            obActividades.push(rows[index][columna+1])
+                            // veces
+                            obActividades.push(rows[index][columna+2])
+                            // largo
+                            obActividades.push(rows[index][columna+3])
+                            // ancho
+                            obActividades.push(rows[index][columna+4])
+                            // alto
+                            obActividades.push(rows[index][columna+5])
+                            // parcial
+                            obActividades.push(rows[index][columna+6])
+     
+                            obPlanilla.actividades.push(obActividades)
+                        }else if(cantcols === 2 &&rows[index][columna] !== null&&rows[index][columna+1] !== null){
+                            // TITULOS
+                            tipo = "titulo"
+                            data2.push(obPlanilla)
+                            obPlanilla = {}
+                            obPlanilla.tipo = "titulo"
+                            obPlanilla.item =  rows[index][columna]
+                            obPlanilla.descripcion =  rows[index][columna+1]
+                            obPlanilla.veces = null
+                            obPlanilla.largo = null
+                            obPlanilla.ancho = null
+                            obPlanilla.alto = null
+                            obPlanilla.parcial = null
+                            obPlanilla.metrado = null
+                            obPlanilla.unidad_medida = null
+                            obPlanilla.costo_unitario = null
+                            obPlanilla.equipo = null
+                            obPlanilla.rendimiento = null
+                            // obPlanilla.actividades = []
+                        }
+                        
+                    }
+                    data2.push(obPlanilla)
+                    data2 = data2.slice(1,data2.length)
+
+
+                        // insertando actividades unicas
+                    for (let j = 0; j < data2.length; j++) {
+                        tipo = "actividades unicas"
+                        if(typeof data2[j].actividades !== 'undefined' && data2[j].actividades.length === 0 ){
+                            var obActividades = []
+                            // convertimos variable si no es null
+                            var veces = data2[j].veces
+                            var largo = data2[j].largo
+                            var alto = data2[j].alto
+                            var ancho = data2[j].ancho
+                            var metrado = data2[j].metrado
+
+                            veces = (veces === null) ? veces  : parseFloat( veces).toFixed(3)
+                            largo = (largo === null )? largo : parseFloat( largo).toFixed(3)
+                            alto = (alto === null )? alto : parseFloat( alto).toFixed(3)
+                            ancho = (ancho === null )? ancho : parseFloat( ancho).toFixed(3)
+                            metrado = (metrado === null )? metrado : parseFloat( metrado).toFixed(3)
+
+                            // console.log('verifica >', typeof veces ,'>' , veces)
+
+                            
+
+                            obActividades.push("Actividad unica")
+                            obActividades.push(veces)
+                            obActividades.push(largo)
+                            obActividades.push(alto)
+                            obActividades.push(ancho)
+                            obActividades.push(metrado)
+
+                            data2[j].actividades.push(obActividades)
+                        }
+                    }
+                    // console.log('data2>>', data2)
+                    this.setState({
+                        Data2:data2,
+                        DataPlanilla:[...data2]
+                    })
+                //    console.log('coin2>',arrayItems2)
+
                 })
-            //    console.log('coin2>',arrayItems2)
+                .catch((error)=>{
+                     var DataErrores = []
+                        DataErrores.push(data2[data2.length-1].tipo+ " ? => "+data2[data2.length-1].item +" "+data2[data2.length-1].descripcion, 
+                        obPlanilla.tipo+" ? =>  "+obPlanilla.item+" "+obPlanilla.descripcion, tipo+" ? => "+temp[0]+" ?"+temp[1]+" ? "+temp[2]+" ? "+temp[3])
+                        
+                    // alert(data2[data2.length-1].item +" "+data2[data2.length-1].descripcion+" "+data2[data2.length-1].tipo)
+                    // alert(obPlanilla.tipo+" "+obPlanilla.item+" "+obPlanilla.descripcion)
+                    // alert(tipo)
+                    // alert(temp[0]+";"+temp[1]+";"+temp[2]+";"+temp[3])
 
-            })
-            .catch((error)=>{
-                alert('algo salió mal')
-                
-                alert(data2[data2.length-1].item +" "+data2[data2.length-1].descripcion+" "+data2[data2.length-1].tipo)
-                alert(obPlanilla.tipo+" "+obPlanilla.item+" "+obPlanilla.descripcion)
-                alert(tipo)
-                alert(temp[0]+";"+temp[1]+";"+temp[2]+";"+temp[3])
-                
-                console.log(error);
-                console.log(data2);
-                
-            })
+                    alert('algo salió mal')
+                    this.setState({DataErrores})
+                    console.log(error);
+                    console.log(DataErrores);
+                    
+                })
+            }else{
+                alert('tipo de archivo no admitido cargue solo archivos con extension .xlsx')
+            }
         })
     }
-    
     verificarDatos(){
         const { Data1, Data2, idComponente, DataPlanilla, idPresupuesto } = this.state
         
@@ -397,7 +405,7 @@ class PartidasNuevas extends Component {
                     // console.log('algo no coincide')
                     Errores++
                     // console.log(Data1[index] ,  Data2[index])
-
+                    alert("ACU" +Data1[index].item+" - planilla "+Data2[index].item)
                     ErroresArray1.push(Data1[index])
                     ErroresArray2.push(Data2[index])
 
@@ -410,6 +418,7 @@ class PartidasNuevas extends Component {
         // uniendo planilla de datos y acu
 
         if(Errores === 0){
+            
             var indexData1 = 0
             for (let i = 0; i < DataPlanilla.length; i++) {
                 if(DataPlanilla[i].tipo === 'partida'){
@@ -442,6 +451,8 @@ class PartidasNuevas extends Component {
             }
         )
     }
+
+
     EnviarDatos(){  
        
         if(confirm('Estas seguro de enviar las partidas !este proceso es irreversible')){
