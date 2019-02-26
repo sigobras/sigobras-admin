@@ -1,13 +1,12 @@
 const axios = require('axios')
 
-const UrlServer = "https://sigobrasbeta.herokuapp.com";
-// const UrlServer = "http://localhost:14000";
-// const UrlServer = "http://192.168.1.59:9000";
-const Token = axios.defaults.headers.common['Authorization'] = `bearer ${sessionStorage.getItem('TuToken')}`;
+const UrlServer = "http://192.168.0.4:9000";
+// const UrlServer = "http://localhost:9000"; ;
+// const Token = axios.defaults.headers.common['Authorization'] = `bearer ${sessionStorage.getItem('TuToken')}`;
 
 
 module.exports = {
     UrlServer,
-    Token
+    // Token
 } 
 
