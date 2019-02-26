@@ -14,6 +14,8 @@ class ObraNueva extends Component {
             IdEstadoObra:'',
             DataComponentes:[]
         }
+        
+        this.formatDate = this.formatDate.bind(this)
         this.CargaDatosExcelObra = this.CargaDatosExcelObra.bind(this)
         this.handleSubmit = this.handleSubmit.bind(this)
         this.CargaDatosExcelComponentes = this.CargaDatosExcelComponentes.bind(this)
@@ -33,6 +35,17 @@ class ObraNueva extends Component {
         )
     }
 
+    formatDate(f){
+        var date = new Date(f);
+    
+        var year = date.getFullYear();
+        var month = date.getMonth()+1;
+        var dt = date.getDate();
+        console.log(year+'-'+month+'-'+dt);
+        
+        return year+'-'+month+'-'+dt
+    }
+
     CargaDatosExcelObra(){
         
         const input = document.getElementById('inputDatosObra')
@@ -42,8 +55,8 @@ class ObraNueva extends Component {
                 var ObrasEstructurado = {}
 
                     ObrasEstructurado.codigo = rows[0][1]
-                    ObrasEstructurado.fecha_inicial = rows[1][1]
-                    ObrasEstructurado.fecha_final = rows[2][1]
+                    ObrasEstructurado.fecha_inicial = this.formatDate(rows[1][1])
+                    ObrasEstructurado.fecha_final = this.formatDate(rows[2][1])
                     ObrasEstructurado.g_sector = rows[3][1]
                     ObrasEstructurado.g_pliego = rows[4][1]
                     ObrasEstructurado.g_uni_ejec = rows[5][1]
@@ -65,12 +78,6 @@ class ObraNueva extends Component {
                     ObrasEstructurado.modalidad_ejec = rows[21][1]
                     ObrasEstructurado.id_estado = this.state.IdEstadoObra
                     ObrasEstructurado.componentes = this.state.DataComponentes
-
-                        
-                // }
-
-                // console.log('ObrasEstructurado', ObrasEstructurado);
-                // console.log('ObrasEstructurado', dataArray);
                 
                 this.setState({
                     DatosObras:ObrasEstructurado
@@ -84,6 +91,8 @@ class ObraNueva extends Component {
     }
     handleSubmit(e){
         e.preventDefault()
+        console.log(this.state.DatosObras);
+        
           axios.post(`${UrlServer}/nuevaObra`,
               this.state.DatosObras
           ) 
