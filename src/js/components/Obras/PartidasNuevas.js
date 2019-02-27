@@ -3,6 +3,7 @@ import readXlsxFile from 'read-excel-file'
 import { Card, Button, CardHeader, CardFooter, CardBody, CardTitle, CardText, Spinner, Row, Col, UncontrolledPopover, PopoverBody } from 'reactstrap';
 import axios from 'axios'
 import { UrlServer } from '../Utils/ServerUrlConfig'
+import { Redondea } from '../Utils/Funciones'
 import ReactJson from 'react-json-view'
 
 class PartidasNuevas extends Component {

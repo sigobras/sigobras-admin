@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import axios from 'axios'
 import { UrlServer } from '../Utils/ServerUrlConfig'
+import { Redondea } from '../Utils/Funciones'
 import { Card, Button, CardHeader, CardFooter, CardBody, CardTitle, CardText, Spinner } from 'reactstrap';
 import readXlsxFile from 'read-excel-file'
 
@@ -91,7 +92,7 @@ class ObraNueva extends Component {
     }
     handleSubmit(e){
         e.preventDefault()
-        console.log(this.state.DatosObras);
+        // console.log(this.state.DatosObras);
         
           axios.post(`${UrlServer}/nuevaObra`,
               this.state.DatosObras
@@ -115,10 +116,17 @@ class ObraNueva extends Component {
         
         const input = document.getElementById('inputComponentes')
         input.addEventListener('change', () => {
-            readXlsxFile(input.files[0]).then((rows ) => {
+            readXlsxFile(input.files[0]).then((rows) => {
+
                 var dataArray = []
                 for (let index = 0; index < rows.length; index++) {
+                    // console.log(rows[index][0]);
+
+                    dataArray.numero = rows[index]
                     var datos = Object.assign({},rows[index])
+                    datos[0] = datos[0]
+                    datos[1] = datos[1]
+                    datos[2] = Redondea(datos[2])                    
                     dataArray.push(datos)
                 }
                 this.setState({
