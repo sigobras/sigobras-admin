@@ -1,6 +1,6 @@
 // const axios = require('axios')
 
-const UrlServer = "http://192.168.0.4:9000";
+const UrlServer = "http://190.117.94.80:9000";
 // const UrlServer = "http://192.168.0.5:9000";
 
 // const UrlServer = "http://localhost:9000"; ;
