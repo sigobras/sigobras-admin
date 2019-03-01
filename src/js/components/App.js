@@ -17,6 +17,7 @@ import Inicio from '../components/Inicio/Inicio'
 // components
 import ObraNueva from './Obras/ObraNueva'
 import PartidasNuevas from '../components/Obras/PartidasNuevas'
+import ComponentesNuevos from '../components/Obras/ComponentesNuevos'
 import ListaObras from '../components/Obras/ListaObras'
 
 import listaCargos from '../components/Cargos/ListaCargos'
@@ -95,6 +96,9 @@ class AppAng extends Component {
                                                     <li className="lii">
                                                         <Link to="PartidasNuevas" className="nav-link"><FaLinode /> Registrar partidas</Link>
                                                     </li>
+                                                    <li className="lii">
+                                                        <Link to="ComponentesNuevos" className="nav-link"><FaLinode /> ComponentesNuevos</Link>
+                                                    </li>
                                                 </ul>
                                             </UncontrolledCollapse>
                                         </li>      
@@ -149,6 +153,7 @@ class AppAng extends Component {
                                     <Route path="/Inicio" component={Inicio} />
                                     <Route path="/ObraNueva" component={ObraNueva} />
                                     <Route path="/PartidasNuevas" component={PartidasNuevas} />
+                                    <Route path="/ComponentesNuevos" component={ComponentesNuevos} />
                                     <Route path="/ListaObras" component={ListaObras} />
 
                                     <Route path="/listaCargos" component={listaCargos} />

@@ -106,6 +106,7 @@ class ObraNueva extends Component {
                 statusRes:res.data
               })
               sessionStorage.setItem('datosObras', JSON.stringify(res.data))
+              sessionStorage.setItem('estado', 'oficial')
           })
           .catch((error)=> {
               console.error('ALGO SALIO MAN AL INGRESAR LOS DATOS DE LA OBRA',error);

@@ -10,12 +10,20 @@ class ListaObras extends Component {
             listaObras:[],
             DataUsuarios:[],
             modal: false,
+            modal2:false,
             IdObra:'',
-            idUser:''
+            idUser:'',
+            Componentes:[]
         }
         this.Modal = this.Modal.bind(this)
         this.CapturarIdObra = this.CapturarIdObra.bind(this)
         this.GuardarDatos = this.GuardarDatos.bind(this)
+
+        //componentes
+        this.ModalComponentes = this.ModalComponentes.bind(this)
+        this.ListarComponentesPorId = this.ListarComponentesPorId.bind(this)        
+        this.apiComponentes = this.apiComponentes.bind(this)
+        this.RedirectPN = this.RedirectPN.bind(this)
         
     }
     componentWillMount(){
@@ -29,6 +37,7 @@ class ListaObras extends Component {
         .catch((error)=>{
             console.log('algo salió mal al tratar de listar las obras error es: ', error);
         })
+
         // LISTA DE USUARIOS
 
         axios.get(`${UrlServer}/listaUsuarios`)
@@ -41,6 +50,9 @@ class ListaObras extends Component {
         .catch((error)=>{
             console.log('algo salió mal al tratar de listar los usuarios error es: ', error);
         })
+
+       
+
     }
     
     Modal() {
@@ -55,7 +67,62 @@ class ListaObras extends Component {
         })
         this.Modal()
     }
+    //listar componentes
+    ModalComponentes() {
+        this.setState(prevState => ({
+            modal2: !prevState.modal2
+        }));
+    }
+    ListarComponentesPorId(id_ficha){
+      
+        this.apiComponentes(id_ficha)
+        this.ModalComponentes()
+    }
 
+    apiComponentes(id_ficha){
+         //lista de componentes
+         axios.post(`${UrlServer}/listaComponentesPorId`,{
+            "id_ficha":id_ficha
+        })
+        .then((res)=>{
+            // console.log(res.data);
+            this.setState({
+                Componentes:res.data
+            })
+            console.log("componentes",res.data);
+            
+        })
+        .catch((error)=>{
+            console.log('algo salió mal al tratar de listar los usuarios error es: ', error);
+        })
+    }
+    RedirectPN(id_componente,id_presupuesto){
+        alert(id_componente+" "+id_presupuesto)
+        var json=
+        {            
+            "componentes": [
+                {
+                    "numero": 1,
+                    "idComponente": id_componente,
+                    "idPresupuesto": id_presupuesto
+                }                
+            ]
+        }
+        sessionStorage.setItem('datosObras', JSON.stringify(json))
+        sessionStorage.setItem('estado', 'PartidaNueva')
+        window.location.href = "/PartidasNuevas";
+
+    }
+    ingresarComponentes(id_ficha,g_meta){
+        
+        sessionStorage.setItem('idFicha', id_ficha)
+        console.log("idficha",id_ficha);
+        
+        sessionStorage.setItem('g_meta', g_meta)
+        window.location.href = "/ComponentesNuevos";
+
+    }
+    ///////////////////////////////////////
     GuardarDatos(event){
         event.preventDefault()
 
@@ -75,7 +142,7 @@ class ListaObras extends Component {
     }
 
     render() {
-        const { listaObras, DataUsuarios } = this.state
+        const { listaObras, DataUsuarios,Componentes } = this.state
         return (
             <div>
                 <Card>
@@ -102,6 +169,12 @@ class ListaObras extends Component {
                                         <td>{ obra.g_local_dist }</td>
                                         <td>
                                             <button className="btn btn-outline-success" onClick={(e) => this.CapturarIdObra(obra.id_ficha)}><Spinner /> Dar acceso</button>
+                                        </td>
+                                        <td>
+                                            <button className="btn btn-outline-success" onClick={(e) => this.ListarComponentesPorId(obra.id_ficha)}><Spinner /> listar componentes</button>
+                                        </td>
+                                        <td>
+                                            <button className="btn btn-outline-success" onClick={(e) => this.ingresarComponentes(obra.id_ficha,obra.g_meta)}><Spinner /> ingresar componentes</button>
                                         </td>
                                     </tr>
                                 )}
@@ -130,6 +203,34 @@ class ListaObras extends Component {
                         <ModalFooter>
                             <Button color="primary" type="submit">Guardar</Button>{' '}
                             <Button color="secondary" onClick={this.Modal}>Cancelar</Button>
+                        </ModalFooter>
+                    </Form>
+                </Modal>
+                <Modal isOpen={this.state.modal2} 
+                //  modalTransition={{ timeout: 700 }} backdropTransition={{ timeout: 1300 }}
+                    toggle={this.ModalComponentes} className={this.props.className} size="lg">
+                    <Form onSubmit={this.GuardarDatos}>
+                        <ModalBody>
+                        
+                            <FormGroup>
+                                <Label for="exampleSelect">SELECCIONE EL COMPONENTE { this.state.idUser }</Label>                             
+                                
+                                
+                                {Componentes.map((componente, iusuers)=>
+                                    
+                                    
+                                    <div key={ iusuers } value={ componente.id_componente } > 
+                                    { componente.numero+" "+ componente.nombre } 
+                                    <Button color="secondary" onClick={e=>this.RedirectPN(componente.id_componente,componente.id_Presupuesto)}>NuevaPartida</Button>
+                                    {/* <Button color="secondary" >NuevaPartida</Button>  */}
+                                    </div>                                                             
+                                )}
+                                
+                            </FormGroup>
+                        
+                        </ModalBody>
+                        <ModalFooter>                            
+                            <Button color="secondary" onClick={this.ModalComponentes}>Cancelar</Button>
                         </ModalFooter>
                     </Form>
                 </Modal>

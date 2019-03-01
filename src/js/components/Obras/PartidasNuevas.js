@@ -21,7 +21,8 @@ class PartidasNuevas extends Component {
             IdObra:'',
             idPresupuesto:'',
             idComponente:'',
-            DataErrores:[]
+            DataErrores:[],
+            estadoPartidas:''
             
         }
         this.CostosUnitarios = this.CostosUnitarios.bind(this)
@@ -34,13 +35,15 @@ class PartidasNuevas extends Component {
 
     componentWillMount(){
         var dataObra = sessionStorage.getItem("datosObras")
+        var estado = sessionStorage.getItem("estado")
         dataObra = JSON.parse(dataObra) 
         console.log('datoss>', dataObra)
         // sessionStorage.getItem("datosObras")
 
         this.setState({
             DataComponentes:dataObra.componentes,
-            IdObra:dataObra.id_ficha
+            IdObra:dataObra.id_ficha,
+            estadoPartidas:estado
         })
 
     }
@@ -455,10 +458,19 @@ class PartidasNuevas extends Component {
 
 
     EnviarDatos(){  
+       console.log(
+        {
+            "estado":this.state.estadoPartidas,
+            "data": this.state.DataFinal                
+        }
+       );
        
         if(confirm('Estas seguro de enviar las partidas !este proceso es irreversible')){
             axios.post(`${UrlServer}/nuevasPartidas`,
-            this.state.DataFinal
+            {
+                "estado":this.state.estadoPartidas,
+                "data": this.state.DataFinal                
+            }            
             )
             .then((res)=>{
                 console.log('partidas ', res);
