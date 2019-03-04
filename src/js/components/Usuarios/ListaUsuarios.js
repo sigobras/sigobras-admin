@@ -74,8 +74,14 @@ class ListaUsuarios extends Component {
             cpt: cpt,
         })
         .then((res)=>{
-            alert('exito ')
-            console.log('exito', res)
+            if(res.status == 204){
+                alert('algo ha salido mal')                
+            }else{
+                alert('exito ')
+            }
+            console.log('res', res)
+            
+            
         })
         .catch((err)=>{
             alert('errores al ingresar el usuario')

@@ -260,9 +260,11 @@ class PartidasNuevas extends Component {
                             obPlanilla.parcial = rows[index][columna+6]
                             obPlanilla.metrado = rows[index][columna+7]
                         }else if(rows[index][columna] === null &&rows[index][columna+1] !== null && rows[index][columna+6] !== null){
-                            tipo = "actividad"
+                            tipo = "actividad subtitulo"
                             var obActividades = []
-                            // nombre
+                            // titulo                            
+                            obActividades.push("subtitulo")
+                            // nombre                            
                             obActividades.push(rows[index][columna+1])
                             // veces
                             obActividades.push(rows[index][columna+2])
@@ -295,6 +297,25 @@ class PartidasNuevas extends Component {
                             obPlanilla.equipo = null
                             obPlanilla.rendimiento = null
                             // obPlanilla.actividades = []
+                        }else if(rows[index][columna+1] !== null){
+                            tipo = "actividad titulo"
+                            var obActividades = []
+                            // titulo                            
+                            obActividades.push("titulo")
+                            // nombre                            
+                            obActividades.push(null)
+                            // veces
+                            obActividades.push(null)
+                            // largo
+                            obActividades.push(null)
+                            // ancho
+                            obActividades.push(null)
+                            // alto
+                            obActividades.push(null)
+                            // parcial
+                            obActividades.push(null)
+     
+                            obPlanilla.actividades.push(obActividades)
                         }
                         
                     }
@@ -323,7 +344,7 @@ class PartidasNuevas extends Component {
                             // console.log('verifica >', typeof veces ,'>' , veces)
 
                             
-
+                            obActividades.push("subtitulo")
                             obActividades.push("Actividad unica")
                             obActividades.push(veces)
                             obActividades.push(largo)
