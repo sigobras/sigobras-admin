@@ -259,7 +259,7 @@ class PartidasNuevas extends Component {
                             obPlanilla.alto = rows[index][columna+5]
                             obPlanilla.parcial = rows[index][columna+6]
                             obPlanilla.metrado = rows[index][columna+7]
-                        }else if(rows[index][columna] === null &&rows[index][columna+1] !== null && rows[index][columna+6] !== null){
+                        }else if(rows[index][columna] === null &&rows[index][columna+1] !== null && (rows[index][columna+6] !== null)||(rows[index][columna+7] !== null)){
                             tipo = "actividad subtitulo"
                             var obActividades = []
                             // titulo                            
@@ -275,10 +275,14 @@ class PartidasNuevas extends Component {
                             // alto
                             obActividades.push(rows[index][columna+5])
                             // parcial
-                            obActividades.push(rows[index][columna+6])
+                            if(rows[index][columna+7] !== null){
+                                obActividades.push(rows[index][columna+7])
+                            }else{
+                                obActividades.push(rows[index][columna+6])
+                            }                            
      
                             obPlanilla.actividades.push(obActividades)
-                        }else if(cantcols === 2 &&rows[index][columna] !== null&&rows[index][columna+1] !== null){
+                        }else if(rows[index][columna] !== null&&rows[index][columna+1] !== null){
                             // TITULOS
                             tipo = "titulo"
                             data2.push(obPlanilla)
@@ -303,7 +307,7 @@ class PartidasNuevas extends Component {
                             // titulo                            
                             obActividades.push("titulo")
                             // nombre                            
-                            obActividades.push(null)
+                            obActividades.push(rows[index][columna+1])
                             // veces
                             obActividades.push(null)
                             // largo
@@ -430,7 +434,7 @@ class PartidasNuevas extends Component {
                     // console.log('algo no coincide')
                     Errores++
                     // console.log(Data1[index] ,  Data2[index])
-                    alert("ACU" +Data1[index].item+" - planilla "+Data2[index].item)
+                    // alert("ACU" +Data1[index].item+" - planilla "+Data2[index].item)
                     ErroresArray1.push(Data1[index])
                     ErroresArray2.push(Data2[index])
 
@@ -471,7 +475,7 @@ class PartidasNuevas extends Component {
                 Errores1: ErroresArray1,
                 Errores2: ErroresArray2,
                 erroresEncontrado:'Errores encontrados : '+Errores,
-                DataFinal: Errores =='tamaños diferentes' ? ErroresArray1:DataPlanilla 
+                DataFinal: (Errores =='tamaños diferentes'||Errores > 0 )? ErroresArray1:DataPlanilla 
 
             }
         )
