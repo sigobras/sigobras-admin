@@ -60,7 +60,10 @@ class ObraNueva extends Component {
                     ObrasEstructurado.fecha_final = this.formatDate(rows[2][1])
                     ObrasEstructurado.g_sector = rows[3][1]
                     ObrasEstructurado.g_pliego = rows[4][1]
-                    ObrasEstructurado.g_uni_ejec = rows[5][1]
+                     //cargar foreignkeyde tipo deobra
+                     ObrasEstructurado.unidadEjecutoras_id_unidadEjecutora = 1
+                     ObrasEstructurado.tipoObras_id_tipoObra = 1
+                     
                     ObrasEstructurado.g_func = rows[6][1]
                     ObrasEstructurado.g_prog = rows[7][1]
                     ObrasEstructurado.g_subprog = rows[8][1]
