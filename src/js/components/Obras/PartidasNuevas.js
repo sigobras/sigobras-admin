@@ -22,7 +22,8 @@ class PartidasNuevas extends Component {
             idPresupuesto:'',
             idComponente:'',
             DataErrores:[],
-            estadoPartidas:''
+            estadoPartidas:'',
+            erroresSuma:[]
             
         }
         this.CostosUnitarios = this.CostosUnitarios.bind(this)
@@ -258,8 +259,8 @@ class PartidasNuevas extends Component {
                             obPlanilla.ancho = rows[index][columna+4]
                             obPlanilla.alto = rows[index][columna+5]
                             obPlanilla.parcial = rows[index][columna+6]
-                            obPlanilla.metrado = rows[index][columna+7]
-                        }else if(rows[index][columna] === null &&rows[index][columna+1] !== null && (rows[index][columna+6] !== null)||(rows[index][columna+7] !== null)){
+                            obPlanilla.metrado = rows[index][columna+7].toFixed(3)
+                        }else if(rows[index][columna] === null && (rows[index][columna+6] !== null)||(rows[index][columna+7] !== null)){
                             tipo = "actividad subtitulo"
                             var obActividades = []
                             // titulo                            
@@ -279,7 +280,7 @@ class PartidasNuevas extends Component {
                                 obActividades.push(rows[index][columna+7])
                             }else{
                                 obActividades.push(rows[index][columna+6])
-                            }                            
+                            }               
      
                             obPlanilla.actividades.push(obActividades)
                         }else if(rows[index][columna] !== null&&rows[index][columna+1] !== null){
@@ -359,10 +360,47 @@ class PartidasNuevas extends Component {
                             data2[j].actividades.push(obActividades)
                         }
                     }
+                    var erroresSuma = []
+                    //revisando sumatorias de actividades
+                    for (let index = 20; index < data2.length; index++) {
+                        const partida = data2[index];
+                        var suma = 0; 
+                        
+                        if(partida.tipo == "partida"){
+                            
+                            for(let j = 0; j < partida.actividades.length; j++) {
+                                
+                                
+                                const parcial = partida.actividades[j][6];
+                                suma+= parcial    
+                                
+                                
+                            }
+                            
+                            if (Number(data2[index].metrado) <=Number(suma-0.001) || (Number(data2[index].metrado) >+Number(suma+0.001))) {
+                                // console.log(Number(data2[index].metrado ),"<=",suma-0.01,Number(data2[index].metrado <=Number(suma-0.01)));
+                                // console.log(Number(data2[index].metrado ),">=",suma+0.01,Number(data2[index].metrado >=Number(suma+0.01)));
+                                
+                                erroresSuma.push(
+                                    {
+                                        "item":data2[index].item,
+                                        "total":Number(data2[index].metrado),
+                                        "suma":suma
+                                    }
+                                )
+                            }
+                            
+                        }
+                        
+                        
+                    }
+                    console.log(erroresSuma);
+                   
                     // console.log('data2>>', data2)
                     this.setState({
                         Data2:data2,
-                        DataPlanilla:[...data2]
+                        DataPlanilla:[...data2],
+                        erroresSuma:erroresSuma
                     })
                 //    console.log('coin2>',arrayItems2)
 
@@ -518,7 +556,7 @@ class PartidasNuevas extends Component {
         })
     }
     render() {
-        const { Data1, Data2, DataErrores, Errores2, DataFinal, DataComponentes, idComponente, IdObra, idPresupuesto } = this.state
+        const { Data1, Data2, DataErrores,erroresSuma, Errores2, DataFinal, DataComponentes, idComponente, IdObra, idPresupuesto } = this.state
         return (
             <div>
                 <Card>
@@ -558,9 +596,17 @@ class PartidasNuevas extends Component {
                                         <legend><b>cargar datos de Planilla de metrados</b></legend>
                                         
                                         <input type="file" id="input2" onClick={this.PlanillaMetrados} />
-
+                                        <hr/>
                                         {DataErrores.map((err, i)=>
                                             <label className="text-danger">{ err}</label>
+                                        )}
+                                        
+                                        
+                                        {erroresSuma.map((err, i)=>
+                                        <div>
+                                            <label className="text-danger">{ err.item +" total partida: "+ err.total+" suma actividades: "+err.suma}</label><br/>
+                                        </div>
+                                            
                                         )}
                                         <code className="small">
                                             <ReactJson src={Data2} name="Data2"  theme="monokai" collapsed={2} displayDataTypes={false}/>
