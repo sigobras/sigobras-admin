@@ -604,7 +604,7 @@ class PartidasNuevas extends Component {
                                         
                                         {erroresSuma.map((err, i)=>
                                         <div>
-                                            <label className="text-danger">{ err.item +" total partida: "+ err.total+" suma actividades: "+err.suma}</label><br/>
+                                            <label className="text-danger">{ err.item +" total partida: "+ err.total+" suma actividades: "+err.suma.toFixed(3)}</label><br/>
                                         </div>
                                             
                                         )}
