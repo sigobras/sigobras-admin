@@ -11,6 +11,7 @@ class ListaObras extends Component {
             DataUsuarios:[],
             modal: false,
             modal2:false,
+            modal3:false,
             IdObra:'',
             idUser:'',
             Componentes:[]
@@ -122,6 +123,17 @@ class ListaObras extends Component {
         window.location.href = "/ComponentesNuevos";
 
     }
+    IngresarCuadroMetrados(id_ficha,g_meta){
+        
+        sessionStorage.setItem('idFicha', id_ficha)
+        console.log("idficha",id_ficha);
+        
+        sessionStorage.setItem('g_meta', g_meta)
+        
+       
+        window.location.href = "/IngresoCudroMetradosEjecutados";
+
+    }
     ///////////////////////////////////////
     GuardarDatos(event){
         event.preventDefault()
@@ -175,6 +187,9 @@ class ListaObras extends Component {
                                         </td>
                                         <td>
                                             <button className="btn btn-outline-success" onClick={(e) => this.ingresarComponentes(obra.id_ficha,obra.g_meta)}><Spinner /> ingresar componentes</button>
+                                        </td>
+                                        <td>
+                                            <button className="btn btn-outline-success" onClick={(e) => this.IngresarCuadroMetrados(obra.id_ficha,obra.g_meta)}><Spinner /> ingresar metrado por mes</button>
                                         </td>
                                     </tr>
                                 )}

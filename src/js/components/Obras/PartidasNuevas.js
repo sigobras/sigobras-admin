@@ -259,7 +259,7 @@ class PartidasNuevas extends Component {
                             obPlanilla.ancho = rows[index][columna+4]
                             obPlanilla.alto = rows[index][columna+5]
                             obPlanilla.parcial = rows[index][columna+6]
-                            obPlanilla.metrado = rows[index][columna+7].toFixed(3)
+                            obPlanilla.metrado = Number(rows[index][columna+7].toFixed(2))
                         }else if(rows[index][columna] === null && (rows[index][columna+6] !== null)||(rows[index][columna+7] !== null)){
                             tipo = "actividad subtitulo"
                             var obActividades = []
@@ -277,9 +277,9 @@ class PartidasNuevas extends Component {
                             obActividades.push(rows[index][columna+5])
                             // parcial
                             if(rows[index][columna+7] !== null){
-                                obActividades.push(rows[index][columna+7])
+                                obActividades.push(Number(rows[index][columna+7].toFixed(2)))
                             }else{
-                                obActividades.push(rows[index][columna+6])
+                                obActividades.push(Number(rows[index][columna+6].toFixed(2)))
                             }               
      
                             obPlanilla.actividades.push(obActividades)
@@ -340,11 +340,11 @@ class PartidasNuevas extends Component {
                             var ancho = data2[j].ancho
                             var metrado = data2[j].metrado
 
-                            veces = (veces === null) ? veces  : parseFloat( veces).toFixed(3)
-                            largo = (largo === null )? largo : parseFloat( largo).toFixed(3)
-                            alto = (alto === null )? alto : parseFloat( alto).toFixed(3)
-                            ancho = (ancho === null )? ancho : parseFloat( ancho).toFixed(3)
-                            metrado = (metrado === null )? metrado : parseFloat( metrado).toFixed(3)
+                            veces = (veces === null) ? veces  : Number( veces).toFixed(2)
+                            largo = (largo === null )? largo : Number( largo).toFixed(2)
+                            alto = (alto === null )? alto : Number( alto).toFixed(2)
+                            ancho = (ancho === null )? ancho : Number( ancho).toFixed(2)
+                            metrado = (metrado === null )? metrado : Number( metrado.toFixed(2))
 
                             // console.log('verifica >', typeof veces ,'>' , veces)
 
@@ -360,8 +360,8 @@ class PartidasNuevas extends Component {
                             data2[j].actividades.push(obActividades)
                         }
                     }
-                    var erroresSuma = []
                     //revisando sumatorias de actividades
+                    var erroresSuma = []
                     for (let index = 20; index < data2.length; index++) {
                         const partida = data2[index];
                         var suma = 0; 
@@ -377,15 +377,16 @@ class PartidasNuevas extends Component {
                                 
                             }
                             
-                            if (Number(data2[index].metrado) <=Number(suma-0.001) || (Number(data2[index].metrado) >+Number(suma+0.001))) {
-                                // console.log(Number(data2[index].metrado ),"<=",suma-0.01,Number(data2[index].metrado <=Number(suma-0.01)));
-                                // console.log(Number(data2[index].metrado ),">=",suma+0.01,Number(data2[index].metrado >=Number(suma+0.01)));
+                            // if (Number(data2[index].metrado) <=Number(suma-0.001) || (Number(data2[index].metrado) >+Number(suma+0.001))) {
+                            console.log("data2[index].metrado <=suma",data2[index].metrado,suma,data2[index].metrado <=suma);
+                                
+                            if (data2[index].metrado !=suma.toFixed(2)) {
                                 
                                 erroresSuma.push(
                                     {
                                         "item":data2[index].item,
                                         "total":Number(data2[index].metrado),
-                                        "suma":suma
+                                        "suma":suma.toFixed(2)
                                     }
                                 )
                             }
@@ -394,7 +395,7 @@ class PartidasNuevas extends Component {
                         
                         
                     }
-                    console.log(erroresSuma);
+                    // console.log(erroresSuma);
                    
                     // console.log('data2>>', data2)
                     this.setState({
@@ -501,7 +502,7 @@ class PartidasNuevas extends Component {
                     indexData1++
                 }
                 DataPlanilla[i].componentes_id_componente = idComponente
-                DataPlanilla[i].presupuestos_id_presupuesto = idPresupuesto
+                // DataPlanilla[i].presupuestos_id_presupuesto = idPresupuesto
                 
 
             }
@@ -604,7 +605,7 @@ class PartidasNuevas extends Component {
                                         
                                         {erroresSuma.map((err, i)=>
                                         <div>
-                                            <label className="text-danger">{ err.item +" total partida: "+ err.total+" suma actividades: "+err.suma.toFixed(3)}</label><br/>
+                                            <label className="text-danger">{ err.item +" total partida: "+ err.total+" suma actividades: "+err.suma}</label><br/>
                                         </div>
                                             
                                         )}
@@ -617,34 +618,7 @@ class PartidasNuevas extends Component {
                                     <fieldset>
                                         <legend><b>Opciones de manejo de los datos cargados</b></legend>
                                         <button className="btn btn-outline-warning" onClick={this.verificarDatos}> verificar datos</button>
-                                        <i>{this.state.erroresEncontrado}</i>
-                                        {/* <table className="table table-bordered table small">
-                                            <tbody>
-                                                <tr>
-                                                    <td colSpan="2"><b>Costos unitarios</b></td>
-                                                    <td colSpan="2"><b>Planilla de metrados</b></td>
-                                                </tr>
-                                                <tr> 
-                                                    <td>
-                                                    {Errores1.map((err1, i)=>
-                                                        <tr key={i}>
-                                                            <td>{err1.item}</td>
-                                                            <td>{err1.nombre}</td>
-                                                        </tr>
-                                                    )} 
-                                                    </td>
-
-                                                    <td>
-                                                    {Errores2.map((err1, i)=>
-                                                        <tr key={i}>
-                                                            <td>{err1.item}</td>
-                                                            <td>{err1.nombre}</td>
-                                                        </tr>
-                                                    )} 
-                                                    </td>
-                                                </tr>                                
-                                            </tbody>
-                                        </table> */}
+                                        <i>{this.state.erroresEncontrado}</i>                            
                                         
                                         <code>
                                             <ReactJson src={DataFinal}  name="DataFinal"  theme="monokai" collapsed={2} displayDataTypes={false}/>
