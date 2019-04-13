@@ -17,7 +17,9 @@ class IngresoCuardoMetrados extends Component {
             partidas:"",
             fecha:"",
             MetradosEjecutados:[],
-            avanceActividades:[]
+            avanceActividades:[],
+            dataExcelPartidasOriginial:[],
+            repetidos:[]
             
         }
         this.CargaDatosExcelComponentes = this.CargaDatosExcelComponentes.bind(this)
@@ -68,11 +70,17 @@ class IngresoCuardoMetrados extends Component {
                 var avanceActividades = []
                 var repetidos = []
                 var MetradosEjecutados = []
+                var dataExcelPartidasOriginial = []
 
                 for (var k in sheets) {
                     await readXlsxFile(input.files[0], { sheet: k }).then((rows) => {
                         // console.log("hoja",k);
-                           //buscando posicion de ITEM          
+
+                     
+
+
+
+                        //buscando posicion de ITEM          
 
              
                         var row = 0
@@ -94,13 +102,33 @@ class IngresoCuardoMetrados extends Component {
                         // console.log("item posicion i %s j %s",row,col);
                         var fecha = rows[row-2][col-2]
                         // console.log("fecha",fecha);
-                        
 
+
+                        //verificar listadeitems
+                        
+                        for (let i = 0; i < listaPartidas.length; i++) {
+                            const fila = rows[i+row];
+                            if(fila[col-2] != listaPartidas[i].item){
+                                console.log("diferente: ",fila[col-2] ,listaPartidas[i].item);
+                                dataExcelPartidasOriginial.push(
+                                    {
+                                        "hoja":k,
+                                        "excel":fila[col-2],
+                                        "planilla":listaPartidas[i].item
+                                    }
+                                )
+                            }
+                            
+                        }
 
                         //verificar items repertidos
+                        console.log("listaPartidas",listaPartidas);
+                        
                         var items = []
                         for (let i = row; i < rows.length; i++) {
                             const fila = rows[i];
+
+                          
                         
                             if(items.indexOf(fila[col-2]) == -1){
                                 items.push(fila[col-2])
@@ -169,7 +197,9 @@ class IngresoCuardoMetrados extends Component {
                 
                 this.setState({
                     MetradosEjecutados:MetradosEjecutados,
-                    avanceActividades:avanceActividades
+                    avanceActividades:avanceActividades,
+                    repetidos:repetidos,
+                    dataExcelPartidasOriginial:dataExcelPartidasOriginial
                     
                 })
             })
@@ -229,7 +259,7 @@ class IngresoCuardoMetrados extends Component {
     }
 
     render() {
-        const { MetradosEjecutados} = this.state
+        const { MetradosEjecutados,repetidos,dataExcelPartidasOriginial} = this.state
         return (
             <div>
              
@@ -241,6 +271,46 @@ class IngresoCuardoMetrados extends Component {
                                 <legend><b>Cuadro de metrados ejecutados</b></legend>
                                
                                 <input type="file" id="inputComponentes" onClick={this.CargaDatosExcelComponentes} />
+                                <button onClick={(e)=>this.guardarMetrados()} className="btn btn-outline-success">  <Spinner color="primary"/>Guardar datos</button>
+                                <table className="table table-bordered table-sm small">
+                                    <thead>
+                                        <tr>
+                                        <th> HOJA</th>
+                                        <th> ITEM repetido</th>
+                                        <th> fila</th>                                        
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    { repetidos.map((metrado, index)=>
+                                    <tr key={ index }>
+                                        <td>{ metrado.hoja }</td>
+                                        <td>{ metrado.item }</td>
+                                        <td>{ metrado.fila }</td>
+                                    </tr>
+                                )}
+                                    
+                                    </tbody>
+                                </table>
+                                <table className="table table-bordered table-sm small">
+                                    <thead>
+                                        <tr>
+                                        <th> HOJA</th>
+                                        <th> EXCEL</th>
+                                        <th> planilla</th>
+                                        
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    { dataExcelPartidasOriginial.map((metrado, index)=>
+                                    <tr key={ index }>
+                                        <td>{ metrado.hoja }</td>
+                                        <td>{ metrado.excel }</td>
+                                        <td>{ metrado.planilla }</td>
+                                    </tr>
+                                )}
+                                    
+                                    </tbody>
+                                </table>
                                 <table className="table table-bordered table-sm small">
                                     <thead>
                                         <tr>
@@ -262,7 +332,7 @@ class IngresoCuardoMetrados extends Component {
                                     
                                     </tbody>
                                 </table>
-                                <button onClick={(e)=>this.guardarMetrados()} className="btn btn-outline-success">  <Spinner color="primary"/>Guardar datos</button>
+                                
                             </fieldset>
                     </CardBody>
                     
