@@ -23,7 +23,9 @@ class PartidasNuevas extends Component {
             idComponente:'',
             DataErrores:[],
             estadoPartidas:'',
-            erroresSuma:[]
+            erroresSuma:[],
+            itemsErroneos:[],
+            erroresSecuenciaItems:[]
             
         }
         this.CostosUnitarios = this.CostosUnitarios.bind(this)
@@ -40,9 +42,10 @@ class PartidasNuevas extends Component {
         dataObra = JSON.parse(dataObra) 
         console.log('datoss>', dataObra)
         // sessionStorage.getItem("datosObras")
-
+        
+        dataObra = dataObra || {}
         this.setState({
-            DataComponentes:dataObra.componentes,
+            DataComponentes:dataObra.componentes||[],
             IdObra:dataObra.id_ficha,
             estadoPartidas:estado
         })
@@ -189,7 +192,7 @@ class PartidasNuevas extends Component {
         })
     }
 
-    PlanillaMetrados(){
+    PlanillaMetrados(){        
         const input = document.getElementById('input2')
         var temp = 0
         var data2 = []
@@ -217,9 +220,9 @@ class PartidasNuevas extends Component {
                             // console.log('item', item)
                             
                             if(item === 'item' || item === 'Partida'){
-                                fila = index 
+                                fila = index
                                 columna = i
-                                console.log('item >', index , '>' , i)
+                                console.log('plabra item fila : %s columna %s', fila+1 ,columna+1)
 
                                 break
                             }
@@ -227,16 +230,78 @@ class PartidasNuevas extends Component {
                         
                     }
 
-                    
-                    
-                    var activo = false
+                    //revisando items bien estructurados y secuencia de items
+                    function itemStructure(data){		
+                        var regla =/^\d{2}(\.\d{2})*$/
+                        return data.match(regla)
+                    }
+                    function predecirItem (data){
+                        var listaNumeros = data.split(".")	
+                        var opciones = []
+                        var numTemp = ""
+                        for (let i = 0; i < listaNumeros.length; i++) {
+                            const numero = listaNumeros[i];
+                            if(i == 0){
+                                numTemp += numero
+                            }else{
+                                numTemp += "."+numero
+                            }
+                            var last2 = numTemp.slice(-2)
+                            last2 = Number(last2)
+                            last2++
+                            last2 = "0"+last2
+                            var numTemp2 =  numTemp.slice(0,numTemp.length-2)+last2.slice(-2)
+                            opciones.push(numTemp2)
+                        }
+                        numTemp += ".01"
+                        opciones.push(numTemp)
+
+                        return opciones                
+                    }
+                    var itemsErroneos = []
+                    var erroresSecuenciaItems = []
+                    var opciones = ["01"]
+                    var itemPrevio = "01"
+                    for (let index = fila+2; index < rows.length; index++) {
+                        const row = rows[index];
+                        if(row[columna] && !itemStructure(row[columna])){
+                            itemsErroneos.push(row[columna])
+                        }
+                       
+                        
+                        if(row[columna]){
+                            if(opciones.indexOf(row[columna]) == -1){
+                                console.log("opciones",opciones);
+                                console.log("item",row[columna]);
+                                console.log("indexof",opciones.indexOf(row[columna]));
+                                erroresSecuenciaItems.push(
+                                    {
+                                        itemPrevio:itemPrevio,
+                                        itemActual:row[columna]
+                                    }
+                                )
+                            }
+                            
+                            opciones = predecirItem(row[columna])
+                            itemPrevio = row[columna]
+
+                        }                        
+                      
+                    }
+                    // console.log("itemsErroneos",itemsErroneos);
+                    // console.log("erroresSecuenciaItems",erroresSecuenciaItems);
+                    this.setState({
+                        itemsErroneos:itemsErroneos,
+                        erroresSecuenciaItems:erroresSecuenciaItems                       
+                    })
+                    //--------------------------------------------------------//
+                                   
 
                     // CREAMOS EL DATA DE PLANILLA DE METRADOS
                     
                     for (let index = fila+2; index < rows.length; index++) {
                         temp = rows[index]
                         var cantcols = 0
-                        // console.log('index ', index);
                         
                         for (let l = 0; l < rows[index].length; l++) {
                             const celda = rows[index][l];
@@ -377,8 +442,6 @@ class PartidasNuevas extends Component {
                                 
                             }
                             
-                            // if (Number(data2[index].metrado) <=Number(suma-0.001) || (Number(data2[index].metrado) >+Number(suma+0.001))) {
-                            console.log("data2[index].metrado <=suma",data2[index].metrado,suma,data2[index].metrado <=suma);
                                 
                             if (data2[index].metrado !=suma.toFixed(2)) {
                                 
@@ -395,30 +458,23 @@ class PartidasNuevas extends Component {
                         
                         
                     }
-                    // console.log(erroresSuma);
-                   
-                    // console.log('data2>>', data2)
+          
                     this.setState({
                         Data2:data2,
                         DataPlanilla:[...data2],
                         erroresSuma:erroresSuma
                     })
-                //    console.log('coin2>',arrayItems2)
+                
 
                 })
                 .catch((error)=>{
                      var DataErrores = []
                         DataErrores.push(data2[data2.length-1].tipo+ " ? => "+data2[data2.length-1].item +" "+data2[data2.length-1].descripcion, 
                         obPlanilla.tipo+" ? =>  "+obPlanilla.item+" "+obPlanilla.descripcion, tipo+" ? => "+temp[0]+" ?"+temp[1]+" ? "+temp[2]+" ? "+temp[3])
-                        
-                    // alert(data2[data2.length-1].item +" "+data2[data2.length-1].descripcion+" "+data2[data2.length-1].tipo)
-                    // alert(obPlanilla.tipo+" "+obPlanilla.item+" "+obPlanilla.descripcion)
-                    // alert(tipo)
-                    // alert(temp[0]+";"+temp[1]+";"+temp[2]+";"+temp[3])
+               
 
                     alert('algo salió mal')
                     this.setState({DataErrores})
-                    console.log(error);
                     console.log(DataErrores);
                     
                 })
@@ -557,7 +613,7 @@ class PartidasNuevas extends Component {
         })
     }
     render() {
-        const { Data1, Data2, DataErrores,erroresSuma, Errores2, DataFinal, DataComponentes, idComponente, IdObra, idPresupuesto } = this.state
+        const { Data1, Data2, DataErrores,erroresSuma, DataFinal, DataComponentes, idComponente, IdObra, idPresupuesto,itemsErroneos,erroresSecuenciaItems } = this.state
         return (
             <div>
                 <Card>
@@ -601,8 +657,14 @@ class PartidasNuevas extends Component {
                                         {DataErrores.map((err, i)=>
                                             <label className="text-danger">{ err}</label>
                                         )}
-                                        
-                                        
+                                        <hr/>
+                                        {itemsErroneos.map((err, i)=>
+                                            <label className="text-danger">Item mal escrito {err}</label>
+                                        )}
+                                         <hr/>
+                                        {erroresSecuenciaItems.map((err, i)=>
+                                            <label className="text-danger"> {"item previo "+err.itemPrevio+" item actual "+err.itemActual} </label>
+                                        )}
                                         {erroresSuma.map((err, i)=>
                                         <div>
                                             <label className="text-danger">{ err.item +" total partida: "+ err.total+" suma actividades: "+err.suma}</label><br/>
@@ -618,13 +680,14 @@ class PartidasNuevas extends Component {
                                     <fieldset>
                                         <legend><b>Opciones de manejo de los datos cargados</b></legend>
                                         <button className="btn btn-outline-warning" onClick={this.verificarDatos}> verificar datos</button>
-                                        <i>{this.state.erroresEncontrado}</i>                            
+                                        <i>{this.state.erroresEncontrado}</i>             
+                                        <button className="btn btn-outline-success" onClick={this.EnviarDatos}> Guardar datos </button>               
                                         
                                         <code>
                                             <ReactJson src={DataFinal}  name="DataFinal"  theme="monokai" collapsed={2} displayDataTypes={false}/>
                                         </code>
-                                        <br/>
-                                        <button className="btn btn-outline-success" onClick={this.EnviarDatos}> Guardar datos </button>
+                                      
+                                        
 
                                     </fieldset>
                                 </Col>
