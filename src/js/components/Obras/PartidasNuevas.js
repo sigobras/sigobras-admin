@@ -206,6 +206,7 @@ class PartidasNuevas extends Component {
                     var fila = 0
                     var columna = 0
                     // UBICANDO LA POSICION DE LA PALABRA ITEM
+                    var breakstate = false
                     for (let index = 0; index < rows.length; index++) {
 
                         for (let i = 0; i < rows[index].length; i++) {
@@ -430,19 +431,12 @@ class PartidasNuevas extends Component {
                     for (let index = 20; index < data2.length; index++) {
                         const partida = data2[index];
                         var suma = 0; 
-                        
                         if(partida.tipo == "partida"){
                             
                             for(let j = 0; j < partida.actividades.length; j++) {
-                                
-                                
                                 const parcial = partida.actividades[j][6];
-                                suma+= parcial    
-                                
-                                
+                                suma+= parcial
                             }
-                            
-                                
                             if (data2[index].metrado !=suma.toFixed(2)) {
                                 
                                 erroresSuma.push(
@@ -455,8 +449,6 @@ class PartidasNuevas extends Component {
                             }
                             
                         }
-                        
-                        
                     }
           
                     this.setState({

@@ -34,33 +34,30 @@ class IngresoCuardoMetrados extends Component {
         function actividadesConMetrado(partida){
  
          
-         var actividades = []
-         for (let i = 0; i < listaPartidas.length; i++) {
-          
-          const element = listaPartidas[i];
-          if(element.item == partida.item){
-           for (let j = 0; j < element.actividades.length; j++) {
-            const actividad = element.actividades[j];
-            actividades.push(
-             [
-              actividad.id_actividad,
-              partida.fecha,
-              partida.valor * actividad.porcentaje_metrado,
-              20
-             ]
-             
-            )
-  
+            var actividades = []
+            for (let i = 0; i < listaPartidas.length; i++) {
             
-           }
-
-           
-           
-           break;
-          }
-          
-         }
-         return actividades
+                const element = listaPartidas[i];
+                if(element.item == partida.item){
+                    for (let j = 0; j < element.actividades.length; j++) {
+                        const actividad = element.actividades[j];
+                        actividades.push(
+                            [
+                            actividad.id_actividad,
+                            partida.fecha,
+                            (partida.valor * actividad.porcentaje_metrado).toFixed(2),
+                            20
+                            ]
+                        
+                        )
+            
+                        
+                    }
+                    break;
+                }
+            
+            }
+            return actividades
         }
         
         const input = document.getElementById('inputComponentes')

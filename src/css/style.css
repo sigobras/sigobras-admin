@@ -250,3 +250,12 @@ body::-webkit-scrollbar-thumb {
   background-color: #f8f9fa;
   opacity: 1;
 }
+.bg-mm{
+  background-color: #b2e241;
+}
+.bg-metrado_actual{
+  background-color: #35ac2a;
+}
+.bg-valor_actual{
+  background-color: #1b9e3c;
+}

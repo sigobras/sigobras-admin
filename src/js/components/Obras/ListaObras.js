@@ -25,6 +25,7 @@ class ListaObras extends Component {
         this.ListarComponentesPorId = this.ListarComponentesPorId.bind(this)        
         this.apiComponentes = this.apiComponentes.bind(this)
         this.RedirectPN = this.RedirectPN.bind(this)
+        this.VerificacionValorizacion = this.VerificacionValorizacion.bind(this)
         
     }
     componentWillMount(){
@@ -134,6 +135,17 @@ class ListaObras extends Component {
         window.location.href = "/IngresoCudroMetradosEjecutados";
 
     }
+    VerificacionValorizacion(id_ficha,g_meta){
+        
+        sessionStorage.setItem('idFicha', id_ficha)
+        console.log("idficha",id_ficha);
+        
+        sessionStorage.setItem('g_meta', g_meta)
+        
+       
+        window.location.href = "/VerificacionValorizacion";
+
+    }
     ///////////////////////////////////////
     GuardarDatos(event){
         event.preventDefault()
@@ -166,7 +178,6 @@ class ListaObras extends Component {
                                     <th>Codigo</th>
                                     <th>Nombre </th>
                                     <th>Presupuesto </th>
-                                    <th>% Ejecución </th>
                                     <th>g_local_dist </th>
                                     <th>Asignar Acceso a usuario</th>
                                 </tr>
@@ -177,19 +188,21 @@ class ListaObras extends Component {
                                         <td>{ obra.codigo }</td>
                                         <td>{ obra.g_sector }</td>
                                         <td>{ obra.g_total_presu }</td>
-                                        <td>-</td>
                                         <td>{ obra.g_local_dist }</td>
                                         <td>
-                                            <button className="btn btn-outline-success" onClick={(e) => this.CapturarIdObra(obra.id_ficha)}><Spinner /> Dar acceso</button>
+                                            <button className="btn btn-outline-success" onClick={(e) => this.CapturarIdObra(obra.id_ficha)}> Dar acceso</button>
                                         </td>
                                         <td>
-                                            <button className="btn btn-outline-success" onClick={(e) => this.ListarComponentesPorId(obra.id_ficha)}><Spinner /> listar componentes</button>
+                                            <button className="btn btn-outline-success" onClick={(e) => this.ListarComponentesPorId(obra.id_ficha)}> P. nuevas</button>
                                         </td>
                                         <td>
-                                            <button className="btn btn-outline-success" onClick={(e) => this.ingresarComponentes(obra.id_ficha,obra.g_meta)}><Spinner /> ingresar componentes</button>
+                                            <button className="btn btn-outline-success" onClick={(e) => this.ingresarComponentes(obra.id_ficha,obra.g_meta)}> C. nuevos</button>
                                         </td>
                                         <td>
-                                            <button className="btn btn-outline-success" onClick={(e) => this.IngresarCuadroMetrados(obra.id_ficha,obra.g_meta)}><Spinner /> ingresar metrado por mes</button>
+                                            <button className="btn btn-outline-success" onClick={(e) => this.IngresarCuadroMetrados(obra.id_ficha,obra.g_meta)}>Metrados</button>
+                                        </td>
+                                        <td>
+                                            <button className="btn btn-outline-success" onClick={(e) => this.VerificacionValorizacion(obra.id_ficha,obra.g_meta)}>valorizacion</button>
                                         </td>
                                     </tr>
                                 )}
@@ -232,7 +245,6 @@ class ListaObras extends Component {
                                 
                                 
                                 {Componentes.map((componente, iusuers)=>
-                                    
                                     
                                     <div key={ iusuers } value={ componente.id_componente } > 
                                     { componente.numero+" "+ componente.nombre } 
