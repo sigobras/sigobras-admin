@@ -261,8 +261,8 @@ class PartidasNuevas extends Component {
                     }
                     var itemsErroneos = []
                     var erroresSecuenciaItems = []
-                    var opciones = ["01"]
-                    var itemPrevio = "01"
+                    var opciones = [rows[fila+2][columna]]
+                    var itemPrevio = rows[fila+2][columna]
                     for (let index = fila+2; index < rows.length; index++) {
                         const row = rows[index];
                         if(row[columna] && !itemStructure(row[columna])){
@@ -272,9 +272,9 @@ class PartidasNuevas extends Component {
                         
                         if(row[columna]){
                             if(opciones.indexOf(row[columna]) == -1){
-                                console.log("opciones",opciones);
-                                console.log("item",row[columna]);
-                                console.log("indexof",opciones.indexOf(row[columna]));
+                                // console.log("opciones",opciones);
+                                // console.log("item",row[columna]);
+                                // console.log("indexof",opciones.indexOf(row[columna]));
                                 erroresSecuenciaItems.push(
                                     {
                                         itemPrevio:itemPrevio,
@@ -428,7 +428,7 @@ class PartidasNuevas extends Component {
                     }
                     //revisando sumatorias de actividades
                     var erroresSuma = []
-                    for (let index = 20; index < data2.length; index++) {
+                    for (let index = 0; index < data2.length; index++) {
                         const partida = data2[index];
                         var suma = 0; 
                         if(partida.tipo == "partida"){
@@ -437,6 +437,8 @@ class PartidasNuevas extends Component {
                                 const parcial = partida.actividades[j][6];
                                 suma+= parcial
                             }
+                            // console.log("comp suma",partida.item,data2[index].metrado,suma.toFixed(2));
+                            
                             if (data2[index].metrado !=suma.toFixed(2)) {
                                 
                                 erroresSuma.push(
