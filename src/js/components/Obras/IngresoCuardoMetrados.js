@@ -38,7 +38,7 @@ class IngresoCuardoMetrados extends Component {
             for (let i = 0; i < listaPartidas.length; i++) {
             
                 const element = listaPartidas[i];
-                if(element.item == partida.item){
+                if(partida.valor!= 0 && element.item == partida.item){
                     for (let j = 0; j < element.actividades.length; j++) {
                         const actividad = element.actividades[j];
                         actividades.push(
@@ -50,6 +50,11 @@ class IngresoCuardoMetrados extends Component {
                             ]
                         
                         )
+                        // if(actividad.id_actividad == null){
+                        //     console.log("null",element);
+                        //     console.log("valor",partida.valor);
+                            
+                        // }
             
                         
                     }
