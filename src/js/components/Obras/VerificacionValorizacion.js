@@ -310,12 +310,12 @@ class ValorizacionGeneral extends Component {
                 }
 
                 //revision de metrados actuales
-                if(partida.tipo == "partida" &&partida.metrado_actual.toFixed(2) !=rows[row+i][col+9].toFixed(2)){
+                if(partida.tipo == "partida" && (Number(partida.metrado_actual)).toFixed(2) !=rows[row+i][col+9].toFixed(2)){
                     metrado_actual = true
                     metrado_actualTotal++
                 }
                 //revision de valor de metrados actuales
-                if(partida.tipo == "partida" &&partida.valor_actual.toFixed(2) !=rows[row+i][col+10].toFixed(2)){
+                if(partida.tipo == "partida" &&(Number(partida.valor_actual)).toFixed(2) !=rows[row+i][col+10].toFixed(2)){
                     valor_actual = true
                     valor_actualTotal++
                 }
@@ -324,8 +324,8 @@ class ValorizacionGeneral extends Component {
                 valorizacionIgualdad.partidas.push(
                     {
                         item:item,
-                        metrado_actual:metrado_actual.toFixed(2),
-                        valor_actual:valor_actual.toFixed(2)
+                        metrado_actual:metrado_actual,
+                        valor_actual:valor_actual
                     }
                 )
                 valorizacionExcel.push(
