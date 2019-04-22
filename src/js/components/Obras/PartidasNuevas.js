@@ -198,284 +198,293 @@ class PartidasNuevas extends Component {
         var data2 = []
         var tipo = ""
         var obPlanilla = {}
-        input.addEventListener('change', () => {
-            console.log('input', input.files[0].type)
-            if(input.files[0].type ==='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'){
-                readXlsxFile(input.files[0]).then((rows ) => {
-                    // console.log('rows>> ', rows)
-                    var fila = 0
-                    var columna = 0
-                    // UBICANDO LA POSICION DE LA PALABRA ITEM
-                    var breakstate = false
-                    for (let index = 0; index < rows.length; index++) {
-
-                        for (let i = 0; i < rows[index].length; i++) {
-                            // console.log(rows[index][i])
-
+        if(input.files[0].type ==='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'){
+            readXlsxFile(input.files[0]).then((rows ) => {
+                // console.log('rows>> ', rows)
+                var fila = 0
+                var columna = 0
+                // UBICANDO LA POSICION DE LA PALABRA ITEM
+                var itemEncontrado = false
+                for (let index = 0; index < rows.length; index++) {
+                    if(!itemEncontrado){
+                        for (let i = 0; i < rows[index].length; i++) { 
                             var item = rows[index][i]
                             if (typeof item === 'string') {
-                        
                             item = item.toLowerCase()  
-                            }
-
-                            // console.log('item', item)
+                            }                   
                             
                             if(item === 'item' || item === 'Partida'){
-                                fila = index
+                                
                                 columna = i
-                                console.log('plabra item fila : %s columna %s', fila+1 ,columna+1)
-
+                                itemEncontrado = true
+                                console.log('palabra item fila : %s columna %s', index+1 ,columna+1)
                                 break
                             }
-                        }
-                        
-                    }
-
-                    //revisando items bien estructurados y secuencia de items
-                    function itemStructure(data){		
-                        var regla =/^\d{2}(\.\d{2})*$/
-                        return data.match(regla)
-                    }
-                    function predecirItem (data){
-                        var listaNumeros = data.split(".")	
-                        var opciones = []
-                        var numTemp = ""
-                        for (let i = 0; i < listaNumeros.length; i++) {
-                            const numero = listaNumeros[i];
-                            if(i == 0){
-                                numTemp += numero
-                            }else{
-                                numTemp += "."+numero
-                            }
-                            var last2 = numTemp.slice(-2)
-                            last2 = Number(last2)
-                            last2++
-                            last2 = "0"+last2
-                            var numTemp2 =  numTemp.slice(0,numTemp.length-2)+last2.slice(-2)
-                            opciones.push(numTemp2)
-                        }
-                        numTemp += ".01"
-                        opciones.push(numTemp)
-
-                        return opciones                
-                    }
-                    var itemsErroneos = []
-                    var erroresSecuenciaItems = []
-                    var opciones = [rows[fila+2][columna]]
-                    var itemPrevio = rows[fila+2][columna]
-                    for (let index = fila+2; index < rows.length; index++) {
-                        const row = rows[index];
-                        if(row[columna] && !itemStructure(row[columna])){
-                            itemsErroneos.push(row[columna])
-                        }
-                       
-                        
-                        if(row[columna]){
-                            if(opciones.indexOf(row[columna]) == -1){
-                                // console.log("opciones",opciones);
-                                // console.log("item",row[columna]);
-                                // console.log("indexof",opciones.indexOf(row[columna]));
-                                erroresSecuenciaItems.push(
-                                    {
-                                        itemPrevio:itemPrevio,
-                                        itemActual:row[columna]
-                                    }
-                                )
-                            }
                             
-                            opciones = predecirItem(row[columna])
-                            itemPrevio = row[columna]
+                        }
+                    }else{
+                        if(rows[index][columna]!=null){
+                            fila = index
+                            console.log('primer dato fila: %s columna %s', fila+1 ,columna+1)
+                            break;
+                        }
 
-                        }                        
-                      
                     }
-                    // console.log("itemsErroneos",itemsErroneos);
-                    // console.log("erroresSecuenciaItems",erroresSecuenciaItems);
-                    this.setState({
-                        itemsErroneos:itemsErroneos,
-                        erroresSecuenciaItems:erroresSecuenciaItems                       
-                    })
-                    //--------------------------------------------------------//
-                                   
-
-                    // CREAMOS EL DATA DE PLANILLA DE METRADOS
                     
-                    for (let index = fila+2; index < rows.length; index++) {
-                        temp = rows[index]
-                        var cantcols = 0
-                        
-                        for (let l = 0; l < rows[index].length; l++) {
-                            const celda = rows[index][l];
-                            if(celda !== null ){
-                                cantcols++
-                            }
+                }
+
+                //revisando items bien estructurados y secuencia de items
+                function itemStructure(data){
+                    data = data.toString();
+                    var regla =/^\d{2}(\.\d{2})*$/
+                    return data.match(regla)
+                }
+                function predecirItem (data){
+                    var listaNumeros = data.split(".")	
+                    var opciones = []
+                    var numTemp = ""
+                    for (let i = 0; i < listaNumeros.length; i++) {
+                        const numero = listaNumeros[i];
+                        if(i == 0){
+                            numTemp += numero
+                        }else{
+                            numTemp += "."+numero
                         }
-                        
-                        if((rows[index][columna+6] !== null ||rows[index][columna+7] !== null) && rows[index][columna] !== null ){
-                            tipo = "partida"
-                            // si la columna total tiene un valor
-                            data2.push(obPlanilla)
-                            obPlanilla = {}
-                            obPlanilla.tipo = "partida"
-                            obPlanilla.item =  rows[index][columna]
-                            obPlanilla.descripcion =  rows[index][columna+1]
-                            obPlanilla.actividades = []
-                            obPlanilla.veces = rows[index][columna+2]
-                            obPlanilla.largo = rows[index][columna+3]
-                            obPlanilla.ancho = rows[index][columna+4]
-                            obPlanilla.alto = rows[index][columna+5]
-                            obPlanilla.parcial = rows[index][columna+6]
-                            obPlanilla.metrado = Number(rows[index][columna+7].toFixed(2))
-                        }else if(rows[index][columna] === null && (rows[index][columna+6] !== null)||(rows[index][columna+7] !== null)){
-                            tipo = "actividad subtitulo"
-                            var obActividades = []
-                            // titulo                            
-                            obActividades.push("subtitulo")
-                            // nombre                            
-                            obActividades.push(rows[index][columna+1])
-                            // veces
-                            obActividades.push(rows[index][columna+2])
-                            // largo
-                            obActividades.push(rows[index][columna+3])
-                            // ancho
-                            obActividades.push(rows[index][columna+4])
-                            // alto
-                            obActividades.push(rows[index][columna+5])
-                            // parcial
-                            if(rows[index][columna+7] !== null){
-                                obActividades.push(Number(rows[index][columna+7].toFixed(2)))
-                            }else{
-                                obActividades.push(Number(rows[index][columna+6].toFixed(2)))
-                            }               
-     
-                            obPlanilla.actividades.push(obActividades)
-                        }else if(rows[index][columna] !== null&&rows[index][columna+1] !== null){
-                            // TITULOS
-                            tipo = "titulo"
-                            data2.push(obPlanilla)
-                            obPlanilla = {}
-                            obPlanilla.tipo = "titulo"
-                            obPlanilla.item =  rows[index][columna]
-                            obPlanilla.descripcion =  rows[index][columna+1]
-                            obPlanilla.veces = null
-                            obPlanilla.largo = null
-                            obPlanilla.ancho = null
-                            obPlanilla.alto = null
-                            obPlanilla.parcial = null
-                            obPlanilla.metrado = null
-                            obPlanilla.unidad_medida = null
-                            obPlanilla.costo_unitario = null
-                            obPlanilla.equipo = null
-                            obPlanilla.rendimiento = null
-                            // obPlanilla.actividades = []
-                        }else if(rows[index][columna+1] !== null){
-                            tipo = "actividad titulo"
-                            var obActividades = []
-                            // titulo                            
-                            obActividades.push("titulo")
-                            // nombre                            
-                            obActividades.push(rows[index][columna+1])
-                            // veces
-                            obActividades.push(null)
-                            // largo
-                            obActividades.push(null)
-                            // ancho
-                            obActividades.push(null)
-                            // alto
-                            obActividades.push(null)
-                            // parcial
-                            obActividades.push(null)
-     
-                            obPlanilla.actividades.push(obActividades)
-                        }
-                        
+                        var last2 = numTemp.slice(-2)
+                        last2 = Number(last2)
+                        last2++
+                        last2 = "0"+last2
+                        var numTemp2 =  numTemp.slice(0,numTemp.length-2)+last2.slice(-2)
+                        opciones.push(numTemp2)
                     }
-                    data2.push(obPlanilla)
-                    data2 = data2.slice(1,data2.length)
+                    numTemp += ".01"
+                    opciones.push(numTemp)
 
-
-                        // insertando actividades unicas
-                    for (let j = 0; j < data2.length; j++) {
-                        tipo = "actividades unicas"
-                        if(typeof data2[j].actividades !== 'undefined' && data2[j].actividades.length === 0 ){
-                            var obActividades = []
-                            // convertimos variable si no es null
-                            var veces = data2[j].veces
-                            var largo = data2[j].largo
-                            var alto = data2[j].alto
-                            var ancho = data2[j].ancho
-                            var metrado = data2[j].metrado
-
-                            veces = (veces === null) ? veces  : Number( veces).toFixed(2)
-                            largo = (largo === null )? largo : Number( largo).toFixed(2)
-                            alto = (alto === null )? alto : Number( alto).toFixed(2)
-                            ancho = (ancho === null )? ancho : Number( ancho).toFixed(2)
-                            metrado = (metrado === null )? metrado : Number( metrado.toFixed(2))
-
-                            // console.log('verifica >', typeof veces ,'>' , veces)
-
-                            
-                            obActividades.push("subtitulo")
-                            obActividades.push("Actividad unica")
-                            obActividades.push(veces)
-                            obActividades.push(largo)
-                            obActividades.push(alto)
-                            obActividades.push(ancho)
-                            obActividades.push(metrado)
-
-                            data2[j].actividades.push(obActividades)
-                        }
+                    return opciones                
+                }
+                var itemsErroneos = []
+                var erroresSecuenciaItems = []
+                var opciones = [rows[fila][columna]]
+                var itemPrevio = rows[fila][columna]
+                console.log("test");
+                for (let index = fila; index < rows.length; index++) {
+                    
+                    const row = rows[index];
+                    if(row[columna]!=null && !itemStructure(row[columna])){
+                        console.log("itemsErroneos");                            
+                        itemsErroneos.push(
+                            {
+                                item:row[columna],
+                                descripcion:row[columna+1],
+                                fila:index                                    
+                            }                                
+                        )
                     }
-                    //revisando sumatorias de actividades
-                    var erroresSuma = []
-                    for (let index = 0; index < data2.length; index++) {
-                        const partida = data2[index];
-                        var suma = 0; 
-                        if(partida.tipo == "partida"){
-                            
-                            for(let j = 0; j < partida.actividades.length; j++) {
-                                const parcial = partida.actividades[j][6];
-                                suma+= parcial
-                            }
-                            // console.log("comp suma",partida.item,data2[index].metrado,suma.toFixed(2));
-                            
-                            if (data2[index].metrado !=suma.toFixed(2)) {
+                    
+                    if(row[columna]){
+                        if(opciones.indexOf(row[columna].toString()) == -1){
+                            // console.log("opciones",opciones);
+                            // console.log("item",row[columna]);
+                            // console.log("indexof",opciones.indexOf(row[columna]));
+                            erroresSecuenciaItems.push(
+                                {
+                                    itemPrevio:itemPrevio,
+                                    itemActual:row[columna]
+                                }
+                            )
+                        }
+                        opciones = predecirItem(row[columna].toString())
+                        itemPrevio = row[columna]
+                    }                        
+                }
+                // console.log("itemsErroneos",itemsErroneos);
+                // console.log("erroresSecuenciaItems",erroresSecuenciaItems);
+                this.setState({
+                    itemsErroneos:itemsErroneos,
+                    erroresSecuenciaItems:erroresSecuenciaItems                       
+                })
+                //--------------------------------------------------------//
                                 
-                                erroresSuma.push(
-                                    {
-                                        "item":data2[index].item,
-                                        "total":Number(data2[index].metrado),
-                                        "suma":suma.toFixed(2)
-                                    }
-                                )
-                            }
-                            
+
+                // CREAMOS EL DATA DE PLANILLA DE METRADOS
+                
+                for (let index = fila; index < rows.length; index++) {
+                    temp = rows[index]
+                    var cantcols = 0
+                    
+                    for (let l = 0; l < rows[index].length; l++) {
+                        const celda = rows[index][l];
+                        if(celda !== null ){
+                            cantcols++
                         }
                     }
-          
-                    this.setState({
-                        Data2:data2,
-                        DataPlanilla:[...data2],
-                        erroresSuma:erroresSuma
-                    })
-                
-
-                })
-                .catch((error)=>{
-                     var DataErrores = []
-                        DataErrores.push(data2[data2.length-1].tipo+ " ? => "+data2[data2.length-1].item +" "+data2[data2.length-1].descripcion, 
-                        obPlanilla.tipo+" ? =>  "+obPlanilla.item+" "+obPlanilla.descripcion, tipo+" ? => "+temp[0]+" ?"+temp[1]+" ? "+temp[2]+" ? "+temp[3])
-               
-
-                    alert('algo salió mal')
-                    this.setState({DataErrores})
-                    console.log(DataErrores);
                     
+                    if((rows[index][columna+6] !== null ||rows[index][columna+7] !== null) && rows[index][columna] !== null ){
+                        tipo = "partida"
+                        // si la columna total tiene un valor
+                        data2.push(obPlanilla)
+                        obPlanilla = {}
+                        obPlanilla.tipo = "partida"
+                        obPlanilla.item =  rows[index][columna]
+                        obPlanilla.descripcion =  rows[index][columna+1]
+                        obPlanilla.actividades = []
+                        obPlanilla.veces = rows[index][columna+2]
+                        obPlanilla.largo = rows[index][columna+3]
+                        obPlanilla.ancho = rows[index][columna+4]
+                        obPlanilla.alto = rows[index][columna+5]
+                        obPlanilla.parcial = rows[index][columna+6]
+                        obPlanilla.metrado = Number(rows[index][columna+7].toFixed(2))
+                    }else if(rows[index][columna] === null && (rows[index][columna+6] !== null)||(rows[index][columna+7] !== null)){
+                        tipo = "actividad subtitulo"
+                        var obActividades = []
+                        // titulo                            
+                        obActividades.push("subtitulo")
+                        // nombre                            
+                        obActividades.push(rows[index][columna+1])
+                        // veces
+                        obActividades.push(rows[index][columna+2])
+                        // largo
+                        obActividades.push(rows[index][columna+3])
+                        // ancho
+                        obActividades.push(rows[index][columna+4])
+                        // alto
+                        obActividades.push(rows[index][columna+5])
+                        // parcial
+                        if(rows[index][columna+7] !== null){
+                            obActividades.push(Number(rows[index][columna+7].toFixed(2)))
+                        }else{
+                            obActividades.push(Number(rows[index][columna+6].toFixed(2)))
+                        }               
+    
+                        obPlanilla.actividades.push(obActividades)
+                    }else if(rows[index][columna] !== null&&rows[index][columna+1] !== null){
+                        // TITULOS
+                        tipo = "titulo"
+                        data2.push(obPlanilla)
+                        obPlanilla = {}
+                        obPlanilla.tipo = "titulo"
+                        obPlanilla.item =  rows[index][columna]
+                        obPlanilla.descripcion =  rows[index][columna+1]
+                        obPlanilla.veces = null
+                        obPlanilla.largo = null
+                        obPlanilla.ancho = null
+                        obPlanilla.alto = null
+                        obPlanilla.parcial = null
+                        obPlanilla.metrado = null
+                        obPlanilla.unidad_medida = null
+                        obPlanilla.costo_unitario = null
+                        obPlanilla.equipo = null
+                        obPlanilla.rendimiento = null
+                        // obPlanilla.actividades = []
+                    }else if(rows[index][columna+1] !== null){
+                        tipo = "actividad titulo"
+                        var obActividades = []
+                        // titulo                            
+                        obActividades.push("titulo")
+                        // nombre                            
+                        obActividades.push(rows[index][columna+1])
+                        // veces
+                        obActividades.push(null)
+                        // largo
+                        obActividades.push(null)
+                        // ancho
+                        obActividades.push(null)
+                        // alto
+                        obActividades.push(null)
+                        // parcial
+                        obActividades.push(null)
+    
+                        obPlanilla.actividades.push(obActividades)
+                    }
+                    
+                }
+                data2.push(obPlanilla)
+                data2 = data2.slice(1,data2.length)
+
+                
+                // insertando actividades unicas
+                for (let j = 0; j < data2.length; j++) {
+                    tipo = "actividades unicas"
+                    if(typeof data2[j].actividades !== 'undefined' && data2[j].actividades.length === 0 ){
+                        var obActividades = []
+                        // convertimos variable si no es null
+                        var veces = data2[j].veces
+                        var largo = data2[j].largo
+                        var alto = data2[j].alto
+                        var ancho = data2[j].ancho
+                        var metrado = data2[j].metrado
+
+                        veces = (veces === null) ? veces  : Number( veces).toFixed(2)
+                        largo = (largo === null )? largo : Number( largo).toFixed(2)
+                        alto = (alto === null )? alto : Number( alto).toFixed(2)
+                        ancho = (ancho === null )? ancho : Number( ancho).toFixed(2)
+                        metrado = (metrado === null )? metrado : Number( metrado.toFixed(2))
+
+                        // console.log('verifica >', typeof veces ,'>' , veces)
+
+                        
+                        obActividades.push("subtitulo")
+                        obActividades.push("Actividad unica")
+                        obActividades.push(veces)
+                        obActividades.push(largo)
+                        obActividades.push(alto)
+                        obActividades.push(ancho)
+                        obActividades.push(metrado)
+
+                        data2[j].actividades.push(obActividades)
+                    }
+                }
+                //revisando sumatorias de actividades
+                var erroresSuma = []
+                for (let index = 0; index < data2.length; index++) {
+                    const partida = data2[index];
+                    var suma = 0; 
+                    if(partida.tipo == "partida"){
+                        
+                        for(let j = 0; j < partida.actividades.length; j++) {
+                            const parcial = partida.actividades[j][6];
+                            suma+= parcial
+                        }
+                        // console.log("comp suma",partida.item,data2[index].metrado,suma.toFixed(2));
+                        
+                        if (data2[index].metrado !=suma.toFixed(2)) {
+                            
+                            erroresSuma.push(
+                                {
+                                    "item":data2[index].item,
+                                    "total":Number(data2[index].metrado),
+                                    "suma":suma.toFixed(2)
+                                }
+                            )
+                        }
+                        
+                    }
+                }
+        
+                this.setState({
+                    Data2:data2,
+                    DataPlanilla:[...data2],
+                    erroresSuma:erroresSuma
                 })
-            }else{
-                alert('tipo de archivo no admitido cargue solo archivos con extension .xlsx')
-            }
-        })
+            
+
+            })
+            .catch((error)=>{
+                console.log("data2",data2);
+                
+                    var DataErrores = []
+                    DataErrores.push(data2[data2.length-1].tipo+ " ? => "+data2[data2.length-1].item +" "+data2[data2.length-1].descripcion, 
+                    obPlanilla.tipo+" ? =>  "+obPlanilla.item+" "+obPlanilla.descripcion, tipo+" ? => "+temp[0]+" ?"+temp[1]+" ? "+temp[2]+" ? "+temp[3])
+            
+
+                alert('algo salió mal')
+                this.setState({DataErrores})
+                console.log(DataErrores);
+                
+            })
+        }else{
+            alert('tipo de archivo no admitido cargue solo archivos con extension .xlsx')
+        }
     }
     verificarDatos(){
         const { Data1, Data2, idComponente, DataPlanilla, idPresupuesto } = this.state
@@ -646,14 +655,15 @@ class PartidasNuevas extends Component {
                                     <fieldset>
                                         <legend><b>cargar datos de Planilla de metrados</b></legend>
                                         
-                                        <input type="file" id="input2" onClick={this.PlanillaMetrados} />
-                                        <hr/>
+                                        <input type="file" id="input2" onChange={this.PlanillaMetrados} />
+                                        <Button onClick={this.PlanillaMetrados} color="success" size="sm">RECARGAR</Button>
+
                                         {DataErrores.map((err, i)=>
                                             <label className="text-danger">{ err}</label>
                                         )}
                                         <hr/>
                                         {itemsErroneos.map((err, i)=>
-                                            <label className="text-danger">Item mal escrito {err}</label>
+                                            <label className="text-danger">Item mal escrito {err.item} - {err.descripcion} fila: {err.fila}</label>
                                         )}
                                          <hr/>
                                         {erroresSecuenciaItems.map((err, i)=>
