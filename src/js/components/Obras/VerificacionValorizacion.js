@@ -321,34 +321,34 @@ class ValorizacionGeneral extends Component {
                     itemTotal++
                 }
                  //revision de metrados anterior
-                 if(partida.tipo == "partida" && (Number(partida.metrado_anterior)).toFixed(3) !=rows[row+i][col+6].toFixed(3)){
+                 if(partida.tipo == "partida" && (Number(partida.metrado_anterior)).toFixed(3) !=Number(rows[row+i][col+6]).toFixed(3)){
                     metrado_anterior = true
                     metrado_anteriorTotal++
                 }
                 //revision de valor de metrados anterior
-                if(partida.tipo == "partida" &&(Number(partida.valor_anterior)).toFixed(3) !=rows[row+i][col+7].toFixed(3)){
+                if(partida.tipo == "partida" &&(Number(partida.valor_anterior)).toFixed(3) !=Number([row+i][col+7]).toFixed(3)){
                     valor_anterior = true
                     valor_anteriorTotal++
                 }
 
                 //revision de metrados actuales
-                if(partida.tipo == "partida" && (Number(partida.metrado_actual)).toFixed(3) !=rows[row+i][col+9].toFixed(3)){
+                if(partida.tipo == "partida" && (Number(partida.metrado_actual)).toFixed(3) !=Number(rows[row+i][col+9]).toFixed(3)){
                     metrado_actual = true
                     metrado_actualTotal++
                 }
                 //revision de valor de metrados actuales
-                if(partida.tipo == "partida" &&(Number(partida.valor_actual)).toFixed(3) !=rows[row+i][col+10].toFixed(3)){
+                if(partida.tipo == "partida" &&(Number(partida.valor_actual)).toFixed(3) !=Number(rows[row+i][col+10]).toFixed(3)){
                     valor_actual = true
                     valor_actualTotal++
                 }
 
                 //revision de metrados actuales
-                if(partida.tipo == "partida" && (Number(partida.metrado_total)).toFixed(3) !=rows[row+i][col+12].toFixed(3)){
+                if(partida.tipo == "partida" && (Number(partida.metrado_total)).toFixed(3) !=Number(rows[row+i][col+12]).toFixed(3)){
                     metrado_total = true
                     metrado_totalTotal++
                 }
                 //revision de valor de metrados totales
-                if(partida.tipo == "partida" &&(Number(partida.valor_total)).toFixed(3) !=rows[row+i][col+13].toFixed(3)){
+                if(partida.tipo == "partida" &&(Number(partida.valor_total)).toFixed(3) !=Number(rows[row+i][col+13]).toFixed(3)){
                     valor_total = true
                     valor_totalTotal++
                 }
