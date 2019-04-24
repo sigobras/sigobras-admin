@@ -45,7 +45,7 @@ class IngresoCuardoMetrados extends Component {
                             [
                             actividad.id_actividad,
                             partida.fecha,
-                            (partida.valor * actividad.porcentaje_metrado).toFixed(3),
+                            (partida.valor * actividad.porcentaje_metrado).toFixed(9),
                             20
                             ]
                         

@@ -16,6 +16,7 @@ class ValorizacionGeneral extends Component {
             DataComponentesApi: [],
             DataResumenApi: [],
             DataPartidasApi: [],
+            DataTotal:{},
 
             activeTabAnio: '0',
             activeTabMes: '0',
@@ -159,7 +160,8 @@ class ValorizacionGeneral extends Component {
                 .then((res) => {
                     // console.log('res partidas val desde tab meses>', res.data)
                     this.setState({
-                        DataPartidasApi: res.data.partidas
+                        DataPartidasApi: res.data.partidas,
+                        DataTotal: res.data,
                     })
                 })
                 .catch((err) => {
@@ -259,6 +261,7 @@ class ValorizacionGeneral extends Component {
     }
     CargarExcel(){
         var DataPartidasApi = this.state.DataPartidasApi
+        var DataTotal = this.state.DataTotal
         const input = document.getElementById('inputValorizacion')
         
         readXlsxFile(input.files[0]).then((rows ) => {
@@ -289,58 +292,111 @@ class ValorizacionGeneral extends Component {
             var valorizacionExcel = []
 
             var itemTotal = 0
+
+            var metrado_anteriorTotal = 0
+            var valor_anteriorTotal = 0
      
             var metrado_actualTotal = 0
             var valor_actualTotal = 0
 
+            var metrado_totalTotal = 0
+            var valor_totalTotal = 0
+
      
 
-            console.log(rows[row-1][col+9]);
-            // console.log(DataPartidasApi);
-            
+
             for (let i = 0; i < DataPartidasApi.length; i++) {
                 const partida = DataPartidasApi[i];
                 var item = false
+                var metrado_anterior = false
+                var valor_anterior = false
                 var metrado_actual = false
                 var valor_actual = false
+                var metrado_total = false
+                var valor_total = false
+
                 //verifica si los items son iguales
                 if(partida.item !=rows[row+i][col]){
                     item = true
                     itemTotal++
                 }
+                 //revision de metrados anterior
+                 if(partida.tipo == "partida" && (Number(partida.metrado_anterior)).toFixed(3) !=rows[row+i][col+6].toFixed(3)){
+                    metrado_anterior = true
+                    metrado_anteriorTotal++
+                }
+                //revision de valor de metrados anterior
+                if(partida.tipo == "partida" &&(Number(partida.valor_anterior)).toFixed(3) !=rows[row+i][col+7].toFixed(3)){
+                    valor_anterior = true
+                    valor_anteriorTotal++
+                }
 
                 //revision de metrados actuales
-                if(partida.tipo == "partida" && (Number(partida.metrado_actual)).toFixed(2) !=rows[row+i][col+9].toFixed(2)){
+                if(partida.tipo == "partida" && (Number(partida.metrado_actual)).toFixed(3) !=rows[row+i][col+9].toFixed(3)){
                     metrado_actual = true
                     metrado_actualTotal++
                 }
                 //revision de valor de metrados actuales
-                if(partida.tipo == "partida" &&(Number(partida.valor_actual)).toFixed(2) !=rows[row+i][col+10].toFixed(2)){
+                if(partida.tipo == "partida" &&(Number(partida.valor_actual)).toFixed(3) !=rows[row+i][col+10].toFixed(3)){
                     valor_actual = true
                     valor_actualTotal++
+                }
+
+                //revision de metrados actuales
+                if(partida.tipo == "partida" && (Number(partida.metrado_total)).toFixed(3) !=rows[row+i][col+12].toFixed(3)){
+                    metrado_total = true
+                    metrado_totalTotal++
+                }
+                //revision de valor de metrados totales
+                if(partida.tipo == "partida" &&(Number(partida.valor_total)).toFixed(3) !=rows[row+i][col+13].toFixed(3)){
+                    valor_total = true
+                    valor_totalTotal++
                 }
 
                 //guarda la data
                 valorizacionIgualdad.partidas.push(
                     {
                         item:item,
+                        metrado_anterior:metrado_anterior,
+                        valor_anterior:valor_anterior,
                         metrado_actual:metrado_actual,
-                        valor_actual:valor_actual
+                        valor_actual:valor_actual,
+                        metrado_total:metrado_total,
+                        valor_total:valor_total
                     }
                 )
                 valorizacionExcel.push(
                     {
                         item:rows[row+i][col],
-                        metrado_actual:(Number(rows[row+i][col+9])).toFixed(2),
-                        valor_actual:(Number(rows[row+i][col+10])).toFixed(2),
+                        metrado_anterior:(Number(rows[row+i][col+6])).toFixed(3),
+                        valor_anterior:(Number(rows[row+i][col+7])).toFixed(3),
+                        metrado_actual:(Number(rows[row+i][col+9])).toFixed(3),
+                        valor_actual:(Number(rows[row+i][col+10])).toFixed(3),
+                        metrado_total:(Number(rows[row+i][col+12])).toFixed(3),
+                        valor_total:(Number(rows[row+i][col+13])).toFixed(3)
                     }
                 )
 
             }
+            console.log("fila total",rows[row+DataPartidasApi.length][col+7]);
+            console.log("fila total",rows[row+DataPartidasApi.length][col+10]);
+            console.log("fila total",rows[row+DataPartidasApi.length][col+13]);
 
+            
+            
             valorizacionIgualdad.itemTotal = itemTotal
+            valorizacionIgualdad.metrado_anteriorTotal = metrado_anteriorTotal
+            valorizacionIgualdad.valor_anteriorTotal = valor_anteriorTotal
             valorizacionIgualdad.metrado_actualTotal = metrado_actualTotal
             valorizacionIgualdad.valor_actualTotal = valor_actualTotal
+            valorizacionIgualdad.metrado_totalTotal = metrado_totalTotal
+            valorizacionIgualdad.valor_totalTotal = valor_totalTotal
+
+            valorizacionIgualdad.total_valor_anterior = rows[row+DataPartidasApi.length][col+7]
+            valorizacionIgualdad.total_valor_actual = rows[row+DataPartidasApi.length][col+10]
+            valorizacionIgualdad.total_valor_total = rows[row+DataPartidasApi.length][col+13]
+
+
             console.log("valorizacionExcel",valorizacionExcel);
             console.log("valorizacionIgualdad",valorizacionIgualdad);
             
@@ -350,8 +406,32 @@ class ValorizacionGeneral extends Component {
                     valorizacionExcel:valorizacionExcel
                 }
             )
-            if(itemTotal > 0 || metrado_actualTotal > 0 || valor_actualTotal > 0){
-                alert("Su valorizacion tiene errores")
+         
+            var textoErrores = ""
+            if(itemTotal > 0 ){
+                textoErrores+=" item,"
+            }
+            if(metrado_anteriorTotal > 0 ){
+                textoErrores+=" metrado_anterior,"
+            }
+            if(valor_anteriorTotal > 0 ){
+                textoErrores+=" valor_anterior,"
+            }
+            if(metrado_actualTotal > 0 ){
+                textoErrores+=" metrado_actual,"
+            }
+            if(valor_actualTotal > 0 ){
+                textoErrores+=" valor_actual,"
+            }
+            if(metrado_totalTotal > 0 ){
+                textoErrores+=" metrado_total,"
+            }
+            if(valor_totalTotal > 0 ){
+                textoErrores+=" valor_total,"
+            }            
+
+            if(textoErrores != ""){
+                alert("Su valorizacion tiene errores en : "+textoErrores)
             }else{
                 alert("Su valorizacion esta conforme al sistema")
             }
@@ -363,7 +443,7 @@ class ValorizacionGeneral extends Component {
     }
 
     render() {
-        const { DataAniosApi, DataMesesApi, DataComponentesApi, DataResumenApi, DataPartidasApi, activeTabAnio, activeTabMes, activeTabComponente, NombreComponente,valorizacionIgualdad,valorizacionExcel } = this.state
+        const { DataAniosApi, DataMesesApi, DataResumenApi, DataPartidasApi, activeTabAnio, activeTabMes, activeTabComponente, NombreComponente,valorizacionIgualdad,valorizacionExcel } = this.state
         return (
             <div>
                 {/* {DataAniosApi.length <= 0 ? <label className="text-center" >  <Spinner color="primary" size="sm" /></label>: */}
@@ -501,6 +581,53 @@ class ValorizacionGeneral extends Component {
                                     <div className="table-responsive">
                                      <input type="file" id="inputValorizacion" onChange={this.CargarExcel} />
                                     <Button onClick={this.CargarExcel} color="success" size="sm">RECARGAR</Button>
+                                    <table className="table table-bordered table-sm small mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>PROCEDENCIA</th>
+                                                <th>VAL ANTERIOR</th>
+                                                <th>VAL ACTUAL</th>
+                                                <th>VAL ACUMULADO</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr>
+                                            <th>SIGOBRAS</th>
+                                            <th>{this.state.soles_anterior}</th>
+                                            <th>{this.state.soles_actual}</th>
+                                            <th>{this.state.soles_acumulado}</th>
+                                        </tr>
+                                        <tr>
+                                            <th>EXCEL</th>
+                                            {valorizacionIgualdad && valorizacionIgualdad.total_valor_anterior ?
+                                                <th>{valorizacionIgualdad.total_valor_anterior.toFixed(3)} </th>                                                                                        
+                                            :""}
+                                            {valorizacionIgualdad && valorizacionIgualdad.total_valor_actual ?
+                                                <th>{valorizacionIgualdad.total_valor_actual.toFixed(3)} </th>                                                                                        
+                                            :""}
+                                            {valorizacionIgualdad && valorizacionIgualdad.total_valor_total ?
+                                                <th>{valorizacionIgualdad.total_valor_total.toFixed(3)} </th>                                                                                        
+                                            :""}                                                                                  
+                                        </tr>
+                                        <tr>
+                                            <th>IGUALDAD</th>
+                                            {valorizacionIgualdad && valorizacionIgualdad.total_valor_anterior ?
+                                                <th>{Number(this.state.soles_anterior).toFixed(3)==valorizacionIgualdad.total_valor_anterior.toFixed(3)?"IGUAL":"DIFERENTE"} </th>                                                                                        
+                                            :""}
+                                            {valorizacionIgualdad && valorizacionIgualdad.total_valor_actual ?
+                                                <th>{Number(this.state.soles_actual).toFixed(3)==valorizacionIgualdad.total_valor_actual.toFixed(3)?"IGUAL":"DIFERENTE"} </th>                                                                                        
+                                            :""}
+                                            {valorizacionIgualdad && valorizacionIgualdad.total_valor_total ?
+                                                <th>{Number(this.state.soles_acumulado).toFixed(3)==valorizacionIgualdad.total_valor_total.toFixed(3)?"IGUAL":"DIFERENTE"} </th>                                                                                        
+                                            :""}                                                                                
+                                        </tr>
+                                        </tbody>
+                                        
+                                        
+                                    </table>
+                                    
+                                   
+
                                         <table className="table table-bordered table-sm small mb-0">
                                             <thead className="text-center resplandPartida">
                                                 <tr>
@@ -529,7 +656,13 @@ class ValorizacionGeneral extends Component {
                                                     <th>P. P S/.</th>
 
                                                     <th>MET. </th>
+                                                    {valorizacionIgualdad && valorizacionIgualdad.metrado_anteriorTotal ?
+                                                    <th>{valorizacionIgualdad.metrado_anteriorTotal} err</th>
+                                                    :""} 
                                                     <th>VAL</th>
+                                                    {valorizacionIgualdad && valorizacionIgualdad.valor_anteriorTotal ?
+                                                    <th>{valorizacionIgualdad.valor_anteriorTotal} err</th>
+                                                    :""}
                                                     <th>%</th>
 
                                                     <th>MET.</th>
@@ -543,7 +676,13 @@ class ValorizacionGeneral extends Component {
                                                     <th>%</th>
 
                                                     <th>MET.</th>
+                                                    {valorizacionIgualdad && valorizacionIgualdad.metrado_totalTotal ?
+                                                    <th>{valorizacionIgualdad.metrado_totalTotal} err</th>
+                                                    :""}  
                                                     <th>VAL</th>
+                                                    {valorizacionIgualdad && valorizacionIgualdad.valor_totalTotal ?
+                                                    <th>{valorizacionIgualdad.valor_totalTotal} err</th>
+                                                    :""}
                                                     <th>%</th>
 
                                                     <th>MET.</th>
@@ -566,22 +705,40 @@ class ValorizacionGeneral extends Component {
                                                             <td>{partidas.precio_parcial}</td>
 
                                                             <td>{partidas.metrado_anterior}</td>
+                                                            {valorizacionIgualdad && valorizacionIgualdad.metrado_anteriorTotal ?
+                                                            <td className={valorizacionIgualdad&&valorizacionIgualdad.partidas[Ipart].metrado_anterior?"bg-danger text-white":"bg-metrado_actual"} >{valorizacionExcel[Ipart].metrado_anterior}</td>
+                                                          :""}
+
                                                             <td>{partidas.valor_anterior}</td>
+                                                            {valorizacionIgualdad && valorizacionIgualdad.valor_anteriorTotal ?
+                                                            <td className={valorizacionIgualdad&&valorizacionIgualdad.partidas[Ipart].valor_anterior?"bg-danger text-white":"bg-metrado_actual"} >{valorizacionExcel[Ipart].valor_anterior}</td>
+                                                          :""}
+
                                                             <td>{partidas.porcentaje_anterior}</td>
 
                                                             <td className="bg-mm">{partidas.metrado_actual}</td>
 
-                                                            {valorizacionIgualdad && valorizacionIgualdad.itemTotal ?
+                                                            {valorizacionIgualdad && valorizacionIgualdad.metrado_actualTotal ?
                                                             <td className={valorizacionIgualdad&&valorizacionIgualdad.partidas[Ipart].metrado_actual?"bg-danger text-white":"bg-metrado_actual"} >{valorizacionExcel[Ipart].metrado_actual}</td>
                                                           :""}
+
                                                             <td className="bg-mm">{partidas.valor_actual}</td>
-                                                            {valorizacionIgualdad && valorizacionIgualdad.itemTotal ?
+
+                                                            {valorizacionIgualdad && valorizacionIgualdad.valor_actualTotal ?
                                                             <td className={valorizacionIgualdad&&valorizacionIgualdad.partidas[Ipart].valor_actual?"bg-danger text-white":"bg-valor_actual"} >{valorizacionExcel[Ipart].valor_actual}</td>
                                                           :""}
+
                                                             <td className="bg-mm">{partidas.porcentaje_actual}</td>
 
                                                             <td>{partidas.metrado_total}</td>
+                                                            {valorizacionIgualdad && valorizacionIgualdad.metrado_totalTotal ?
+                                                            <td className={valorizacionIgualdad&&valorizacionIgualdad.partidas[Ipart].metrado_total?"bg-danger text-white":"bg-metrado_actual"} >{valorizacionExcel[Ipart].metrado_total}</td>
+                                                          :""}
+
                                                             <td>{partidas.valor_total}</td>
+                                                            {valorizacionIgualdad && valorizacionIgualdad.valor_totalTotal ?
+                                                            <td className={valorizacionIgualdad&&valorizacionIgualdad.partidas[Ipart].valor_total?"bg-danger text-white":"bg-valor_actual"} >{valorizacionExcel[Ipart].valor_total}</td>
+                                                          :""}
                                                             <td>{partidas.porcentaje_total}</td>
 
                                                             <td>
