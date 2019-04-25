@@ -320,16 +320,24 @@ class ValorizacionGeneral extends Component {
                     item = true
                     itemTotal++
                 }
-                 //revision de metrados anterior
+                 //revision de metrados anterior           
+                 
                  if(partida.tipo == "partida" && (Number(partida.metrado_anterior)).toFixed(3) !=Number(rows[row+i][col+6]).toFixed(3)){
                     metrado_anterior = true
                     metrado_anteriorTotal++
                 }
                 //revision de valor de metrados anterior
-                if(partida.tipo == "partida" &&(Number(partida.valor_anterior)).toFixed(3) !=Number([row+i][col+7]).toFixed(3)){
+                partida.valor_anterior = (partida.valor_anterior)||0
+                rows[row+i][col+7] = (rows[row+i][col+7])||0
+               
+                
+                if(partida.tipo == "partida" && (partida.valor_anterior.toFixed(3) !=rows[row+i][col+7].toFixed(3)) ){
+                    console.log("diferente");
                     valor_anterior = true
                     valor_anteriorTotal++
                 }
+                console.log("valor_anterior",valor_anterior);
+
 
                 //revision de metrados actuales
                 if(partida.tipo == "partida" && (Number(partida.metrado_actual)).toFixed(3) !=Number(rows[row+i][col+9]).toFixed(3)){
@@ -392,7 +400,9 @@ class ValorizacionGeneral extends Component {
             valorizacionIgualdad.metrado_totalTotal = metrado_totalTotal
             valorizacionIgualdad.valor_totalTotal = valor_totalTotal
 
-            valorizacionIgualdad.total_valor_anterior = rows[row+DataPartidasApi.length][col+7]
+            valorizacionIgualdad.total_valor_anterior = rows[row+DataPartidasApi.length][col+7]||0
+            console.log("7",rows[row+DataPartidasApi.length][col+7]);
+            
             valorizacionIgualdad.total_valor_actual = rows[row+DataPartidasApi.length][col+10]
             valorizacionIgualdad.total_valor_total = rows[row+DataPartidasApi.length][col+13]
 
@@ -599,7 +609,7 @@ class ValorizacionGeneral extends Component {
                                         </tr>
                                         <tr>
                                             <th>EXCEL</th>
-                                            {valorizacionIgualdad && valorizacionIgualdad.total_valor_anterior ?
+                                            {valorizacionIgualdad ?
                                                 <th>{valorizacionIgualdad.total_valor_anterior.toFixed(3)} </th>                                                                                        
                                             :""}
                                             {valorizacionIgualdad && valorizacionIgualdad.total_valor_actual ?
@@ -611,13 +621,13 @@ class ValorizacionGeneral extends Component {
                                         </tr>
                                         <tr>
                                             <th>IGUALDAD</th>
-                                            {valorizacionIgualdad && valorizacionIgualdad.total_valor_anterior ?
+                                            {valorizacionIgualdad  ?
                                                 <th>{Number(this.state.soles_anterior).toFixed(3)==valorizacionIgualdad.total_valor_anterior.toFixed(3)?"IGUAL":"DIFERENTE"} </th>                                                                                        
                                             :""}
-                                            {valorizacionIgualdad && valorizacionIgualdad.total_valor_actual ?
+                                            {valorizacionIgualdad  ?
                                                 <th>{Number(this.state.soles_actual).toFixed(3)==valorizacionIgualdad.total_valor_actual.toFixed(3)?"IGUAL":"DIFERENTE"} </th>                                                                                        
                                             :""}
-                                            {valorizacionIgualdad && valorizacionIgualdad.total_valor_total ?
+                                            {valorizacionIgualdad  ?
                                                 <th>{Number(this.state.soles_acumulado).toFixed(3)==valorizacionIgualdad.total_valor_total.toFixed(3)?"IGUAL":"DIFERENTE"} </th>                                                                                        
                                             :""}                                                                                
                                         </tr>
