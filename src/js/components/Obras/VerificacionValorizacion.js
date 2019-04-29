@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import axios from 'axios';
-import { MdMoreVert, MdDone } from "react-icons/md";
-import { Button,Nav, NavItem, NavLink, Card, CardHeader, CardBody, Row, Col, UncontrolledPopover, PopoverBody, Spinner } from 'reactstrap';
+import { MdDone } from "react-icons/md";
+import { Button,Nav, NavItem, NavLink, Card, CardHeader, CardBody } from 'reactstrap';
 import classnames from 'classnames';
 import { UrlServer } from '../Utils/ServerUrlConfig'
 import readXlsxFile from 'read-excel-file'
@@ -64,6 +64,7 @@ class ValorizacionGeneral extends Component {
         this.TabsMeses = this.TabsMeses.bind(this);
         this.TabsComponentes = this.TabsComponentes.bind(this);
         this.CargarExcel = this.CargarExcel.bind(this);
+        this.cargarDatos = this.cargarDatos.bind(this);
         
     }
 
@@ -77,41 +78,47 @@ class ValorizacionGeneral extends Component {
                 if (res.data === "vacio") {
                     console.log("no hay datos en la base datos")
                 } else {
-                    // console.log('data PRIMERA CARGA', res.data)
-                    // console.log('data AÑOS', res.data)
-                    // console.log('data PERIODOS', res.data[0].periodos)
-                    // console.log('data PERIODOS >>>>>>>>>>', res.data[0].periodos[0].resumen)
-                    // console.log('data COMPONENTES', res.data[0].periodos[0].componentes)
-                    // console.log('data RESUMEN', res.data[0].periodos[0].resumen)
+                    var activeTabAnio =  res.data.length-1
+                    var periodos =  res.data[res.data.length-1].periodos
+                    var activeTabMes =  periodos.length-1
+                    var resumen = periodos[periodos.length-1].resumen
+                    var componentes = periodos[periodos.length-1].componentes
+
+                    console.log('data AÑOS', res.data)
+                    console.log('data activeTabAnio', activeTabAnio)
+                    console.log('data PERIODOS', periodos)
+                    console.log('data resumen ',resumen)
+                    console.log('data COMPONENTES', componentes)                    
 
                     this.setState({
+                        activeTabAnio:activeTabAnio.toString(),
+                        activeTabMes:activeTabMes.toString(),
                         DataAniosApi: res.data,
-                        DataMesesApi: res.data[0].periodos,
-                        DataComponentesApi: res.data[0].periodos[0].componentes,
-                        DataResumenApi: res.data[0].periodos[0].resumen,
+                        DataMesesApi: periodos,
+                        DataComponentesApi: componentes,
+                        DataResumenApi: resumen,
 
                         // seteamos el nombre del componente
                         NombreComponente: 'RESUMEN DE VALORIZACION',
 
                         // capturamos montos de dinero en resumen
-                        ppto: res.data[0].periodos[0].resumen.presupuesto,
-                        monto_actual: res.data[0].periodos[0].resumen.valor_actual,
+                        ppto: resumen.presupuesto,
+                        monto_actual: resumen.valor_actual,
 
-                        avance_anterior: res.data[0].periodos[0].resumen.valor_anterior,
-                        porcentaje_anterior: res.data[0].periodos[0].resumen.porcentaje_anterior,
+                        avance_anterior: resumen.valor_anterior,
+                        porcentaje_anterior: resumen.porcentaje_anterior,
 
-                        avance_actual: res.data[0].periodos[0].resumen.valor_actual,
-                        porcentaje_actual: res.data[0].periodos[0].resumen.porcentaje_actual,
+                        avance_actual: resumen.valor_actual,
+                        porcentaje_actual: resumen.porcentaje_actual,
 
-                        avance_acumulado: res.data[0].periodos[0].resumen.valor_total,
-                        porcentaje_acumulado: res.data[0].periodos[0].resumen.porcentaje_total,
+                        avance_acumulado: resumen.valor_total,
+                        porcentaje_acumulado: resumen.porcentaje_total,
 
-                        saldo: res.data[0].periodos[0].resumen.valor_saldo,
-                        porcentaje_saldo: res.data[0].periodos[0].resumen.porcentaje_saldo,
+                        saldo: resumen.valor_saldo,
+                        porcentaje_saldo: resumen.porcentaje_saldo,
                         // seteamos las fechas par ala carga por defecto
-                        fecha_inicial: res.data[0].periodos[0].fecha_inicial,
-                        fecha_final: res.data[0].periodos[0].fecha_final,
-
+                        fecha_inicial: periodos.fecha_inicial,
+                        fecha_final: periodos.fecha_final
                     })
                 }
             })
@@ -120,148 +127,123 @@ class ValorizacionGeneral extends Component {
             });
     }
 
-    TabsAnios(tab) {
+    TabsAnios(tab,anyo) {
         if (this.state.activeTabAnio !== tab) {
             this.setState({
                 activeTabAnio: tab
             });
+            console.log("id_ficha: %s anyo: %s",sessionStorage.getItem("idFicha"),anyo);
+            
+            axios.post(`${UrlServer}/getValGeneralPeriodos`,
+                {
+                    "id_ficha":sessionStorage.getItem("idFicha"),
+                    "anyo": anyo
+                }
+            )
+            .then(async (res) => {
+               console.log(res.data);
+               var periodos = res.data
+               var activeTabMes =  periodos.length-1
+               var periodo = periodos[periodos.length-1]
+               await this.setState(
+                    {
+                        DataMesesApi: res.data,
+                        activeTabMes:activeTabMes.toString(),
+                        fecha_inicial: periodo.fecha_inicial,
+                        fecha_final: periodos.fecha_final
+                    }
+                )
+                await this.cargarDatos()
+
+            })
+            .catch((err) => {
+                console.log('hay erres al solicitar la peticion al api, ', err);
+            })
         }
     }
 
-    TabsMeses(tab, fechaInicial, fechaFinal) {
-        console.log('cero', tab,'Id componente', this.state.IdComponente ,'inicio', fechaInicial, 'fin', fechaFinal);        
+    async TabsMeses(tab,fecha_inicial,fecha_final) {
+        console.log("TabsMeses",tab,fecha_inicial,fecha_final);
+        
         if (this.state.activeTabMes !== tab) {
-            this.setState({
+            await this.setState({
                 activeTabMes: tab,
-                fecha_inicial: fechaInicial,
-                fecha_final: fechaFinal,
-                NombreComponente: 'RESUMEN DE VALORIZACION',
-                // montos de resumen de componentes
-                // ppto:"",
-                // monto_actual:"",
-                // avance_anterior	:"",
-                // avance_actual:"",	
-                // avance_acumulado:"",	
-                // saldo:""
-            });
-
-
-
-
-            if (this.state.IdComponente !== "") {
-                // llamamos al api de partidas en valarizaciones------------------------------------------------------------------------------------------------------------------------------
-                axios.post(`${UrlServer}/getValGeneralPartidas`,
-                    {
-                        "id_componente": this.state.IdComponente,
-                        "fecha_inicial": fechaInicial,
-                        "fecha_final": fechaFinal
-                    }
-                )
-                .then((res) => {
-                    // console.log('res partidas val desde tab meses>', res.data)
-                    this.setState({
-                        DataPartidasApi: res.data.partidas,
-                        DataTotal: res.data,
-                    })
-                })
-                .catch((err) => {
-                    console.log('hay erres al solicitar la peticion al api, ', err);
-                })
-
-
-            } else {
-                // llamamos a resumen--------------------------------------------------------------------------------------------------------------------------------
-                axios.post(`${UrlServer}/getValGeneralResumenPeriodo`,
-                    {
-                        "id_ficha": sessionStorage.getItem("idFicha"),
-                        "fecha_inicial": fechaInicial,
-                        "fecha_final": fechaFinal,
-                    }
-                )
-                    .then((res) => {
-                        // console.log('resumen', res.data)
-                        this.setState({
-                            DataResumenApi: res.data,
-                            // montos de resumen de componentes
-                            ppto: res.data.presupuesto,
-                            monto_actual: res.data.valor_actual,
-
-                            avance_anterior: res.data.valor_anterior,
-                            porcentaje_anterior: res.data.porcentaje_anterior,
-
-                            avance_actual: res.data.valor_actual,
-                            porcentaje_actual: res.data.porcentaje_actual,
-
-                            avance_acumulado: res.data.valor_total,
-                            porcentaje_acumulado: res.data.porcentaje_total,
-
-                            saldo: res.data.valor_saldo,
-                            porcentaje_saldo: res.data.porcentaje_saldo,
-                        })
-                    })
-                    .catch((err) => {
-                        console.log('hay erres al solicitar la peticion al api, ', err);
-                    })
-            }
+                fecha_inicial:fecha_inicial,
+                fecha_final:fecha_final              
+            });   
+            await this.cargarDatos()
         }
-
+        
     }
 
-    TabsComponentes(tab) {
+    async TabsComponentes(tab) {
         
         if (this.state.activeTabComponente !== tab) {
-            this.setState({
-                activeTabComponente: tab,   
-                // montos en soles de componentes 
-                soles_parcial: "",
-                soles_anterior: "",
-                soles_actual: "",
-                soles_acumulado: "",
-                soles_saldo: "",
-
+            await this.setState({
+                activeTabComponente: tab 
             });
+            await this.cargarDatos()
+        }
 
-            if (tab !== "resumen") {
-                // llamamos al api de partidas en valarizaciones
-                axios.post(`${UrlServer}/getValGeneralTodosComponentes`,
+    }
+    cargarDatos(){
+        console.log("cargardatos");        
+        console.log("tab",this.state.activeTabComponente);        
+        if (this.state.activeTabComponente=="componentes") {
+            console.log("dataa enviar",
+                {
+                    "id_ficha":sessionStorage.getItem("idFicha"),
+                    "fecha_inicial": this.state.fecha_inicial,
+                    "fecha_final": this.state.fecha_final
+                }
+            );
+            
+            axios.post(`${UrlServer}/getValGeneralTodosComponentes`,
+                {
+                    "id_ficha":sessionStorage.getItem("idFicha"),
+                    "fecha_inicial": this.state.fecha_inicial,
+                    "fecha_final": this.state.fecha_final
+                }
+            )
+            .then((res) => {
+                console.log("data",res.data);
+                this.setState(
                     {
-                        "id_ficha": sessionStorage.getItem("idFicha"),
-                        "fecha_inicial": this.state.fecha_inicial,
-                        "fecha_final": this.state.fecha_final
+                        DataPartidasApi: res.data.partidas,
+                        soles_anterior: res.data.valor_anterior,
+                        soles_actual: res.data.valor_actual,
+                        soles_acumulado: res.data.valor_total,
+                        soles_saldo: res.data.valor_saldo
                     }
                 )
-                .then((res) => {
-                    // console.log('res partidas val', res.data)
-                    this.setState({
-                        DataPartidasApi: res.data.partidas,
-
-                        // montos en soles de componentes 
-                        soles_parcial: res.data.precio_parcial,
-
-                        soles_anterior: res.data.valor_anterior,
-                        soles_porcentaje_anterior: res.data.porcentaje_anterior,
-
-                        soles_actual: res.data.valor_actual,
-                        soles_porcentaje_actual: res.data.porcentaje_actual,
-
-                        soles_acumulado: res.data.valor_total,
-                        soles_porcentaje_acumulado: res.data.porcentaje_total,
-
-                        soles_saldo: res.data.valor_saldo,
-                        soles_porcentaje_saldo: res.data.porcentaje_saldo
-
-                    })
-                })
-                .catch((err) => {
-                    console.log('hay erres al solicitar la peticion al api, ', err);
-                })
+            })
+            .catch((err) => {
+                console.log('hay erres al solicitar la peticion al api, ', err);
+            })
+        } else {
+            axios.post(`${UrlServer}/getValGeneralResumenPeriodo`,
+            {
+                "id_ficha":sessionStorage.getItem("idFicha"),
+                "fecha_inicial": this.state.fecha_inicial,
+                "fecha_final": this.state.fecha_final
             }
-
+            )
+            .then((res) => {
+                console.log("data",res.data);
+                this.setState(
+                    {
+                        DataResumenApi: res.data
+                    }
+                )
+            })
+            .catch((err) => {
+                console.log('hay erres al solicitar la peticion al api, ', err);
+            })
+            
         }
     }
     CargarExcel(){
         var DataPartidasApi = this.state.DataPartidasApi
-        var DataTotal = this.state.DataTotal
         const input = document.getElementById('inputValorizacion')
         
         readXlsxFile(input.files[0]).then((rows ) => {
@@ -461,7 +443,7 @@ class ValorizacionGeneral extends Component {
                 <Nav tabs>
                     {DataAniosApi.map((anio, IA) =>
                         <NavItem key={IA}>
-                            <NavLink className={classnames({ active: activeTabAnio === IA.toString() })} onClick={() => { this.TabsAnios(IA.toString()); }} >
+                            <NavLink className={classnames({ active: activeTabAnio === IA.toString() })} onClick={() => { this.TabsAnios(IA.toString(),anio.anyo); }} >
                                 {anio.anyo}
                             </NavLink>
                         </NavItem>
@@ -474,7 +456,7 @@ class ValorizacionGeneral extends Component {
 
                     {DataMesesApi.map((mes, IMes) =>
                         <NavItem key={IMes}>
-                            <NavLink className={classnames({ active: activeTabMes === IMes.toString() })} onClick={() => { this.TabsMeses(IMes.toString(), mes.fecha_inicial, mes.fecha_final) }} >
+                            <NavLink className={classnames({ active: activeTabMes === IMes.toString() })} onClick={() => { this.TabsMeses(IMes.toString(),mes.fecha_inicial,mes.fecha_final) }} >
                                 {mes.codigo}
                             </NavLink>
                         </NavItem>
@@ -485,13 +467,13 @@ class ValorizacionGeneral extends Component {
                     {/* COMPONENTES */}
                     <Nav tabs>
                         <NavItem >
-                            <NavLink className={classnames({ active: activeTabComponente === "resumen" })} onClick={() => { this.TabsComponentes("resumen", "", "RESUMEN DE VALORIZACION") }} >
+                            <NavLink className={classnames({ active: activeTabComponente === "resumen" })} onClick={() => { this.TabsComponentes("resumen") }} >
                                 RESUMEN
                             </NavLink>
                         </NavItem>
                         <NavItem >
                     
-                                <NavLink className={classnames({ active: activeTabComponente === "componentes" })} onClick={() => { this.TabsComponentes("componentes") }} >
+                            <NavLink className={classnames({ active: activeTabComponente === "componentes" })} onClick={() => { this.TabsComponentes("componentes") }} >
                                 componentes 
                             </NavLink>
                         </NavItem>
@@ -638,158 +620,158 @@ class ValorizacionGeneral extends Component {
                                     
                                    
 
-                                        <table className="table table-bordered table-sm small mb-0">
-                                            <thead className="text-center resplandPartida">
-                                                <tr>
-                                                    <th colSpan="3" rowSpan="2" className="align-middle">DESCRIPCION</th>
-                                                    <th colSpan="2" className="align-middle">S/. {this.state.soles_parcial}</th>
-                                                    <th colSpan="3">S/. {this.state.soles_anterior}</th>
-                                                    <th colSpan="3" >S/. {this.state.soles_actual}</th>
-                                                    <th colSpan="3">S/. {this.state.soles_acumulado}</th>
-                                                    <th colSpan="3">S/. {this.state.soles_saldo}</th>
-                                                </tr>
-                                                <tr>
-                                                    <th colSpan="2">PRESUPUESTO</th>
-                                                    <th colSpan="3">ANTERIOR</th>
-                                                    <th colSpan="3">ACTUAL</th>
-                                                    <th colSpan="3">ACUMULADO</th>
-                                                    <th colSpan="3">SALDO</th>
-                                                </tr>
-                                                <tr>
-                                                    <th>ITEM</th>
-                                                    {valorizacionIgualdad && valorizacionIgualdad.itemTotal ?
-                                                    <th>{valorizacionIgualdad.itemTotal} err</th>
-                                                    :""}
-                                                    <th>DESCRIPCION</th>
-                                                    <th>METRADO</th>
-                                                    <th>P. U. S/.</th>
-                                                    <th>P. P S/.</th>
+                                    <table className="table table-bordered table-sm small mb-0">
+                                        <thead className="text-center resplandPartida">
+                                            <tr>
+                                                <th colSpan="3" rowSpan="2" className="align-middle">DESCRIPCION</th>
+                                                <th colSpan="2" className="align-middle">S/. {this.state.soles_parcial}</th>
+                                                <th colSpan="3">S/. {this.state.soles_anterior}</th>
+                                                <th colSpan="3" >S/. {this.state.soles_actual}</th>
+                                                <th colSpan="3">S/. {this.state.soles_acumulado}</th>
+                                                <th colSpan="3">S/. {this.state.soles_saldo}</th>
+                                            </tr>
+                                            <tr>
+                                                <th colSpan="2">PRESUPUESTO</th>
+                                                <th colSpan="3">ANTERIOR</th>
+                                                <th colSpan="3">ACTUAL</th>
+                                                <th colSpan="3">ACUMULADO</th>
+                                                <th colSpan="3">SALDO</th>
+                                            </tr>
+                                            <tr>
+                                                <th>ITEM</th>
+                                                {valorizacionIgualdad && valorizacionIgualdad.itemTotal ?
+                                                <th>{valorizacionIgualdad.itemTotal} err</th>
+                                                :""}
+                                                <th>DESCRIPCION</th>
+                                                <th>METRADO</th>
+                                                <th>P. U. S/.</th>
+                                                <th>P. P S/.</th>
 
-                                                    <th>MET. </th>
-                                                    {valorizacionIgualdad && valorizacionIgualdad.metrado_anteriorTotal ?
-                                                    <th>{valorizacionIgualdad.metrado_anteriorTotal} err</th>
-                                                    :""} 
-                                                    <th>VAL</th>
-                                                    {valorizacionIgualdad && valorizacionIgualdad.valor_anteriorTotal ?
-                                                    <th>{valorizacionIgualdad.valor_anteriorTotal} err</th>
-                                                    :""}
-                                                    <th>%</th>
+                                                <th>MET. </th>
+                                                {valorizacionIgualdad && valorizacionIgualdad.metrado_anteriorTotal ?
+                                                <th>{valorizacionIgualdad.metrado_anteriorTotal} err</th>
+                                                :""} 
+                                                <th>VAL</th>
+                                                {valorizacionIgualdad && valorizacionIgualdad.valor_anteriorTotal ?
+                                                <th>{valorizacionIgualdad.valor_anteriorTotal} err</th>
+                                                :""}
+                                                <th>%</th>
 
-                                                    <th>MET.</th>
-                                                    {valorizacionIgualdad && valorizacionIgualdad.metrado_actualTotal ?
-                                                    <th>{valorizacionIgualdad.metrado_actualTotal} err</th>
-                                                    :""}    
-                                                    <th>VAL</th>
-                                                    {valorizacionIgualdad && valorizacionIgualdad.valor_actualTotal ?
-                                                    <th>{valorizacionIgualdad.valor_actualTotal} err</th>
-                                                    :""}
-                                                    <th>%</th>
+                                                <th>MET.</th>
+                                                {valorizacionIgualdad && valorizacionIgualdad.metrado_actualTotal ?
+                                                <th>{valorizacionIgualdad.metrado_actualTotal} err</th>
+                                                :""}    
+                                                <th>VAL</th>
+                                                {valorizacionIgualdad && valorizacionIgualdad.valor_actualTotal ?
+                                                <th>{valorizacionIgualdad.valor_actualTotal} err</th>
+                                                :""}
+                                                <th>%</th>
 
-                                                    <th>MET.</th>
-                                                    {valorizacionIgualdad && valorizacionIgualdad.metrado_totalTotal ?
-                                                    <th>{valorizacionIgualdad.metrado_totalTotal} err</th>
-                                                    :""}  
-                                                    <th>VAL</th>
-                                                    {valorizacionIgualdad && valorizacionIgualdad.valor_totalTotal ?
-                                                    <th>{valorizacionIgualdad.valor_totalTotal} err</th>
-                                                    :""}
-                                                    <th>%</th>
+                                                <th>MET.</th>
+                                                {valorizacionIgualdad && valorizacionIgualdad.metrado_totalTotal ?
+                                                <th>{valorizacionIgualdad.metrado_totalTotal} err</th>
+                                                :""}  
+                                                <th>VAL</th>
+                                                {valorizacionIgualdad && valorizacionIgualdad.valor_totalTotal ?
+                                                <th>{valorizacionIgualdad.valor_totalTotal} err</th>
+                                                :""}
+                                                <th>%</th>
 
-                                                    <th>MET.</th>
-                                                    <th>VAL</th>
-                                                    <th>%</th>
-                                                </tr>
-                                            </thead>
+                                                <th>MET.</th>
+                                                <th>VAL</th>
+                                                <th>%</th>
+                                            </tr>
+                                        </thead>
 
-                                            <tbody>
-                                                {
-                                                    DataPartidasApi.map((partidas, Ipart) =>
-                                                        <tr key={Ipart} className={partidas.tipo === "titulo" ? "font-weight-bold text-warning" : "font-weight-light"}>
-                                                            <td>{partidas.item}</td>
-                                                          {valorizacionIgualdad && valorizacionIgualdad.itemTotal ?
-                                                            <td className={valorizacionIgualdad&&valorizacionIgualdad.partidas[Ipart].item?"bg-danger text-white":""} >{valorizacionExcel[Ipart].item}</td>
-                                                          :""}
-                                                            <td>{partidas.descripcion}</td>
-                                                            <td>{partidas.metrado}</td>
-                                                            <td>{partidas.costo_unitario}</td>
-                                                            <td>{partidas.precio_parcial}</td>
+                                        <tbody>
+                                            {
+                                                DataPartidasApi.map((partidas, Ipart) =>
+                                                    <tr key={Ipart} className={partidas.tipo === "titulo" ? "font-weight-bold text-warning" : "font-weight-light"}>
+                                                        <td>{partidas.item}</td>
+                                                        {valorizacionIgualdad && valorizacionIgualdad.itemTotal ?
+                                                        <td className={valorizacionIgualdad&&valorizacionIgualdad.partidas[Ipart].item?"bg-danger text-white":""} >{valorizacionExcel[Ipart].item}</td>
+                                                        :""}
+                                                        <td>{partidas.descripcion}</td>
+                                                        <td>{partidas.metrado}</td>
+                                                        <td>{partidas.costo_unitario}</td>
+                                                        <td>{partidas.precio_parcial}</td>
 
-                                                            <td>{partidas.metrado_anterior}</td>
-                                                            {valorizacionIgualdad && valorizacionIgualdad.metrado_anteriorTotal ?
-                                                            <td className={valorizacionIgualdad&&valorizacionIgualdad.partidas[Ipart].metrado_anterior?"bg-danger text-white":"bg-metrado_actual"} >{valorizacionExcel[Ipart].metrado_anterior}</td>
-                                                          :""}
+                                                        <td>{partidas.metrado_anterior}</td>
+                                                        {valorizacionIgualdad && valorizacionIgualdad.metrado_anteriorTotal ?
+                                                        <td className={valorizacionIgualdad&&valorizacionIgualdad.partidas[Ipart].metrado_anterior?"bg-danger text-white":"bg-metrado_actual"} >{valorizacionExcel[Ipart].metrado_anterior}</td>
+                                                        :""}
 
-                                                            <td>{partidas.valor_anterior}</td>
-                                                            {valorizacionIgualdad && valorizacionIgualdad.valor_anteriorTotal ?
-                                                            <td className={valorizacionIgualdad&&valorizacionIgualdad.partidas[Ipart].valor_anterior?"bg-danger text-white":"bg-metrado_actual"} >{valorizacionExcel[Ipart].valor_anterior}</td>
-                                                          :""}
+                                                        <td>{partidas.valor_anterior}</td>
+                                                        {valorizacionIgualdad && valorizacionIgualdad.valor_anteriorTotal ?
+                                                        <td className={valorizacionIgualdad&&valorizacionIgualdad.partidas[Ipart].valor_anterior?"bg-danger text-white":"bg-metrado_actual"} >{valorizacionExcel[Ipart].valor_anterior}</td>
+                                                        :""}
 
-                                                            <td>{partidas.porcentaje_anterior}</td>
+                                                        <td>{partidas.porcentaje_anterior}</td>
 
-                                                            <td className="bg-mm">{partidas.metrado_actual}</td>
+                                                        <td className="bg-mm">{partidas.metrado_actual}</td>
 
-                                                            {valorizacionIgualdad && valorizacionIgualdad.metrado_actualTotal ?
-                                                            <td className={valorizacionIgualdad&&valorizacionIgualdad.partidas[Ipart].metrado_actual?"bg-danger text-white":"bg-metrado_actual"} >{valorizacionExcel[Ipart].metrado_actual}</td>
-                                                          :""}
+                                                        {valorizacionIgualdad && valorizacionIgualdad.metrado_actualTotal ?
+                                                        <td className={valorizacionIgualdad&&valorizacionIgualdad.partidas[Ipart].metrado_actual?"bg-danger text-white":"bg-metrado_actual"} >{valorizacionExcel[Ipart].metrado_actual}</td>
+                                                        :""}
 
-                                                            <td className="bg-mm">{partidas.valor_actual}</td>
+                                                        <td className="bg-mm">{partidas.valor_actual}</td>
 
-                                                            {valorizacionIgualdad && valorizacionIgualdad.valor_actualTotal ?
-                                                            <td className={valorizacionIgualdad&&valorizacionIgualdad.partidas[Ipart].valor_actual?"bg-danger text-white":"bg-valor_actual"} >{valorizacionExcel[Ipart].valor_actual}</td>
-                                                          :""}
+                                                        {valorizacionIgualdad && valorizacionIgualdad.valor_actualTotal ?
+                                                        <td className={valorizacionIgualdad&&valorizacionIgualdad.partidas[Ipart].valor_actual?"bg-danger text-white":"bg-valor_actual"} >{valorizacionExcel[Ipart].valor_actual}</td>
+                                                        :""}
 
-                                                            <td className="bg-mm">{partidas.porcentaje_actual}</td>
+                                                        <td className="bg-mm">{partidas.porcentaje_actual}</td>
 
-                                                            <td>{partidas.metrado_total}</td>
-                                                            {valorizacionIgualdad && valorizacionIgualdad.metrado_totalTotal ?
-                                                            <td className={valorizacionIgualdad&&valorizacionIgualdad.partidas[Ipart].metrado_total?"bg-danger text-white":"bg-metrado_actual"} >{valorizacionExcel[Ipart].metrado_total}</td>
-                                                          :""}
+                                                        <td>{partidas.metrado_total}</td>
+                                                        {valorizacionIgualdad && valorizacionIgualdad.metrado_totalTotal ?
+                                                        <td className={valorizacionIgualdad&&valorizacionIgualdad.partidas[Ipart].metrado_total?"bg-danger text-white":"bg-metrado_actual"} >{valorizacionExcel[Ipart].metrado_total}</td>
+                                                        :""}
 
-                                                            <td>{partidas.valor_total}</td>
-                                                            {valorizacionIgualdad && valorizacionIgualdad.valor_totalTotal ?
-                                                            <td className={valorizacionIgualdad&&valorizacionIgualdad.partidas[Ipart].valor_total?"bg-danger text-white":"bg-valor_actual"} >{valorizacionExcel[Ipart].valor_total}</td>
-                                                          :""}
-                                                            <td>{partidas.porcentaje_total}</td>
+                                                        <td>{partidas.valor_total}</td>
+                                                        {valorizacionIgualdad && valorizacionIgualdad.valor_totalTotal ?
+                                                        <td className={valorizacionIgualdad&&valorizacionIgualdad.partidas[Ipart].valor_total?"bg-danger text-white":"bg-valor_actual"} >{valorizacionExcel[Ipart].valor_total}</td>
+                                                        :""}
+                                                        <td>{partidas.porcentaje_total}</td>
 
-                                                            <td>
-                                                                {partidas.metrado_saldo === 0 ? <div className="text-success text-center"><MdDone size={20} /></div> :
-                                                                    partidas.metrado_saldo
-                                                                }
-                                                            </td>
-                                                            <td>
-                                                                {partidas.valor_saldo === 0 ? "" :
-                                                                    partidas.valor_saldo
-                                                                }
-                                                            </td>
-                                                            <td>
-                                                                {partidas.porcentaje_saldo === 0 ? "" :
-                                                                    partidas.porcentaje_saldo
-                                                                }
-                                                            </td>
-                                                        </tr>
-                                                    )
-                                                }
+                                                        <td>
+                                                            {partidas.metrado_saldo === 0 ? <div className="text-success text-center"><MdDone size={20} /></div> :
+                                                                partidas.metrado_saldo
+                                                            }
+                                                        </td>
+                                                        <td>
+                                                            {partidas.valor_saldo === 0 ? "" :
+                                                                partidas.valor_saldo
+                                                            }
+                                                        </td>
+                                                        <td>
+                                                            {partidas.porcentaje_saldo === 0 ? "" :
+                                                                partidas.porcentaje_saldo
+                                                            }
+                                                        </td>
+                                                    </tr>
+                                                )
+                                            }
 
-                                                <tr className="resplandPartida">
-                                                    <td colSpan="3">TOTAL</td>
-                                                    <td colSpan="2">S/. {this.state.soles_parcial}</td>
+                                            <tr className="resplandPartida">
+                                                <td colSpan="3">TOTAL</td>
+                                                <td colSpan="2">S/. {this.state.soles_parcial}</td>
 
-                                                    <td colSpan="2">S/. {this.state.soles_anterior}</td>
-                                                    <td>{this.state.soles_porcentaje_anterior} %</td>
+                                                <td colSpan="2">S/. {this.state.soles_anterior}</td>
+                                                <td>{this.state.soles_porcentaje_anterior} %</td>
 
-                                                    <td colSpan="2" >S/. {this.state.soles_actual}</td>
-                                                    <td>{this.state.soles_porcentaje_actual} %</td>
+                                                <td colSpan="2" >S/. {this.state.soles_actual}</td>
+                                                <td>{this.state.soles_porcentaje_actual} %</td>
 
-                                                    <td colSpan="2">S/. {this.state.soles_acumulado}</td>
-                                                    <td>{this.state.soles_porcentaje_acumulado} %</td>
+                                                <td colSpan="2">S/. {this.state.soles_acumulado}</td>
+                                                <td>{this.state.soles_porcentaje_acumulado} %</td>
 
-                                                    <td colSpan="2">S/. {this.state.soles_saldo}</td>
-                                                    <td>{this.state.soles_porcentaje_saldo} %</td>
+                                                <td colSpan="2">S/. {this.state.soles_saldo}</td>
+                                                <td>{this.state.soles_porcentaje_saldo} %</td>
 
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             }
 
                         </CardBody>
