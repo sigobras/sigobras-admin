@@ -19,7 +19,8 @@ class IngresoCuardoMetrados extends Component {
             MetradosEjecutados:[],
             avanceActividades:[],
             dataExcelPartidasOriginial:[],
-            repetidos:[]
+            repetidos:[],
+            titulosMetrados:[]
             
         }
         this.CargaDatosExcelComponentes = this.CargaDatosExcelComponentes.bind(this)
@@ -29,7 +30,8 @@ class IngresoCuardoMetrados extends Component {
     }
   
     CargaDatosExcelComponentes(){
-     var listaPartidas = this.state.partidas
+    var listaPartidas = this.state.partidas
+    var titulosMetrados = []
      
         function actividadesConMetrado(partida){
  
@@ -38,25 +40,27 @@ class IngresoCuardoMetrados extends Component {
             for (let i = 0; i < listaPartidas.length; i++) {
             
                 const element = listaPartidas[i];
-                if(partida.valor!= 0 && element.item == partida.item){
-                    for (let j = 0; j < element.actividades.length; j++) {
-                        const actividad = element.actividades[j];
-                        actividades.push(
-                            [
-                            actividad.id_actividad,
-                            partida.fecha,
-                            (partida.valor * actividad.porcentaje_metrado).toFixed(9),
-                            20
-                            ]
-                        
-                        )
-                        // if(actividad.id_actividad == null){
-                        //     console.log("null",element);
-                        //     console.log("valor",partida.valor);
+                
+                if(Number(partida.valor)!= 0 && element.item == partida.item){
+                    if(element.tipo == "partida"){
+                        for (let j = 0; j < element.actividades.length; j++) {
+                            const actividad = element.actividades[j];
+                            actividades.push(
+                                [
+                                actividad.id_actividad,
+                                partida.fecha,
+                                (partida.valor * actividad.porcentaje_metrado).toFixed(9),
+                                20
+                                ]
                             
-                        // }
-            
-                        
+                            )
+                        }
+                    }else{
+                        titulosMetrados.push(
+                            {
+                                partida
+                            }
+                        )
                     }
                     break;
                 }
@@ -196,12 +200,14 @@ class IngresoCuardoMetrados extends Component {
                     
                 }
                 console.log("avancesRepetidos",avancesRepetidos);
+                console.log("titulosMetrados",titulosMetrados);
                 
                 this.setState({
                     MetradosEjecutados:MetradosEjecutados,
                     avanceActividades:avanceActividades,
                     repetidos:repetidos,
-                    dataExcelPartidasOriginial:dataExcelPartidasOriginial
+                    dataExcelPartidasOriginial:dataExcelPartidasOriginial,
+                    titulosMetrados:titulosMetrados
                     
                 })
             })
@@ -261,7 +267,7 @@ class IngresoCuardoMetrados extends Component {
     }
 
     render() {
-        const { MetradosEjecutados,repetidos,dataExcelPartidasOriginial} = this.state
+        const { MetradosEjecutados,repetidos,dataExcelPartidasOriginial,titulosMetrados} = this.state
         return (
             <div>
              
@@ -303,13 +309,24 @@ class IngresoCuardoMetrados extends Component {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                    { dataExcelPartidasOriginial.map((metrado, index)=>
-                                    <tr key={ index }>
-                                        <td>{ metrado.hoja }</td>
-                                        <td>{ metrado.excel }</td>
-                                        <td>{ metrado.planilla }</td>
-                                    </tr>
-                                )}
+                                        { dataExcelPartidasOriginial.map((metrado, index)=>
+                                            <tr key={ index }>
+                                                <td>{ metrado.hoja }</td>
+                                                <td>{ metrado.excel }</td>
+                                                <td>{ metrado.planilla }</td>
+                                            </tr>
+                                        )}
+                                    
+                                    </tbody>
+                                </table>
+                                <table className="table table-bordered table-sm small">
+                                    <tbody>
+                                        { titulosMetrados.map((titulo, index)=>
+                                            <tr key={ index }>
+                                                <td className="text-danger h4 text-center p-2">TITULO ->{ titulo.partida.item } con metrado de {titulo.partida.valor} el {titulo.partida.fecha} </td>
+                                               
+                                            </tr>
+                                        )}
                                     
                                     </tbody>
                                 </table>
