@@ -49,6 +49,15 @@ class PartidasNuevas extends Component {
             IdObra:dataObra.id_ficha,
             estadoPartidas:estado
         })
+        axios.get(`${UrlServer}/componentesConPartidas`)
+        .then((res)=>{
+            this.setState({
+                DataListaEstados:res.data
+            })
+        })
+        .catch((error)=>
+            console.error('falló al obtener los datos del servidor', error)
+        )
 
     }
 

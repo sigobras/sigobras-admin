@@ -107,14 +107,14 @@ class HistorialObra extends Component {
         dataHistorial[dataHistorial.length-1][3] = "2030-12-01"
             for(var i=0;i<dataHistorial.length-1;i++){
                 
-                    dataHistorial[i][3] =  dataHistorial[i+1][2]
+                dataHistorial[i][3] =  dataHistorial[i+1][2]
             }
 
         console.log(dataHistorial);     
         console.log("Dato Almacenado");
         axios.post(`${UrlServer}/postHistorialEstadosObra`,
                     
-                        dataHistorial
+            dataHistorial
                     
         )
 		.then((res)=>{

@@ -26,7 +26,6 @@ class ObraNueva extends Component {
     componentWillMount(){
         axios.get(`${UrlServer}/listaEstados`)
         .then((res)=>{
-            // console.info('dataEstados',res.data)
             this.setState({
                 DataListaEstados:res.data
             })
