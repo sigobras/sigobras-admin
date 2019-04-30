@@ -25,6 +25,7 @@ import listaCargos from '../components/Cargos/ListaCargos'
 import ListaUsuarios from '../components/Usuarios/ListaUsuarios'
 import IngresoCuardoMetrados from '../components/Obras/IngresoCuardoMetrados'
 import VerificacionValorizacion from '../components/Obras/VerificacionValorizacion'
+import HistorialObra from '../components/Obras/HistorialObra'
 
 class AppAng extends Component {
     constructor(){
@@ -163,6 +164,7 @@ class AppAng extends Component {
                                     <Route path="/ListaUsuarios" component={ListaUsuarios} />
                                     <Route path="/IngresoCudroMetradosEjecutados" component={IngresoCuardoMetrados} />
                                     <Route path="/VerificacionValorizacion" component={VerificacionValorizacion} />
+                                    <Route path="/HistorialObra" component={HistorialObra} />
 
                                 </div>
 
