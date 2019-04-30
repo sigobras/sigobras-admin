@@ -305,7 +305,11 @@ class PartidasNuevas extends Component {
                 })
                 //--------------------------------------------------------//
                                 
-
+                function Redondear(data){
+                    data =  Math.round(data * 10000000000) / 10000000000
+                    data =  Math.round(data * 100) / 100
+                    return data
+                }
                 // CREAMOS EL DATA DE PLANILLA DE METRADOS
                 
                 for (let index = fila; index < rows.length; index++) {
@@ -333,7 +337,10 @@ class PartidasNuevas extends Component {
                         obPlanilla.ancho = rows[index][columna+4]
                         obPlanilla.alto = rows[index][columna+5]
                         obPlanilla.parcial = rows[index][columna+6]
-                        obPlanilla.metrado = Number(rows[index][columna+7].toFixed(2))
+                        obPlanilla.metrado = Redondear(rows[index][columna+7])
+                        console.log((rows[index][columna+7]).toString())
+                        console.log(Redondear(rows[index][columna+7]));
+                        
                     }else if(rows[index][columna] === null && (rows[index][columna+6] !== null)||(rows[index][columna+7] !== null)){
                         tipo = "actividad subtitulo"
                         var obActividades = []
@@ -351,9 +358,9 @@ class PartidasNuevas extends Component {
                         obActividades.push(rows[index][columna+5])
                         // parcial
                         if(rows[index][columna+7] !== null){
-                            obActividades.push(Number(rows[index][columna+7].toFixed(2)))
+                            obActividades.push(Redondear(rows[index][columna+7]))
                         }else{
-                            obActividades.push(Number(rows[index][columna+6].toFixed(2)))
+                            obActividades.push(Redondear(rows[index][columna+6]))
                         }               
     
                         obPlanilla.actividades.push(obActividades)
@@ -375,7 +382,6 @@ class PartidasNuevas extends Component {
                         obPlanilla.costo_unitario = null
                         obPlanilla.equipo = null
                         obPlanilla.rendimiento = null
-                        // obPlanilla.actividades = []
                     }else if(rows[index][columna+1] !== null){
                         tipo = "actividad titulo"
                         var obActividades = []
