@@ -146,6 +146,14 @@ class ListaObras extends Component {
         window.location.href = "/VerificacionValorizacion";
 
     }
+    HistorialObra(id_ficha,g_meta){
+        sessionStorage.setItem('idFicha',id_ficha)
+
+        sessionStorage.setItem('g_meta',g_meta)
+
+        window.location.href = "/HistorialObra";
+
+    }
     ///////////////////////////////////////
     GuardarDatos(event){
         event.preventDefault()
@@ -203,6 +211,9 @@ class ListaObras extends Component {
                                         </td>
                                         <td>
                                             <button className="btn btn-outline-success" onClick={(e) => this.VerificacionValorizacion(obra.id_ficha,obra.g_meta)}>valorizacion</button>
+                                        </td>
+                                        <td>
+                                            <button className="btn btn-outline-success" onClick={(e) => this.HistorialObra(obra.id_ficha,obra.g_meta)}>Crear Historial</button>
                                         </td>
                                     </tr>
                                 )}
