@@ -18,6 +18,7 @@ class HistorialObra extends Component {
         this.actualizarFecha = this.actualizarFecha.bind(this)
         this.actualizarEstado = this.actualizarEstado.bind(this)
         this.handleSubmit = this.handleSubmit.bind(this)
+        this.elminarHistorial = this.elminarHistorial.bind(this)
 
         
         
@@ -100,7 +101,7 @@ class HistorialObra extends Component {
     }
 
   
-     handleSubmit(event) {
+    handleSubmit(event) {
         event.preventDefault();
         var dataHistorial=this.state.dataHistorial
      
@@ -113,9 +114,7 @@ class HistorialObra extends Component {
         console.log(dataHistorial);     
         console.log("Dato Almacenado");
         axios.post(`${UrlServer}/postHistorialEstadosObra`,
-                    
             dataHistorial
-                    
         )
 		.then((res)=>{
 			console.log(res.data)
@@ -124,8 +123,47 @@ class HistorialObra extends Component {
 			console.log('Algo salió mal al tratar de listar los estados, error es: ',error);
 		})
 
-      }
-      
+    }
+    elminarHistorial(i){
+        console.log("index",i );
+        
+        var dataHistorial=this.state.dataHistorial
+        console.log(dataHistorial)
+
+        console.log("idHistorial",dataHistorial[i][0]);
+        if(dataHistorial[i][0]!=null)
+        {
+            axios.delete(`${UrlServer}/deleteEliminarHistorial`,
+
+                {
+                    data:{
+                        id_historialEstado:dataHistorial[i][0]
+                    }
+                   
+                }
+            )
+            .then((res)=>{
+                console.log("exito");
+                
+                console.log(res.data)
+
+                
+            }).catch((error)=>{
+                console.log('error al eliminar: ',error);
+            })
+            
+        }
+
+
+        dataHistorial.splice(i, 1);
+        this.setState({
+            dataHistorial:dataHistorial
+        })
+       
+
+        console.log("Dato Eliminado");
+
+    }
 
     render() {
         const { estados,dataHistorial} = this.state
@@ -134,30 +172,67 @@ class HistorialObra extends Component {
                 <Card>
                     <CardHeader>{this.state.idFicha+" "+this.state.g_meta}</CardHeader>
 					<CardBody>
-                        <Button onClick={this.agregarHistorial}>
-                           +
+                        <Button color="primary"onClick={this.agregarHistorial}>
+                          Agregar Estados
                         </Button> 
+                        
                         <form onSubmit={this.handleSubmit} >
+                        <table>
+                            
+                            <thead>
+                                <tr>
+                                    <th>
+                                        Estados de Obra
+                                    </th>
+                                    <th>
+                                        Fecha de Inicio
+                                    </th>
+                                    <th>
+                                        Eliminar Estado
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
                             {
                                 dataHistorial.map((data,index)=>
-                                <div>
-                                    <select onChange={event => this.actualizarEstado(index,event.target.value)} required value={data[4]}>
-                                    <option>Seleccionar los estados</option>  
+                                
+                                    <tr>
+                                        <td>
+                                            <select onChange={event => this.actualizarEstado(index,event.target.value)} required value={data[4]}>
+                                                <option>Seleccionar los estados</option>  
 
-                                        {estados.map((estado,estados)=>
-                                            <option value={estado.id_Estado}>{estado.nombre}</option>
-                                        )}
-                                    </select>
-                                    <Input type="date" onChange={event => this.actualizarFecha(index,event.target.value)} required value={data[2]}
-                                    />
-                                </div>
+                                                {estados.map((estado,estados)=>
+                                                    <option value={estado.id_Estado}>{estado.nombre}</option>
+                                                )}
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <Input type="date" onChange={event => this.actualizarFecha(index,event.target.value)} required value={data[2]}
+                                        />      
+                                        </td>
+                                        <td>
+                                            <Button color="danger" onClick={()=>this.elminarHistorial(index)} > 
+                                                Eliminar
+                                            </Button>  
+                                        </td>
+                                    </tr>
+                                
+                               
                                 )
                             }
+                            </tbody>
+                       
+                        </table>
+                         {/* <div class="col-xs-12 col-md-3">
+                                    
+                                   
+                                          
+                                </div> */}
                             <br/>
-                            <Button type="submit" >
+                            <Button color="success" type="submit" >
                             Guardar Datos
                             </Button> 
-
+                           
                         </form>     
                    
 				 	</CardBody>
