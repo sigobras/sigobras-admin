@@ -20,8 +20,6 @@ class HistorialObra extends Component {
         this.handleSubmit = this.handleSubmit.bind(this)
         this.elminarHistorial = this.elminarHistorial.bind(this)
 
-        
-        
     }
   
     componentWillMount(){
@@ -102,7 +100,7 @@ class HistorialObra extends Component {
 
   
     handleSubmit(event) {
-        event.preventDefault();
+        // event.preventDefault();
         var dataHistorial=this.state.dataHistorial
      
         dataHistorial[dataHistorial.length-1][3] = "2030-12-01"
