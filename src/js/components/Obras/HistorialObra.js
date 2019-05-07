@@ -100,27 +100,38 @@ class HistorialObra extends Component {
 
   
     handleSubmit(event) {
-        // event.preventDefault();
+        event.preventDefault();
         var dataHistorial=this.state.dataHistorial
-     
         dataHistorial[dataHistorial.length-1][3] = "2030-12-01"
-            for(var i=0;i<dataHistorial.length-1;i++){
-                
-                dataHistorial[i][3] =  dataHistorial[i+1][2]
+        for(var i=0;i<dataHistorial.length-1;i++){
+            dataHistorial[i][3] =  dataHistorial[i+1][2]
+        }
+        var id_actualizacion = 0
+        //encontrar el id estado de obra actualizacion
+        for (let i = 0; i < this.state.estados.length; i++) {
+            if(this.state.estados[i].nombre =="Actualizacion"){
+                id_actualizacion = this.state.estados[i].id_Estado;
+                break;
             }
-
-        console.log(dataHistorial);     
-        console.log("Dato Almacenado");
+        }
+        console.log("id_actualizacion",id_actualizacion);
+        
+        //resion de estado actualizacion
+        var fecha_final = "2030-12-01"
+        for(var i= dataHistorial.length-1; i>0;i++){
+            if(dataHistorial[i][4] != id_actualizacion){
+                // dataHistorial[i][]
+            }
+        }
+        console.log(dataHistorial);
         axios.post(`${UrlServer}/postHistorialEstadosObra`,
             dataHistorial
         )
 		.then((res)=>{
-			console.log(res.data)
 			
 		}).catch((error)=>{
 			console.log('Algo salió mal al tratar de listar los estados, error es: ',error);
 		})
-
     }
     elminarHistorial(i){
         console.log("index",i );
