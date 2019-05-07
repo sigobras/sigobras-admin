@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import axios from 'axios'
-import { Card, Button, CardHeader, FormGroup, CardBody, Input, Label, CardText, Spinner,  Modal, Form, ModalBody, ModalFooter  } from 'reactstrap';
+import { Card, Button, CardHeader, FormGroup, CardBody, Input, Label, Table,  Modal, Form, ModalBody, ModalFooter  } from 'reactstrap';
 import { UrlServer } from '../Utils/ServerUrlConfig'
 
 class ListaObras extends Component {
@@ -14,7 +14,8 @@ class ListaObras extends Component {
             modal3:false,
             IdObra:'',
             idUser:'',
-            Componentes:[]
+            Componentes:[],
+            modalPersonal:false
         }
         this.Modal = this.Modal.bind(this)
         this.CapturarIdObra = this.CapturarIdObra.bind(this)
@@ -26,6 +27,8 @@ class ListaObras extends Component {
         this.apiComponentes = this.apiComponentes.bind(this)
         this.RedirectPN = this.RedirectPN.bind(this)
         this.VerificacionValorizacion = this.VerificacionValorizacion.bind(this)
+        this.PersonalObra = this.PersonalObra.bind(this)
+        
         
     }
     componentWillMount(){
@@ -79,6 +82,30 @@ class ListaObras extends Component {
       
         this.apiComponentes(id_ficha)
         this.ModalComponentes()
+    }
+    PersonalObra(id_ficha){
+
+        if(this.state.modalPersonal==false){
+            axios.post(`${UrlServer}/getPersonalObra`,
+            {
+                "id_ficha": id_ficha
+            }
+            )
+            .then((res)=>{
+                console.log(res.data);
+                this.setState({
+                    DataUsuarios:res.data
+                })
+            })
+            .catch((error)=>{
+                console.log('algo salió mal al tratar de listar los usuarios error es: ', error);
+            })
+        }
+      
+        
+        this.setState(prevState => ({
+            modalPersonal: !prevState.modalPersonal
+        }));
     }
 
     apiComponentes(id_ficha){
@@ -215,6 +242,9 @@ class ListaObras extends Component {
                                         <td>
                                             <button className="btn btn-outline-success" onClick={(e) => this.HistorialObra(obra.id_ficha,obra.g_meta)}>Crear Historial</button>
                                         </td>
+                                        <td>
+                                            <button className="btn btn-outline-success" onClick={() => this.PersonalObra(obra.id_ficha,obra.id_usuario)}>Personal Obra</button>
+                                        </td>
                                     </tr>
                                 )}
                                 
@@ -245,9 +275,7 @@ class ListaObras extends Component {
                         </ModalFooter>
                     </Form>
                 </Modal>
-                <Modal isOpen={this.state.modal2} 
-                //  modalTransition={{ timeout: 700 }} backdropTransition={{ timeout: 1300 }}
-                    toggle={this.ModalComponentes} className={this.props.className} size="lg">
+                <Modal isOpen={this.state.modal2} toggle={this.ModalComponentes}  size="lg">
                     <Form onSubmit={this.GuardarDatos}>
                         <ModalBody>
                         
@@ -272,9 +300,52 @@ class ListaObras extends Component {
                         </ModalFooter>
                     </Form>
                 </Modal>
+               
+                {/* Modal que muestra el Personal Obra */}
+                <Modal modal-dark isOpen={this.state.modalPersonal} toggle={this.PersonalObra} size="lg">
+           
+                        <ModalBody>
+                        <Table  className="table table-bordered table-hover table-sm table-dark "  >
+                            <thead > 
+                                <tr> 
+                                    <th><center>N°</center></th>
+                                    <th><center> Cargo</center></th>
+                                    <th><center>Nombres y Apellidos</center>  </th>
+                                    <th><center> DNI</center></th>
+                                    <th><center> CPT</center></th>
+                                    <th><center> Celular</center></th>
+                                    <th><center> E-mail</center></th>
+                                 
+                                </tr>
+                            </thead>    
+                            <tbody>
+                             
+                                {DataUsuarios.map((usuarios, index)=>
+                                    <tr>
+                                        <td><center>{index+1}</center></td> 
+                                        <td> { usuarios.cargo }</td>
+                                        <td> { usuarios.nombre } { usuarios.apellido_paterno } { usuarios.apellido_materno } </td>
+                                        <td> { usuarios.dni }</td>
+                                        <td> { usuarios.cpt }</td>
+                                        <td> { usuarios.celular }</td>
+                                        <td> { usuarios.email }</td>
+                        
+                                    </tr>                                
+                                )}
+                            </tbody>
+                     
+
+                        </Table>
+                        </ModalBody>
+                </Modal>
+                
             </div>
         );
     }
 }
+
+
+
+
 
 export default ListaObras;
