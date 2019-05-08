@@ -106,23 +106,29 @@ class HistorialObra extends Component {
         for(var i=0;i<dataHistorial.length-1;i++){
             dataHistorial[i][3] =  dataHistorial[i+1][2]
         }
-        var id_actualizacion = 0
-        //encontrar el id estado de obra actualizacion
-        for (let i = 0; i < this.state.estados.length; i++) {
-            if(this.state.estados[i].nombre =="Actualizacion"){
-                id_actualizacion = this.state.estados[i].id_Estado;
-                break;
-            }
-        }
-        console.log("id_actualizacion",id_actualizacion);
+        // var id_actualizacion = 0
+        // //encontrar el id estado de obra actualizacion
+        // for (let i = 0; i < this.state.estados.length; i++) {
+        //     if(this.state.estados[i].nombre =="Actualizacion"){
+        //         id_actualizacion = this.state.estados[i].id_Estado;
+        //         break;
+        //     }
+        // }
+        // console.log("id_actualizacion",id_actualizacion);
         
-        //resion de estado actualizacion
-        var fecha_final = "2030-12-01"
-        for(var i= dataHistorial.length-1; i>0;i++){
-            if(dataHistorial[i][4] != id_actualizacion){
-                // dataHistorial[i][]
-            }
-        }
+        // //resion de estado actualizacion
+        // var fecha_final = "2030-12-01"
+        // console.log(dataHistorial);
+        // var act  = false
+        // for(var i= dataHistorial.length-1; i>=0;i--){
+        //     if(dataHistorial[i][4] != id_actualizacion && act){
+        //         dataHistorial[i][3] = fecha_final
+        //         act = false
+        //     }else{
+        //         fecha_final = dataHistorial[i][3]
+        //         act = true
+        //     }
+        // }
         console.log(dataHistorial);
         axios.post(`${UrlServer}/postHistorialEstadosObra`,
             dataHistorial
