@@ -15,7 +15,8 @@ class ListaObras extends Component {
             IdObra:'',
             idUser:'',
             Componentes:[],
-            modalPersonal:false
+            modalPersonal:false,
+            DataPersonal:[]
         }
         this.Modal = this.Modal.bind(this)
         this.CapturarIdObra = this.CapturarIdObra.bind(this)
@@ -45,7 +46,7 @@ class ListaObras extends Component {
 
         // LISTA DE USUARIOS
 
-        axios.get(`${UrlServer}/listaUsuarios`)
+        axios.get(`${UrlServer}/getUsuariosConAcceso`)
         .then((res)=>{
             // console.log(res.data);
             this.setState({
@@ -94,7 +95,7 @@ class ListaObras extends Component {
             .then((res)=>{
                 console.log(res.data);
                 this.setState({
-                    DataUsuarios:res.data
+                    DataPersonal:res.data
                 })
             })
             .catch((error)=>{
@@ -183,25 +184,30 @@ class ListaObras extends Component {
     }
     ///////////////////////////////////////
     GuardarDatos(event){
-        event.preventDefault()
-
+        // event.preventDefault()
+        console.log(this.state.idUser,this.state.IdObra);
+        
         axios.post(`${UrlServer}/asignarObra`,{
-            id_usuario:  this.state.idUser,
-            id_ficha: this.state.IdObra
+            Accesos_id_acceso:  this.state.idUser,
+            Fichas_id_ficha: this.state.IdObra
         })
         .then((res)=>{
-            console.log(res)
-           alert('ok estoy en proceso de desarrollo')
+            if(res.status == 400){
+                alert('algo ha salido mal')                
+            }else{
+                alert('exito ')
+            }
         })
         .catch((error)=>{
             console.log('algo salió mal al tratar de listar los usuarios error es: ', error);
+            alert('algo ha salido mal')
         })
 
         this.Modal()
     }
 
     render() {
-        const { listaObras, DataUsuarios,Componentes } = this.state
+        const { listaObras, DataUsuarios,Componentes,DataPersonal } = this.state
         return (
             <div>
                 <Card>
@@ -263,7 +269,7 @@ class ListaObras extends Component {
                                 <Input type="select" onChange={(e) => this.setState({idUser: e.target.value})}>
                                     <option>SELECCIONE</option>
                                     {DataUsuarios.map((usuarios, iusuers)=>
-                                        <option key={ iusuers } value={ usuarios.id_usuario }>DNI : { usuarios.dni }  Nombre: { usuarios.nombre } { usuarios.apellido_paterno } { usuarios.apellido_materno } </option>                                
+                                        <option key={ iusuers } value={ usuarios.id_acceso }>DNI : { usuarios.dni }  Nombre: { usuarios.nombre } { usuarios.apellido_paterno } { usuarios.apellido_materno } </option>                                
                                     )}
                                 </Input>
                             </FormGroup>
@@ -320,7 +326,7 @@ class ListaObras extends Component {
                             </thead>    
                             <tbody>
                              
-                                {DataUsuarios.map((usuarios, index)=>
+                                {DataPersonal.map((usuarios, index)=>
                                     <tr>
                                         <td><center>{index+1}</center></td> 
                                         <td> { usuarios.cargo }</td>
