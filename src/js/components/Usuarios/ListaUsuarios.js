@@ -61,7 +61,7 @@ class ListaUsuarios extends Component {
         this.modalA()
     }
     enviarDatosUsuarios(event){
-        event.preventDefault()
+        // event.preventDefault()
         this.modalNUsuario()
         const { nombre, apellido_Paterno, apellido_Materno, dni, direccion, email, cpt } = this.state
         axios.post(`${UrlServer}/nuevoUsuario`,{
@@ -74,14 +74,11 @@ class ListaUsuarios extends Component {
             cpt: cpt,
         })
         .then((res)=>{
-            if(res.status == 204){
+            if(res.status == 400){
                 alert('algo ha salido mal')                
             }else{
                 alert('exito ')
             }
-            console.log('res', res)
-            
-            
         })
         .catch((err)=>{
             alert('errores al ingresar el usuario')
@@ -108,6 +105,7 @@ class ListaUsuarios extends Component {
                                     <th>direccion</th>
                                     <th>email</th>
                                     <th>cpt</th>
+                                    <th>ultimo Usuario</th>
                                     <th>opciones</th>
                                 </tr>
                             </thead>
@@ -121,6 +119,7 @@ class ListaUsuarios extends Component {
                                         <td>{usuario.direccion}</td>
                                         <td>{usuario.email}</td>
                                         <td>{usuario.cpt}</td>
+                                        <td>{usuario.usuario}</td>
                                         <td>
                                             <button className="btn btn-outline-secondary btn-xs" id={`e${index}`} onClick={ e => this.IdUser(usuario.id_usuario)}>crear acceso </button>
                                             <UncontrolledTooltip placement="bottom" target={`e${index}`}>

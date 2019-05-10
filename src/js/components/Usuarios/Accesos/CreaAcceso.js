@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { Button, Form, FormGroup, Label, Input, FormText, CustomInput } from 'reactstrap';
 import axios from 'axios'
 import { DebounceInput } from 'react-debounce-input';
-
 import { UrlServer } from '../../Utils/ServerUrlConfig'
 
 class CreaAcceso extends Component {
@@ -21,19 +20,17 @@ class CreaAcceso extends Component {
     componentWillMount(){
         axios.get(`${UrlServer}/listaCargos`)
         .then((res)=>{
-            // console.log('sasasa',res.data)
             this.setState({
                 DataListaCargos:res.data
             })
         })
         .catch((err)=>{
             console.log(err);
-            
         })
     }
 
     enviarDatos(event){
-        event.preventDefault()
+        // event.preventDefault()
         const {IdCargo, usuario, password, estado } = this.state
         axios.post(`${UrlServer}/nuevoAcceso`,{
             "usuario": usuario,
@@ -42,12 +39,16 @@ class CreaAcceso extends Component {
             "cargos_id_cargo":IdCargo,
             "Usuarios_id_usuario":this.props.idUsuario
         })
-        .then((res)=>
-            console.log('estado',res)
-        )
+        .then((res)=>{
+            if(res.status == 400){
+                alert('algo ha salido mal')                
+            }else{
+                alert('exito ')
+            }
+        })
         .catch((err)=>{
-            console.error(err);
-            
+            alert('errores al ingresar el usuario')
+            console.log(err)
         })
     }
     render(){
