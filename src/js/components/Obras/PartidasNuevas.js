@@ -25,7 +25,8 @@ class PartidasNuevas extends Component {
             estadoPartidas:'',
             erroresSuma:[],
             itemsErroneos:[],
-            erroresSecuenciaItems:[]
+            erroresSecuenciaItems:[],
+            recursosErroresTamanyo:[]
             
         }
         this.CostosUnitarios = this.CostosUnitarios.bind(this)
@@ -188,9 +189,27 @@ class PartidasNuevas extends Component {
                 dataSubmit.push(partida)
                 // console.log('dataSubmit > ', dataSubmit)
                 dataSubmit = dataSubmit.slice(1,dataSubmit.length)
-
+                var recursosErroresTamanyo = []
+                for (let i = 0; i < dataSubmit.length; i++) {
+                    const acu = dataSubmit[i];
+                    for (let j = 0; j < acu.recursos.length; j++) {
+                        const recurso = acu.recursos[j];
+                        if(recurso.length != 8){
+                            recursosErroresTamanyo.push(
+                                {
+                                    "item":acu.item,
+                                    "recurso":recurso
+                                }
+                            )
+                            console.log("acu",acu.item);
+                            console.log("acu",recurso);
+                        }
+                    }
+                }
+                console.log(recursosErroresTamanyo);
                 this.setState({
-                    Data1:dataSubmit
+                    Data1:dataSubmit,
+                    recursosErroresTamanyo
                 })
 
             })
@@ -611,14 +630,16 @@ class PartidasNuevas extends Component {
             }            
             )
             .then((res)=>{
-                console.log('partidas ', res);
-                alert('todo okey se ingresaron las partidas')
+                console.log(res)
+                if(res.status == 204){
+                    alert('errores al ingresar los datos')
+                }else{
+                    alert('exito ')
+                }
             })
-            .catch((error)=>{
-                console.log('algo salio mal ERROR',error);
-                alert('Algo salio mal')
-
-                
+            .catch((err)=>{
+                alert('errores al ingresar los datos')
+                console.log(err)
             })
         }
     }
@@ -631,7 +652,7 @@ class PartidasNuevas extends Component {
         })
     }
     render() {
-        const { Data1, Data2, DataErrores,erroresSuma, DataFinal, DataComponentes, idComponente, IdObra, idPresupuesto,itemsErroneos,erroresSecuenciaItems } = this.state
+        const { Data1, Data2, DataErrores,erroresSuma, DataFinal, DataComponentes, idComponente, IdObra, idPresupuesto,itemsErroneos,erroresSecuenciaItems,recursosErroresTamanyo } = this.state
         return (
             <div>
                 <Card>
@@ -660,11 +681,18 @@ class PartidasNuevas extends Component {
                                     <fieldset>
                                         <legend><b>cargar datos de Costos unitarios</b></legend>
                                         <input type="file" id="input1" onClick={this.CostosUnitarios} />
-                                            <code>
-                                                <ReactJson src={Data1}  name="Data1" theme="monokai" collapsed={2} displayDataTypes={false}/>
-                                            </code>
+                                        {recursosErroresTamanyo.map((err, i)=>
+                                            <label className="text-danger">el siguiente recurso tiene errores { err.item +" "+  err.recurso[0]+" "+ err.recurso[1]+" "+  err.recurso[2]}</label>
+                                              
+                                        )}
+                                        <code>
+                                            <ReactJson src={Data1}  name="Data1" theme="monokai" collapsed={2} displayDataTypes={false}/>
+                                        </code>
+                                        
+                                      
                                         
                                     </fieldset>
+                                    
                                 </Col>
                                 <Col sm="4">
                                     <fieldset>
