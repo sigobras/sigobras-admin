@@ -26,7 +26,8 @@ class PartidasNuevas extends Component {
             erroresSuma:[],
             itemsErroneos:[],
             erroresSecuenciaItems:[],
-            recursosErroresTamanyo:[]
+            recursosErroresTamanyo:[],
+            ComponentesPartidasIngresadas:[]
             
         }
         this.CostosUnitarios = this.CostosUnitarios.bind(this)
@@ -40,6 +41,8 @@ class PartidasNuevas extends Component {
     componentWillMount(){
         var dataObra = sessionStorage.getItem("datosObras")
         var estado = sessionStorage.getItem("estado")
+        var id_ficha = sessionStorage.getItem("idFicha")
+        
         dataObra = JSON.parse(dataObra) 
         console.log('datoss>', dataObra)
         // sessionStorage.getItem("datosObras")
@@ -50,10 +53,18 @@ class PartidasNuevas extends Component {
             IdObra:dataObra.id_ficha,
             estadoPartidas:estado
         })
-        axios.get(`${UrlServer}/componentesConPartidas`)
+       
+
+        axios.post(`${UrlServer}/getComponentesPartidasIngresadas`,
+        {
+            "id_ficha":id_ficha
+        }
+        )
         .then((res)=>{
+            console.log(res);
+            
             this.setState({
-                DataListaEstados:res.data
+                ComponentesPartidasIngresadas:res.data
             })
         })
         .catch((error)=>
@@ -65,159 +76,159 @@ class PartidasNuevas extends Component {
     CostosUnitarios(){
         
         const input = document.getElementById('input1')
-        input.addEventListener('change', () => {
-            readXlsxFile(input.files[0]).then((rows) => {
+        
+        readXlsxFile(input.files[0]).then((rows) => {
 
-                // console.log('> ', rows)
-                var procesoBucarElemento = 1
-                var dataSubmit = []
-                var partida = {}
-                var ObRecurso = []
-                var zonaRecursos = false
-                var tipoRecurso = null
-                for (let index = 0; index < rows.length; index++) {
+            // console.log('> ', rows)
+            var procesoBucarElemento = 1
+            var dataSubmit = []
+            var partida = {}
+            var ObRecurso = []
+            var zonaRecursos = false
+            var tipoRecurso = null
+            for (let index = 0; index < rows.length; index++) {
+                
+                // busca el valor de partida
+                if(rows[index][0] === "Partida"){
+                    dataSubmit.push(partida)
+                    partida = {}
+                    partida.recursos = []
+                    partida.item = rows[index][1]
+                    partida.descripcion = rows[index][3]
+                    procesoBucarElemento++
+
+                }else if (rows[index][0] === "Rendimiento") {
+                    // busca unidad de medida, eq y costo unitario
+                    partida.unidad_medida = rows[index][1]
+                    partida.costo_unitario = rows[index][7]
+
+                    for (let i = 0; i < rows[index].length; i++) {
+                        if(rows[index][i] === "EQ."){
+                            if(rows[index][i+1] === null){
+                                partida.equipo = 1
+                            }else{
+                                partida.equipo = rows[index][i+1]
+                            }
+                        }
+                    }
+
+                    // console.log('sss>>',rows[index])
+
+                    if(rows[index][1] === "GLB/DIA" && rows[index][2] === null){
+                        partida.rendimiento = 1;
+
+                    }else if(rows[index][2] === "MO."){
+                        partida.rendimiento = rows[index][3]
+                    }else{
+                        partida.rendimiento = rows[index][2] 
+                    }
+
+                }else if (rows[index][0] === "Código" ) {
+                    //buscamos el nombre del recurso
+                    index++
+                    for (let i = 0; i < rows[index].length; i++) {
+                        if(rows[index][i] !== null ){
+                            tipoRecurso = rows[index][i]
+                        }
+                    }
+                    zonaRecursos = true
+
+                // zona de recursos
+                }else if ( zonaRecursos === true){
                     
-                    // busca el valor de partida
-                    if(rows[index][0] === "Partida"){
-                        dataSubmit.push(partida)
-                        partida = {}
-                        partida.recursos = []
-                        partida.item = rows[index][1]
-                        partida.descripcion = rows[index][3]
-                        procesoBucarElemento++
-
-                    }else if (rows[index][0] === "Rendimiento") {
-                        // busca unidad de medida, eq y costo unitario
-                        partida.unidad_medida = rows[index][1]
-                        partida.costo_unitario = rows[index][7]
-
-                        for (let i = 0; i < rows[index].length; i++) {
-                            if(rows[index][i] === "EQ."){
-                                if(rows[index][i+1] === null){
-                                    partida.equipo = 1
-                                }else{
-                                    partida.equipo = rows[index][i+1]
+                    // busca el tipo de material
+                    var valorExiste = 0 
+                    var temp = ''
+                    for (let k = 0; k < rows[index].length; k++) {
+                        const element = rows[index][k];
+                        if(element !== null && typeof element !== 'number' ){
+                            temp = element
+                            valorExiste++
+                        }
+                        
+                    }
+                    if(valorExiste === 1){
+                        // console.log('dddsasasas',temp,'>>> ',rows[index]);
+                        
+                        tipoRecurso = temp
+                    }
+                    
+                    
+                    
+                    
+                    if (rows[index][0] !== null ) {
+                        ObRecurso.push(tipoRecurso)
+                            ObRecurso.push(rows[index][0])
+                        var columnaRecurso = 2
+                        // revisa toda la fila
+                        for (let i = 1; i < rows[index].length; i++) {
+                            if (rows[index][i] !== null ) {
+                                if(columnaRecurso === 2){
+                                    ObRecurso.push(rows[index][i])
+                                    columnaRecurso++
+                                }else if(columnaRecurso === 3){
+                                    ObRecurso.push(rows[index][i])
+                                    columnaRecurso++
+                                }else if(columnaRecurso === 4){
+                                    ObRecurso.push( rows[index][i])
+                                    columnaRecurso++
+                                }else if(columnaRecurso === 5){
+                                    ObRecurso.push(rows[index][i])
+                                    columnaRecurso++
+                                }else if(columnaRecurso === 6){
+                                    ObRecurso.push(rows[index][i])
+                                    columnaRecurso++
+                                }else if(columnaRecurso === 7){
+                                    ObRecurso.push( rows[index][i])
+                                    columnaRecurso++
                                 }
                             }
                         }
-
-                        // console.log('sss>>',rows[index])
-
-                        if(rows[index][1] === "GLB/DIA" && rows[index][2] === null){
-                            partida.rendimiento = 1;
-
-                        }else if(rows[index][2] === "MO."){
-                            partida.rendimiento = rows[index][3]
-                        }else{
-                            partida.rendimiento = rows[index][2] 
-                        }
-
-                    }else if (rows[index][0] === "Código" ) {
-                        //buscamos el nombre del recurso
-                        index++
-                        for (let i = 0; i < rows[index].length; i++) {
-                            if(rows[index][i] !== null ){
-                                tipoRecurso = rows[index][i]
-                            }
-                        }
-                        zonaRecursos = true
-
-                    // zona de recursos
-                    }else if ( zonaRecursos === true){
-                        
-                        // busca el tipo de material
-                        var valorExiste = 0 
-                        var temp = ''
-                        for (let k = 0; k < rows[index].length; k++) {
-                            const element = rows[index][k];
-                            if(element !== null && typeof element !== 'number' ){
-                                temp = element
-                                valorExiste++
-                            }
-                            
-                        }
-                        if(valorExiste === 1){
-                            // console.log('dddsasasas',temp,'>>> ',rows[index]);
-                            
-                            tipoRecurso = temp
+                        // 
+                        if(ObRecurso.length < 8){
+                            ObRecurso.splice(4,0, null)
                         }
                         
-                        
-                       
-                        
-                        if (rows[index][0] !== null ) {
-                            ObRecurso.push(tipoRecurso)
-                             ObRecurso.push(rows[index][0])
-                            var columnaRecurso = 2
-                            // revisa toda la fila
-                            for (let i = 1; i < rows[index].length; i++) {
-                                if (rows[index][i] !== null ) {
-                                    if(columnaRecurso === 2){
-                                        ObRecurso.push(rows[index][i])
-                                        columnaRecurso++
-                                    }else if(columnaRecurso === 3){
-                                        ObRecurso.push(rows[index][i])
-                                        columnaRecurso++
-                                    }else if(columnaRecurso === 4){
-                                        ObRecurso.push( rows[index][i])
-                                        columnaRecurso++
-                                    }else if(columnaRecurso === 5){
-                                        ObRecurso.push(rows[index][i])
-                                        columnaRecurso++
-                                    }else if(columnaRecurso === 6){
-                                        ObRecurso.push(rows[index][i])
-                                        columnaRecurso++
-                                    }else if(columnaRecurso === 7){
-                                        ObRecurso.push( rows[index][i])
-                                        columnaRecurso++
-                                    }
-                                }
-                            }
-                            // 
-                            if(ObRecurso.length < 8){
-                                ObRecurso.splice(4,0, null)
-                            }
-                            
-                            partida.recursos.push(ObRecurso)
-                            ObRecurso = []
+                        partida.recursos.push(ObRecurso)
+                        ObRecurso = []
 
-                        }else if(rows[index][0] === null &&  rows[index][2] !== null){
-                            tipoRecurso = rows[index][2]
-                        }
+                    }else if(rows[index][0] === null &&  rows[index][2] !== null){
+                        tipoRecurso = rows[index][2]
                     }
                 }
-                dataSubmit.push(partida)
-                // console.log('dataSubmit > ', dataSubmit)
-                dataSubmit = dataSubmit.slice(1,dataSubmit.length)
-                var recursosErroresTamanyo = []
-                for (let i = 0; i < dataSubmit.length; i++) {
-                    const acu = dataSubmit[i];
-                    for (let j = 0; j < acu.recursos.length; j++) {
-                        const recurso = acu.recursos[j];
-                        if(recurso.length != 8){
-                            recursosErroresTamanyo.push(
-                                {
-                                    "item":acu.item,
-                                    "recurso":recurso
-                                }
-                            )
-                            console.log("acu",acu.item);
-                            console.log("acu",recurso);
-                        }
+            }
+            dataSubmit.push(partida)
+            // console.log('dataSubmit > ', dataSubmit)
+            dataSubmit = dataSubmit.slice(1,dataSubmit.length)
+            var recursosErroresTamanyo = []
+            for (let i = 0; i < dataSubmit.length; i++) {
+                const acu = dataSubmit[i];
+                for (let j = 0; j < acu.recursos.length; j++) {
+                    const recurso = acu.recursos[j];
+                    if(recurso.length != 8){
+                        recursosErroresTamanyo.push(
+                            {
+                                "item":acu.item,
+                                "recurso":recurso
+                            }
+                        )
+                        console.log("acu",acu.item);
+                        console.log("acu",recurso);
                     }
                 }
-                console.log(recursosErroresTamanyo);
-                this.setState({
-                    Data1:dataSubmit,
-                    recursosErroresTamanyo
-                })
+            }
+            console.log(recursosErroresTamanyo);
+            this.setState({
+                Data1:dataSubmit,
+                recursosErroresTamanyo
+            })
 
-            })
-            .catch((error)=>{
-                alert('algo salió mal')
-                console.log(error);
-            })
         })
+        .catch((error)=>{
+            alert('algo salió mal')
+            console.log(error);
+        })
+        
     }
 
     PlanillaMetrados(){        
@@ -620,7 +631,7 @@ class PartidasNuevas extends Component {
             "estado":this.state.estadoPartidas,
             "data": this.state.DataFinal                
         }
-       );
+        );
        
         if(confirm('Estas seguro de enviar las partidas !este proceso es irreversible')){
             axios.post(`${UrlServer}/nuevasPartidas`,
@@ -636,6 +647,7 @@ class PartidasNuevas extends Component {
                 }else{
                     alert('exito ')
                 }
+
             })
             .catch((err)=>{
                 alert('errores al ingresar los datos')
@@ -652,14 +664,24 @@ class PartidasNuevas extends Component {
         })
     }
     render() {
-        const { Data1, Data2, DataErrores,erroresSuma, DataFinal, DataComponentes, idComponente, IdObra, idPresupuesto,itemsErroneos,erroresSecuenciaItems,recursosErroresTamanyo } = this.state
+        const {ComponentesPartidasIngresadas, Data1, Data2, DataErrores,erroresSuma, DataFinal, DataComponentes, idComponente, IdObra, idPresupuesto,itemsErroneos,erroresSecuenciaItems,recursosErroresTamanyo } = this.state
         return (
             <div>
                 <Card>
                     <CardHeader className="p-2">
-                            Ingreso de Partidas a la obra con id:  <strong>{ `${IdObra} ID PRESUPUESTO :${ idPresupuesto }`}</strong>
-                            <label className="float-right  mb-0">
-                                
+                            Ingreso de Partidas a la obra con id:  
+                            <strong>{ `${IdObra} ID PRESUPUESTO :${ idPresupuesto }`}</strong>
+                            
+                                <hr/>
+                                Componentes Partidas Ingresados
+                                <hr/>
+                                {ComponentesPartidasIngresadas.map((compomente, i)=>
+                                    <div>
+                                       { compomente.numero +" "+  compomente.nombre +" "+ (compomente.recurso_descripcion==null?"sin recursos":"con recursos" )}
+                                    <br/>
+                                    </div>
+                                    
+                                )}
                                 <Button id="PopoverClick" type="button">selecione </Button>
                                 <UncontrolledPopover trigger="legacy" placement="bottom" target="PopoverClick">
                                     <PopoverBody>
@@ -671,7 +693,7 @@ class PartidasNuevas extends Component {
                                         )}
                                     </PopoverBody>
                                 </UncontrolledPopover>
-                            </label>
+                            
                     </CardHeader>
                     {idComponente === '' ? <h1 className="text-center ">Seleccione Un compomente</h1>:
                         <CardBody>
@@ -680,10 +702,10 @@ class PartidasNuevas extends Component {
                                 <Col sm="4">
                                     <fieldset>
                                         <legend><b>cargar datos de Costos unitarios</b></legend>
-                                        <input type="file" id="input1" onClick={this.CostosUnitarios} />
+                                        <input type="file" id="input1" onChange={this.CostosUnitarios} />
+                                        <Button onClick={this.CostosUnitarios} color="success" size="sm">RECARGAR</Button>
                                         {recursosErroresTamanyo.map((err, i)=>
                                             <label className="text-danger">el siguiente recurso tiene errores { err.item +" "+  err.recurso[0]+" "+ err.recurso[1]+" "+  err.recurso[2]}</label>
-                                              
                                         )}
                                         <code>
                                             <ReactJson src={Data1}  name="Data1" theme="monokai" collapsed={2} displayDataTypes={false}/>
@@ -733,9 +755,6 @@ class PartidasNuevas extends Component {
                                         <code>
                                             <ReactJson src={DataFinal}  name="DataFinal"  theme="monokai" collapsed={2} displayDataTypes={false}/>
                                         </code>
-                                      
-                                        
-
                                     </fieldset>
                                 </Col>
                             </Row>
