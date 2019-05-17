@@ -83,6 +83,7 @@ class ListaObras extends Component {
       
         this.apiComponentes(id_ficha)
         this.ModalComponentes()
+        sessionStorage.setItem('idFicha', id_ficha)
     }
     PersonalObra(id_ficha){
 
@@ -140,6 +141,7 @@ class ListaObras extends Component {
         }
         sessionStorage.setItem('datosObras', JSON.stringify(json))
         sessionStorage.setItem('estado', 'PartidaNueva')
+        
         window.location.href = "/PartidasNuevas";
 
     }
