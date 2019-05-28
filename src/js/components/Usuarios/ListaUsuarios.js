@@ -6,7 +6,7 @@ import { UrlServer } from '../Utils/ServerUrlConfig'
 
 import CreaAcceso from './Accesos/CreaAcceso'
 import { DebounceInput } from 'react-debounce-input';
-
+    
 import ReactDOM from "react-dom";
 
 class ListaUsuarios extends Component {
@@ -16,6 +16,7 @@ class ListaUsuarios extends Component {
             listaUsuarios:[],
             modal: false,
             modalNuevoUser: false,
+            modalEditarUsuario: false,
             idUser:'',
             nombre:'',
             apellido_Paterno:'',
@@ -24,15 +25,34 @@ class ListaUsuarios extends Component {
             direccion:'',
             email:'',
             cpt:'',
-            imagen: null,                                                                                                                                                                                                   
+            imagen: null,                                                                                                                                                                                                  
             message: "",
-            msg: ""
+            msg: "",
+            mostrarmasdatos:[],
+            id_usuario:"",
+            nombre_editable:"",
+            apellido_paterno_editable:"",
+            apellido_materno_editable:"",
+            dni_editable:"",
+            direccion_editable:"",
+            email_editable:"",
+            celular_editable:"",
+            cpt_editable:""
+
         }
         this.modalA = this.modalA.bind(this)
         this.IdUser = this.IdUser.bind(this)
         this.modalNUsuario = this.modalNUsuario.bind(this)
         this.enviarDatosUsuarios = this.enviarDatosUsuarios.bind(this)
         this.handleChangeInput = this.handleChangeInput.bind(this)
+        this.modalEditarUsuario=this.modalEditarUsuario.bind(this)
+        this.ActualizarUsuario=this.ActualizarUsuario.bind(this)
+        this.SwitchmodalEditarUsuario=this.SwitchmodalEditarUsuario.bind(this)
+        
+        // this.delete=this.delete.bind(this)
+       
+        
+        
 
 
     }
@@ -59,7 +79,41 @@ class ListaUsuarios extends Component {
             modalNuevoUser: !prevState.modalNuevoUser
         }));
     }
-   
+
+    modalEditarUsuario(id_usuario) {
+        axios.post(`${UrlServer}/getUsuarioData`,
+        {
+            "id_usuario":id_usuario
+        }
+        )
+        .then(async(res)=>{
+            console.log(res.data);
+            await this.setState({
+                id_usuario:id_usuario,
+                nombre_editable:res.data.nombre,
+                apellido_paterno_editable:res.data.apellido_paterno,
+                apellido_materno_editable:res.data.apellido_materno,
+                dni_editable:res.data.dni,
+                direccion_editable:res.data.direccion,
+                email_editable:res.data.email,
+                celular_editable:res.data.celular,
+                cpt_editable:res.data.cpt
+            })
+            this.SwitchmodalEditarUsuario()
+
+            
+        })
+        .catch((error)=>{
+            console.log('algo salió mal al tratar de listar los usuarios error es: ', error);
+        })
+       
+    }
+    SwitchmodalEditarUsuario(){
+        this.setState(prevState => ({
+            modalEditarUsuario: !prevState.modalEditarUsuario
+        }));
+    }
+    
     IdUser(id){
         // console.log(id);
         
@@ -96,10 +150,13 @@ class ListaUsuarios extends Component {
         .then(function (response) {
             //handle success
             console.log(response);
+            location.reload()
+
         })
         .catch(function (response) {
             //handle error
             console.log(response);
+
         });
         // const { nombre, apellido_Paterno, apellido_Materno, dni, direccion, email, cpt } = this.state
         // axios.post(`${UrlServer}/nuevoUsuario`,{
@@ -131,17 +188,81 @@ class ListaUsuarios extends Component {
                     message
                 });
     }
-    // handleChangeInput(e) {
-    //     const { value, maxLength } = e.target;
-    //     const msg  = value.slice(0, maxLength);
-    //     this.setState({celular: e.target.value})
-    //     this.setState({
-    //                 msg 
-    //             });
-    // }
+
+    elminarUsuario(i){
+        console.log("Dato Eliminado");
+        console.log("index",i );
+        
+        axios.delete(`${UrlServer}/deleteEliminarUsuario`,
+            {
+                data:{
+                    "id_usuario":i
+                }
+              
+            }
+        )
+        .then((res)=>{
+            console.log("exito");
+            
+            console.log(res.data)
+            location.reload()
+
+            
+        }).catch((error)=>{
+            console.log('error al eliminar: ',error);
+        })
+
+    }
+    ActualizarUsuario(event){
+        event.preventDefault()
+        // console.log(this.state.id_usuario);
+        // console.log(this.state.nombre_editable);
+        // console.log(this.state.apellido_paterno_editable);
+        // console.log(this.state.apellido_materno_editable);
+        // console.log(this.state.dni_editable);
+        // console.log(this.state.direccion_editable);
+        // console.log(this.state.email_editable);
+        // console.log(this.state.celular_editable);
+        // console.log(this.state.cpt_editable);
+        
+        var usuario=
+        {
+            "id_usuario": this.state.id_usuario,
+            "nombre": this.state.nombre_editable,
+            "apellido_paterno": this.state.apellido_paterno_editable,
+            "apellido_materno": this.state.apellido_materno_editable,
+            "dni": this.state.dni_editable,
+            "direccion": this.state.direccion_editable,
+            "email": this.state.email_editable,
+            "celular": this.state.celular_editable,
+            "cpt": this.state.cpt_editable
+        
+        }
+
+        console.log(usuario);
+        axios.put(`${UrlServer}/putActualizarUsuario`,
+          usuario
+        )
+        .then((res)=>{
+            console.log("exito");
+            
+            console.log(res.data)
+           location.reload()
+
+            
+        }).catch((error)=>{
+            
+            console.log('error al eliminar: ',error);
+            alert("Hubo un error al actualizar")
+        })
+
+
+
+    }
+
 
     render() {
-        const { listaUsuarios, modalNuevoUser } = this.state
+        const { listaUsuarios, modalNuevoUser, modalEditarUsuario,nombre_editable, apellido_paterno_editable, apellido_materno_editable, dni_editable, direccion_editable, email_editable, celular_editable, cpt_editable} = this.state
         return (
             <div>
                 <Card>
@@ -160,6 +281,7 @@ class ListaUsuarios extends Component {
                                     <th>direccion</th>
                                     <th>email</th>
                                     <th>cpt</th>
+                                    <th>Celular</th>
                                     <th>ultimo Usuario</th>
                                     <th>opciones</th>
                                 </tr>
@@ -174,14 +296,19 @@ class ListaUsuarios extends Component {
                                         <td>{usuario.direccion}</td>
                                         <td>{usuario.email}</td>
                                         <td>{usuario.cpt}</td>
-                                        <td>{usuario.usuario}</td>
                                         <td>{usuario.celular}</td>
+                                        <td>{usuario.usuario}</td>
 
                                         <td>
-                                            <button className="btn btn-outline-secondary btn-xs" id={`e${index}`} onClick={ e => this.IdUser(usuario.id_usuario)}>crear acceso </button>
+                                            <tr><button className="btn btn-outline-primary btn-xs" id={`e${index}`} onClick={ e => this.IdUser(usuario.id_usuario)}>crear acceso </button>
                                             <UncontrolledTooltip placement="bottom" target={`e${index}`}>
                                                 crear acceso
-                                            </UncontrolledTooltip> 
+                                            </UncontrolledTooltip> </tr>
+                                            <buttontoolbar><button className="btn btn-success " size="lg"  id={`e${index}`} onClick={ e => this.modalEditarUsuario(usuario.id_usuario)}>Editar</button>
+                                            </buttontoolbar>
+                                            <tr><Button className="btn btn-danger" size="lg" onClick={ e => this.elminarUsuario(usuario.id_usuario) } >Eliminar</Button>
+                                            </tr>
+                                            
                                         </td>
                                     </tr>
                                 )}
@@ -191,6 +318,7 @@ class ListaUsuarios extends Component {
                     </CardBody>
                 </Card>
                 
+
 
                 <Modal isOpen={this.state.modal} fade={false} toggle={this.modalA} className={this.props.className}>
                     <ModalBody>
@@ -250,13 +378,68 @@ class ListaUsuarios extends Component {
                                 </FormGroup> 
                           
                         </ModalBody>
+                        
                         <ModalFooter>
                             <Button color="success" type="submit">Guardar datos</Button>{' '}
                             <Button color="danger" onClick={this.modalNUsuario}>Cerrar </Button>
                         </ModalFooter>
                     </Form>
                 </Modal>
+            {/* modal mostrar el editar */}
+            <Modal isOpen={ modalEditarUsuario } fade={false} toggle={this.SwitchmodalEditarUsuario} className={this.props.className}>
+                    <Form onSubmit={this.ActualizarUsuario}>
 
+                        <ModalBody>
+                                <FormGroup>
+                                    <b for="nombre">Nombre</b>
+                                    <input  className="form-control" id="nombre" defaultValue={nombre_editable} onChange={e => this.setState({nombre_editable: e.target.value}) } required/>
+                                </FormGroup>
+
+                                <FormGroup>
+                                    <b for="apellido_Paterno">Apellido Paterno</b>
+                                    <input className="form-control" id="apellido_Paterno" defaultValue={apellido_paterno_editable} onChange={e => this.setState({apellido_paterno_editable: e.target.value})}  required/>
+                                </FormGroup>
+
+                                <FormGroup>
+                                    <b for="apellido_Materno">Apellido Materno</b>
+                                    <input className="form-control" id="apellido_Materno" defaultValue={apellido_materno_editable} onChange={e => this.setState({apellido_materno_editable: e.target.value})} required/>
+                                </FormGroup>
+
+                                <FormGroup>
+                                    <b for="dni">DNI</b>
+                                    <input maxLength="8" className="form-control" type="number" id="dni" defaultValue={dni_editable} onChange={e => this.setState({dni_editable: e.target.value})} required/>
+                                </FormGroup>
+
+                                <FormGroup>                                    
+                                    <b for="direccion">Direccion</b>
+                                    <input className="form-control" id="direccion" defaultValue={direccion_editable}  onChange={e => this.setState({direccion_editable: e.target.value})}  required/>
+                                </FormGroup>
+
+                                <FormGroup>
+                                    <b for="email">Email</b>
+                                    <input className="form-control" id="email" defaultValue={email_editable} onChange={e => this.setState({email_editable: e.target.value})} required/>
+                                </FormGroup>
+
+                                <FormGroup>
+                                    <b for="cpt">N° Celular</b>
+                                    <input maxLength="9" type="number" className="form-control"  id="celular" defaultValue={celular_editable} onChange={e =>this.setState({celular_editable: e.target.value}) }  required/>
+                                </FormGroup>
+
+                                <FormGroup>
+                                    <b for="cpt">Código de colegiatura</b>
+                                    <input className="form-control"  id="cpt" defaultValue={cpt_editable} onChange={e => this.setState({cpt_editable: e.target.value})} required/>
+                                </FormGroup>
+                         
+                        </ModalBody>
+                        
+                        <ModalFooter>
+                            <Button color="info" type="submit">Guardar datos</Button>{' '}
+                            
+                        </ModalFooter>
+                    </Form>
+                </Modal>
+               
+             
 
             </div>
         );

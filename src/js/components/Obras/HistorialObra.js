@@ -191,6 +191,16 @@ class HistorialObra extends Component {
         console.log("Dato Eliminado");
 
     }
+        //  actualizarUsuario = (req, res) => {
+    //     const { id } = req.params;
+    //     const newCustomer = req.body;
+    //     req.getConnection((err, conn) => {
+      
+    //     conn.query('UPDATE customer set ? where id = ?', [newCustomer, id], (err, rows) => {
+    //       res.redirect('/');
+    //     });
+    //     });
+    //   };
 
     render() {
         const { estados,dataHistorial} = this.state
@@ -250,11 +260,6 @@ class HistorialObra extends Component {
                             </tbody>
                        
                         </table>
-                         {/* <div class="col-xs-12 col-md-3">
-                                    
-                                   
-                                          
-                                </div> */}
                             <br/>
                             <Button color="success" type="submit" >
                             Guardar Datos
