@@ -1,770 +1,661 @@
 import React, { Component } from 'react'
 import readXlsxFile from 'read-excel-file'
-import { Card, Button, CardHeader, CardFooter, CardBody, CardTitle, CardText, Spinner, Row, Col, UncontrolledPopover, PopoverBody } from 'reactstrap';
+import { Card, Button, CardHeader, CardFooter, CardBody, Row, Col } from 'reactstrap';
 import axios from 'axios'
 import { UrlServer } from '../Utils/ServerUrlConfig'
-import { Redondea } from '../Utils/Funciones'
 import ReactJson from 'react-json-view'
-
 class PartidasNuevas extends Component {
-    constructor(){
-        super()
-        this.state={
-            DataComponentes:[],
-            Data1:[],
-            Data2:[],
-            Errores1:[],
-            Errores2:[],
-            erroresEncontrado:'',
-            DataFinal:[],
-            DataPlanilla:[],
-            IdObra:'',
-            idPresupuesto:'',
-            idComponente:'',
-            DataErrores:[],
-            estadoPartidas:'',
-            erroresSuma:[],
-            itemsErroneos:[],
-            erroresSecuenciaItems:[],
-            recursosErroresTamanyo:[],
-            ComponentesPartidasIngresadas:[]
-            
-        }
-        this.CostosUnitarios = this.CostosUnitarios.bind(this)
-        this.PlanillaMetrados = this.PlanillaMetrados.bind(this)
-        this.verificarDatos = this.verificarDatos.bind(this)
-        this.EnviarDatos = this.EnviarDatos.bind(this)
-        this.clickSelect = this.clickSelect.bind(this)
+	constructor() {
+		super()
+		this.state = {
+			componentes: [],
+			CostosUnitarios: [],
+			PlanillaMetrados: [],
+			Errores1: [],
+			Errores2: [],
+			erroresEncontrado: '',
+			DataFinal: [],
+			DataPlanilla: [],
+			IdObra: '',
+			idPresupuesto: '',
+			idComponente: '',
+			DataErrores: [],
+			estadoPartidas: '',
+			erroresSuma: [],
+			itemsErroneos: [],
+			erroresSecuenciaItems: [],
+			recursosErroresTamanyo: [],
+			ComponentesPartidasIngresadas: [],
+			ficha: {},
+			componente: { numero: "", nombre: "" }
+		}
+		this.CostosUnitarios = this.CostosUnitarios.bind(this)
+		this.PlanillaMetrados = this.PlanillaMetrados.bind(this)
+		this.verificarDatos = this.verificarDatos.bind(this)
+		this.EnviarDatos = this.EnviarDatos.bind(this)
+		this.componentesIngresados = this.componentesIngresados.bind(this)
 
-    }
+	}
+	componentesIngresados() {
+		var id_ficha = sessionStorage.getItem("idFicha")
+		//cargando datos de componentes ingresados
+		axios.post(`${UrlServer}/getComponentesPartidasIngresadas`,
+			{
+				"id_ficha": id_ficha
+			}
+		)
+			.then((res) => {
+				console.log(res.data);
+				this.setState({
+					ComponentesPartidasIngresadas: res.data
+				})
+			})
+			.catch((error) => {
+				alert("ALGO SALIO MAN AL cargar los datos  DE LA OBRA")
+				console.error('ALGO SALIO MAN AL INGRESAR LOS DATOS DE LA OBRA', error);
+			});
+	}
+	componentWillMount() {
+		var id_ficha = sessionStorage.getItem("idFicha")
+		//cargando datos de obra
+		axios.post(`${UrlServer}/getObra`,
+			{
+				"id_ficha": id_ficha
+			}
+		)
+			.then((res) => {
+				console.log(res.data);
+				this.setState({
+					ficha: res.data
+				})
+			})
+			.catch((error) => {
+				alert("ALGO SALIO MAN AL cargar los datos  DE LA OBRA")
+				console.error('ALGO SALIO MAN AL INGRESAR LOS DATOS DE LA OBRA', error);
+			});
+		//cargando datos de componentes
+		axios.post(`${UrlServer}/listaComponentesPorId`,
+			{
+				"id_ficha": id_ficha
+			}
+		)
+			.then((res) => {
+				console.log(res.data);
+				this.setState({
+					componentes: res.data
+				})
+			})
+			.catch((error) => {
+				alert("ALGO SALIO MAN AL cargar los datos  DE LA OBRA")
+				console.error('ALGO SALIO MAN AL INGRESAR LOS DATOS DE LA OBRA', error);
+			});
+		this.componentesIngresados()
+	}
 
-    componentWillMount(){
-        var dataObra = sessionStorage.getItem("datosObras")
-        var estado = sessionStorage.getItem("estado")
-        var id_ficha = sessionStorage.getItem("idFicha")
-        
-        dataObra = JSON.parse(dataObra) 
-        console.log('datoss>', dataObra)
-        // sessionStorage.getItem("datosObras")
-        
-        dataObra = dataObra || {}
-        this.setState({
-            DataComponentes:dataObra.componentes||[],
-            IdObra:dataObra.id_ficha,
-            estadoPartidas:estado
-        })
-       
+	CostosUnitarios() {
+		const input = document.getElementById('input1')
+		readXlsxFile(input.files[0]).then((rows) => {
+			var CostosUnitarios = []
+			var partida = {}
+			var ObRecurso = {}
+			var zonaRecursos = false
+			var tipoRecurso = null
+			for (let index = 0; index < rows.length; index++) {
+				// busca el texto Partida
+				if (rows[index][0] === "Partida") {
+					CostosUnitarios.push(partida)
+					partida = {}
+					partida.recursos = []
+					partida.item = rows[index][1]
+					partida.descripcion = rows[index][3]
+				} else if (rows[index][0] === "Rendimiento") {
+					// busca unidad de medida, eq y costo unitario
+					partida.unidad_medida = rows[index][1]
+					partida.costo_unitario = rows[index][7]
+					for (let i = 0; i < rows[index].length; i++) {
+						if (rows[index][i] === "EQ.") {
+							if (rows[index][i + 1] === null) {
+								partida.equipo = 1
+							} else {
+								partida.equipo = rows[index][i + 1]
+							}
+						}
+					}
+					if (rows[index][1] === "GLB/DIA" && rows[index][2] === null) {
+						partida.rendimiento = 1;
+					} else if (rows[index][2] === "MO.") {
+						partida.rendimiento = rows[index][3]
+					} else {
+						partida.rendimiento = rows[index][2]
+					}
+				} else if (rows[index][0] === "Código") {
+					//buscamos el nombre del recurso
+					index++
+					for (let i = 0; i < rows[index].length; i++) {
+						if (rows[index][i] !== null) {
+							tipoRecurso = rows[index][i]
+						}
+					}
+					zonaRecursos = true
+					// zona de recursos
+				} else if (zonaRecursos === true) {
+					// busca el tipo de material
+					var valorExiste = 0
+					var temp = ''
+					for (let k = 0; k < rows[index].length; k++) {
+						const element = rows[index][k];
+						if (element !== null && typeof element !== 'number') {
+							temp = element
+							valorExiste++
+						}
+					}
+					if (valorExiste === 1) {
+						tipoRecurso = temp
+					}
+					if (rows[index][0] !== null) {
+						ObRecurso.tipo = tipoRecurso
+						ObRecurso.codigo = rows[index][0]
+						var columnaRecurso = 2
+						// revisa toda la fila de izquierda a derecha
+						for (let i = 1; i < rows[index].length; i++) {
+							if (rows[index][i] !== null) {
+								if (columnaRecurso === 2) {
+									ObRecurso.descripcion = rows[index][i]
+									columnaRecurso++
+								} else if (columnaRecurso === 3) {
+									ObRecurso.unidad = rows[index][i]
+									columnaRecurso++
+									break
+								}
+							}
+						}
+						columnaRecurso = 1
+						// revisa toda la fila de derecha a izquierda
+						for (let i = rows[index].length - 1; i >= 0; i--) {
+							if (rows[index][i] !== null) {
+								if (columnaRecurso === 4) {
+									if (!isNaN(rows[index][i])) {
+										ObRecurso.cuadrilla = rows[index][i]
+									}
+									columnaRecurso++
+									break
+								} else if (columnaRecurso === 3) {
+									ObRecurso.cantidad = rows[index][i]
+									columnaRecurso++
+								} else if (columnaRecurso === 2) {
+									ObRecurso.precio = rows[index][i]
+									columnaRecurso++
+								} else if (columnaRecurso === 1) {
+									ObRecurso.parcial = rows[index][i]
+									columnaRecurso++
+								}
+							}
+						}
+						partida.recursos.push(ObRecurso)
+						ObRecurso = {}
+					} else if (rows[index][0] === null && rows[index][2] !== null) {
+						tipoRecurso = rows[index][2]
+					}
+				}
+			}
+			CostosUnitarios.push(partida)
+			CostosUnitarios = CostosUnitarios.slice(1, CostosUnitarios.length)
+			console.log('CostosUnitarios > ', CostosUnitarios)
+			var recursosErroresTamanyo = []
+			for (let i = 0; i < CostosUnitarios.length; i++) {
+				const acu = CostosUnitarios[i];
+				for (let j = 0; j < acu.recursos.length; j++) {
+					const recurso = acu.recursos[j];
+					if (!recurso.cantidad || !recurso.precio || !recurso.parcial) {
+						recursosErroresTamanyo.push(
+							{
+								"item": acu.item,
+								"recurso": recurso
+							}
+						)
+					}
+				}
+			}
+			this.setState({
+				CostosUnitarios,
+				recursosErroresTamanyo
+			})
+		})
+			.catch((error) => {
+				alert('algo salió mal')
+				console.log(error);
+			})
+	}
+	PlanillaMetrados() {
+		const input = document.getElementById('input2')
+		var temp = 0
+		var PlanillaMetrados = []
+		var tipo = ""
+		var obPlanilla = {}
+		if (input.files[0].type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+			readXlsxFile(input.files[0]).then((rows) => {
+				var fila = 0
+				var columna = 0
+				// UBICANDO LA POSICION DE LA PALABRA ITEM
+				var itemEncontrado = false
+				for (let index = 0; index < rows.length; index++) {
+					if (!itemEncontrado) {
+						for (let i = 0; i < rows[index].length; i++) {
+							var item = rows[index][i]
+							if (typeof item === 'string') {
+								item = item.toLowerCase()
+							}
+							if (item === 'item' || item === 'Partida') {
+								columna = i
+								itemEncontrado = true
+								console.log('palabra item fila : %s columna %s', index + 1, columna + 1)
+								break
+							}
+						}
+					} else {
+						if (rows[index][columna] != null) {
+							fila = index
+							console.log('primer dato fila: %s columna %s', fila + 1, columna + 1)
+							break;
+						}
+					}
+				}
+				//revisando items bien estructurados y secuencia de items
+				function itemStructure(data) {
+					data = data.toString();
+					var regla = /^\d{2}(\.\d{2})*$/
+					return data.match(regla)
+				}
+				function predecirItem(data) {
+					var listaNumeros = data.split(".")
+					var opciones = []
+					var numTemp = ""
+					for (let i = 0; i < listaNumeros.length; i++) {
+						const numero = listaNumeros[i];
+						if (i == 0) {
+							numTemp += numero
+						} else {
+							numTemp += "." + numero
+						}
+						var last2 = numTemp.slice(-2)
+						last2 = Number(last2)
+						last2++
+						last2 = "0" + last2
+						var numTemp2 = numTemp.slice(0, numTemp.length - 2) + last2.slice(-2)
+						opciones.push(numTemp2)
+					}
+					numTemp += ".01"
+					opciones.push(numTemp)
+					return opciones
+				}
+				var itemsErroneos = []
+				var erroresSecuenciaItems = []
+				var opciones = [rows[fila][columna]]
+				var itemPrevio = rows[fila][columna]
+				console.log("test");
+				for (let index = fila; index < rows.length; index++) {
+					const row = rows[index];
+					if (row[columna] != null && !itemStructure(row[columna])) {
+						console.log("itemsErroneos");
+						itemsErroneos.push(
+							{
+								item: row[columna],
+								descripcion: row[columna + 1],
+								fila: index
+							}
+						)
+					}
+					if (row[columna]) {
+						if (opciones.indexOf(row[columna].toString()) == -1) {
+							// console.log("opciones",opciones);
+							// console.log("item",row[columna]);
+							// console.log("indexof",opciones.indexOf(row[columna]));
+							erroresSecuenciaItems.push(
+								{
+									itemPrevio: itemPrevio,
+									itemActual: row[columna]
+								}
+							)
+						}
+						opciones = predecirItem(row[columna].toString())
+						itemPrevio = row[columna]
+					}
+				}
+				// console.log("itemsErroneos",itemsErroneos);
+				// console.log("erroresSecuenciaItems",erroresSecuenciaItems);
+				this.setState({
+					itemsErroneos: itemsErroneos,
+					erroresSecuenciaItems: erroresSecuenciaItems
+				})
+				//--------------------------------------------------------// 
+				function Redondear(data) {
+					data = Math.round(data * 10000000000) / 10000000000
+					data = Math.round(data * 100) / 100
+					return data
+				}
+				// CREAMOS EL DATA DE PLANILLA DE METRADOS 
+				var obActividades = {}
+				for (let index = fila; index < rows.length; index++) {
+					temp = rows[index]
+					if ((rows[index][columna + 6] !== null || rows[index][columna + 7] !== null) && rows[index][columna] !== null) {
+						tipo = "partida"
+						// si la columna total tiene un valor
+						PlanillaMetrados.push(obPlanilla)
+						obPlanilla = {}
+						obPlanilla.tipo = "partida"
+						obPlanilla.item = rows[index][columna]
+						obPlanilla.descripcion = rows[index][columna + 1]
+						obPlanilla.actividades = []
+						obPlanilla.veces = rows[index][columna + 2]
+						obPlanilla.largo = rows[index][columna + 3]
+						obPlanilla.ancho = rows[index][columna + 4]
+						obPlanilla.alto = rows[index][columna + 5]
+						// obPlanilla.parcial = rows[index][columna + 6]
+						obPlanilla.metrado = Redondear(rows[index][columna + 7])
+					} else if (rows[index][columna] === null && (rows[index][columna + 6] !== null) || (rows[index][columna + 7] !== null)) {
+						tipo = "actividad subtitulo"
+						var obActividades = {}
+						// titulo                            
+						obActividades.tipo = "subtitulo"
+						// nombre                            
+						obActividades.nombre = rows[index][columna + 1]
+						// veces
+						obActividades.veces = rows[index][columna + 2]
+						// largo
+						obActividades.largo = rows[index][columna + 3]
+						// ancho
+						obActividades.ancho = rows[index][columna + 4]
+						// alto
+						obActividades.alto = rows[index][columna + 5]
+						// parcial
+						if (rows[index][columna + 7] !== null) {
+							obActividades.parcial = Redondear(rows[index][columna + 7])
+						} else {
+							obActividades.parcial = Redondear(rows[index][columna + 6])
+						}
+						console.log("obActividades", obActividades);
 
-        axios.post(`${UrlServer}/getComponentesPartidasIngresadas`,
-        {
-            "id_ficha":id_ficha
-        }
-        )
-        .then((res)=>{
-            console.log(res);
-            
-            this.setState({
-                ComponentesPartidasIngresadas:res.data
-            })
-        })
-        .catch((error)=>
-            console.error('falló al obtener los datos del servidor', error)
-        )
+						obPlanilla.actividades.push(obActividades)
+					} else if (rows[index][columna] !== null && rows[index][columna + 1] !== null) {
+						// TITULOS
+						tipo = "titulo"
+						PlanillaMetrados.push(obPlanilla)
+						obPlanilla = {}
+						obPlanilla.tipo = "titulo"
+						obPlanilla.item = rows[index][columna]
+						obPlanilla.descripcion = rows[index][columna + 1]
+					} else if (rows[index][columna + 1] !== null) {
+						tipo = "actividad titulo"
+						var obActividades = {}
+						// titulo                            
+						obActividades.tipo = "titulo"
+						// nombre                            
+						obActividades.nombre = rows[index][columna + 1]
+						obPlanilla.actividades.push(obActividades)
+					}
+				}
+				PlanillaMetrados.push(obPlanilla)
+				PlanillaMetrados = PlanillaMetrados.slice(1, PlanillaMetrados.length)
+				// insertando actividades unicas
+				for (let j = 0; j < PlanillaMetrados.length; j++) {
+					tipo = "actividades unicas"
+					if (typeof PlanillaMetrados[j].actividades !== 'undefined' && PlanillaMetrados[j].actividades.length === 0) {
+						var obActividades = {}
+						// convertimos variable si no es null
+						var veces = PlanillaMetrados[j].veces
+						var largo = PlanillaMetrados[j].largo
+						var alto = PlanillaMetrados[j].alto
+						var ancho = PlanillaMetrados[j].ancho
+						var metrado = PlanillaMetrados[j].metrado
+						// veces = (veces === null) ? veces : Number(veces).toFixed(2)
+						// largo = (largo === null) ? largo : Number(largo).toFixed(2)
+						// alto = (alto === null) ? alto : Number(alto).toFixed(2)
+						// ancho = (ancho === null) ? ancho : Number(ancho).toFixed(2)
+						// metrado = (metrado === null) ? metrado : Number(metrado.toFixed(2)) 
+						// console.log('verifica >', typeof veces ,'>' , veces) 
+						obActividades.tipo = "subtitulo"
+						obActividades.nombre = "Actividad unica"
+						obActividades.veces = veces
+						obActividades.largo = largo
+						obActividades.ancho = ancho
+						obActividades.alto = alto
+						obActividades.parcial = metrado
+						PlanillaMetrados[j].actividades.push(obActividades)
+					}
+					delete PlanillaMetrados[j].veces
+					delete PlanillaMetrados[j].largo
+					delete PlanillaMetrados[j].alto
+					delete PlanillaMetrados[j].ancho
+				}
+				console.log("PlanillaMetrados", PlanillaMetrados);
 
-    }
+				//revisando sumatorias de actividades
+				var erroresSuma = []
+				for (let index = 0; index < PlanillaMetrados.length; index++) {
+					const partida = PlanillaMetrados[index];
+					var suma = 0;
+					if (partida.tipo == "partida") {
+						for (let j = 0; j < partida.actividades.length; j++) {
+							const parcial = partida.actividades[j].parcial;
+							if (parcial) {
+								suma += parcial
+							}
+						}
+						// console.log("comp suma",partida.item,PlanillaMetrados[index].metrado,suma.toFixed(2)); 
+						if (PlanillaMetrados[index].metrado != suma.toFixed(2)) {
+							erroresSuma.push(
+								{
+									"item": PlanillaMetrados[index].item,
+									"total": Number(PlanillaMetrados[index].metrado),
+									"suma": suma.toFixed(2)
+								}
+							)
+						}
+					}
+				}
+				this.setState({
+					PlanillaMetrados: PlanillaMetrados,
+					DataPlanilla: [...PlanillaMetrados],
+					erroresSuma: erroresSuma
+				})
+			})
+				.catch((error) => {
+					alert('algo salió mal')
+					console.log(error);
+					console.log("PlanillaMetrados", PlanillaMetrados);
+					var DataErrores = []
+					DataErrores.push(PlanillaMetrados[PlanillaMetrados.length - 1].tipo + " ? => " + PlanillaMetrados[PlanillaMetrados.length - 1].item + " " + PlanillaMetrados[PlanillaMetrados.length - 1].descripcion,
+						obPlanilla.tipo + " ? =>  " + obPlanilla.item + " " + obPlanilla.descripcion, tipo + " ? => " + temp[0] + " ?" + temp[1] + " ? " + temp[2] + " ? " + temp[3])
+					alert('algo salió mal')
+					this.setState({ DataErrores })
+					console.log(DataErrores);
+				})
+		} else {
+			alert('tipo de archivo no admitido cargue solo archivos con extension .xlsx')
+		}
+	}
+	verificarDatos() {
+		const { CostosUnitarios, PlanillaMetrados, componente, DataPlanilla } = this.state
+		var Errores = 0
+		var ErroresArray1 = []
+		var ErroresArray2 = []
+		// eliminamos los titulo del  array 
+		for (let i = 0; i < PlanillaMetrados.length; i++) {
+			const tipo = PlanillaMetrados[i].tipo;
+			if (tipo === 'titulo') {
+				PlanillaMetrados.splice(i, 1)
+				i--
+			}
+		}
+		// verifica que sean del mismo tamaño los datas de Costos unitarios y Planilla de metrados 
+		if (CostosUnitarios.length !== PlanillaMetrados.length) {
+			for (let i = 0; i < CostosUnitarios.length; i++) {
+				var data = CostosUnitarios[i]
+				var encontrado = false
+				for (let j = 0; j < PlanillaMetrados.length; j++) {
+					if (data.item === PlanillaMetrados[j].item) {
+						encontrado = true
+						break
+					}
+				}
+				if (!encontrado) {
+					ErroresArray1.push(data)
+				}
+			}
+			Errores = 'tamaños diferentes'
+		} else {
+			for (let index = 0; index < CostosUnitarios.length; index++) {
+				if (CostosUnitarios[index].item === PlanillaMetrados[index].item) {
+					// console.log('coincide')
+				} else {
+					// console.log('algo no coincide')
+					Errores++
+					// console.log(CostosUnitarios[index] ,  PlanillaMetrados[index])
+					// alert("ACU" +CostosUnitarios[index].item+" - planilla "+PlanillaMetrados[index].item)
+					ErroresArray1.push(CostosUnitarios[index])
+					ErroresArray2.push(PlanillaMetrados[index])
+				}
+			}
+		}
+		// console.log('errores encontrados', Errores)
+		// uniendo planilla de datos y acu 
+		if (Errores === 0) {
+			var indexData1 = 0
+			for (let i = 0; i < DataPlanilla.length; i++) {
+				if (DataPlanilla[i].tipo === 'partida') {
+					delete DataPlanilla[i]['nombre']
+					DataPlanilla[i].item = CostosUnitarios[indexData1].item
+					DataPlanilla[i].descripcion = CostosUnitarios[indexData1].descripcion
+					DataPlanilla[i].unidad_medida = CostosUnitarios[indexData1].unidad_medida
+					DataPlanilla[i].costo_unitario = CostosUnitarios[indexData1].costo_unitario
+					DataPlanilla[i].equipo = CostosUnitarios[indexData1].equipo
+					DataPlanilla[i].rendimiento = CostosUnitarios[indexData1].rendimiento
+					DataPlanilla[i].recursos = CostosUnitarios[indexData1].recursos
+					indexData1++
+				}
+				DataPlanilla[i].componentes_id_componente = componente.id_componente
+				// DataPlanilla[i].presupuestos_id_presupuesto = idPresupuesto 
+			}
+		}
+		// console.log('data modificada DataPlanilla', DataPlanilla) 
+		this.setState(
+			{
+				Errores1: ErroresArray1,
+				Errores2: ErroresArray2,
+				erroresEncontrado: 'Errores encontrados : ' + Errores,
+				DataFinal: (Errores == 'tamaños diferentes' || Errores > 0) ? ErroresArray1 : DataPlanilla
+			}
+		)
+	}
+	EnviarDatos() {
 
-    CostosUnitarios(){
-        
-        const input = document.getElementById('input1')
-        
-        readXlsxFile(input.files[0]).then((rows) => {
+		var data = {
+			"estado": sessionStorage.getItem("estado"),
+			"partidas": this.state.DataFinal
+		}
+		console.log(data);
 
-            // console.log('> ', rows)
-            var procesoBucarElemento = 1
-            var dataSubmit = []
-            var partida = {}
-            var ObRecurso = []
-            var zonaRecursos = false
-            var tipoRecurso = null
-            for (let index = 0; index < rows.length; index++) {
-                
-                // busca el valor de partida
-                if(rows[index][0] === "Partida"){
-                    dataSubmit.push(partida)
-                    partida = {}
-                    partida.recursos = []
-                    partida.item = rows[index][1]
-                    partida.descripcion = rows[index][3]
-                    procesoBucarElemento++
-
-                }else if (rows[index][0] === "Rendimiento") {
-                    // busca unidad de medida, eq y costo unitario
-                    partida.unidad_medida = rows[index][1]
-                    partida.costo_unitario = rows[index][7]
-
-                    for (let i = 0; i < rows[index].length; i++) {
-                        if(rows[index][i] === "EQ."){
-                            if(rows[index][i+1] === null){
-                                partida.equipo = 1
-                            }else{
-                                partida.equipo = rows[index][i+1]
-                            }
-                        }
-                    }
-
-                    // console.log('sss>>',rows[index])
-
-                    if(rows[index][1] === "GLB/DIA" && rows[index][2] === null){
-                        partida.rendimiento = 1;
-
-                    }else if(rows[index][2] === "MO."){
-                        partida.rendimiento = rows[index][3]
-                    }else{
-                        partida.rendimiento = rows[index][2] 
-                    }
-
-                }else if (rows[index][0] === "Código" ) {
-                    //buscamos el nombre del recurso
-                    index++
-                    for (let i = 0; i < rows[index].length; i++) {
-                        if(rows[index][i] !== null ){
-                            tipoRecurso = rows[index][i]
-                        }
-                    }
-                    zonaRecursos = true
-
-                // zona de recursos
-                }else if ( zonaRecursos === true){
-                    
-                    // busca el tipo de material
-                    var valorExiste = 0 
-                    var temp = ''
-                    for (let k = 0; k < rows[index].length; k++) {
-                        const element = rows[index][k];
-                        if(element !== null && typeof element !== 'number' ){
-                            temp = element
-                            valorExiste++
-                        }
-                        
-                    }
-                    if(valorExiste === 1){
-                        // console.log('dddsasasas',temp,'>>> ',rows[index]);
-                        
-                        tipoRecurso = temp
-                    }
-                    
-                    
-                    
-                    
-                    if (rows[index][0] !== null ) {
-                        ObRecurso.push(tipoRecurso)
-                            ObRecurso.push(rows[index][0])
-                        var columnaRecurso = 2
-                        // revisa toda la fila
-                        for (let i = 1; i < rows[index].length; i++) {
-                            if (rows[index][i] !== null ) {
-                                if(columnaRecurso === 2){
-                                    ObRecurso.push(rows[index][i])
-                                    columnaRecurso++
-                                }else if(columnaRecurso === 3){
-                                    ObRecurso.push(rows[index][i])
-                                    columnaRecurso++
-                                }else if(columnaRecurso === 4){
-                                    ObRecurso.push( rows[index][i])
-                                    columnaRecurso++
-                                }else if(columnaRecurso === 5){
-                                    ObRecurso.push(rows[index][i])
-                                    columnaRecurso++
-                                }else if(columnaRecurso === 6){
-                                    ObRecurso.push(rows[index][i])
-                                    columnaRecurso++
-                                }else if(columnaRecurso === 7){
-                                    ObRecurso.push( rows[index][i])
-                                    columnaRecurso++
-                                }
-                            }
-                        }
-                        // 
-                        if(ObRecurso.length < 8){
-                            ObRecurso.splice(4,0, null)
-                        }
-                        
-                        partida.recursos.push(ObRecurso)
-                        ObRecurso = []
-
-                    }else if(rows[index][0] === null &&  rows[index][2] !== null){
-                        tipoRecurso = rows[index][2]
-                    }
-                }
-            }
-            dataSubmit.push(partida)
-            // console.log('dataSubmit > ', dataSubmit)
-            dataSubmit = dataSubmit.slice(1,dataSubmit.length)
-            var recursosErroresTamanyo = []
-            for (let i = 0; i < dataSubmit.length; i++) {
-                const acu = dataSubmit[i];
-                for (let j = 0; j < acu.recursos.length; j++) {
-                    const recurso = acu.recursos[j];
-                    if(recurso.length != 8){
-                        recursosErroresTamanyo.push(
-                            {
-                                "item":acu.item,
-                                "recurso":recurso
-                            }
-                        )
-                        console.log("acu",acu.item);
-                        console.log("acu",recurso);
-                    }
-                }
-            }
-            console.log(recursosErroresTamanyo);
-            this.setState({
-                Data1:dataSubmit,
-                recursosErroresTamanyo
-            })
-
-        })
-        .catch((error)=>{
-            alert('algo salió mal')
-            console.log(error);
-        })
-        
-    }
-
-    PlanillaMetrados(){        
-        const input = document.getElementById('input2')
-        var temp = 0
-        var data2 = []
-        var tipo = ""
-        var obPlanilla = {}
-        if(input.files[0].type ==='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'){
-            readXlsxFile(input.files[0]).then((rows ) => {
-                // console.log('rows>> ', rows)
-                var fila = 0
-                var columna = 0
-                // UBICANDO LA POSICION DE LA PALABRA ITEM
-                var itemEncontrado = false
-                for (let index = 0; index < rows.length; index++) {
-                    if(!itemEncontrado){
-                        for (let i = 0; i < rows[index].length; i++) { 
-                            var item = rows[index][i]
-                            if (typeof item === 'string') {
-                            item = item.toLowerCase()  
-                            }                   
-                            
-                            if(item === 'item' || item === 'Partida'){
-                                
-                                columna = i
-                                itemEncontrado = true
-                                console.log('palabra item fila : %s columna %s', index+1 ,columna+1)
-                                break
-                            }
-                            
-                        }
-                    }else{
-                        if(rows[index][columna]!=null){
-                            fila = index
-                            console.log('primer dato fila: %s columna %s', fila+1 ,columna+1)
-                            break;
-                        }
-
-                    }
-                    
-                }
-
-                //revisando items bien estructurados y secuencia de items
-                function itemStructure(data){
-                    data = data.toString();
-                    var regla =/^\d{2}(\.\d{2})*$/
-                    return data.match(regla)
-                }
-                function predecirItem (data){
-                    var listaNumeros = data.split(".")	
-                    var opciones = []
-                    var numTemp = ""
-                    for (let i = 0; i < listaNumeros.length; i++) {
-                        const numero = listaNumeros[i];
-                        if(i == 0){
-                            numTemp += numero
-                        }else{
-                            numTemp += "."+numero
-                        }
-                        var last2 = numTemp.slice(-2)
-                        last2 = Number(last2)
-                        last2++
-                        last2 = "0"+last2
-                        var numTemp2 =  numTemp.slice(0,numTemp.length-2)+last2.slice(-2)
-                        opciones.push(numTemp2)
-                    }
-                    numTemp += ".01"
-                    opciones.push(numTemp)
-
-                    return opciones                
-                }
-                var itemsErroneos = []
-                var erroresSecuenciaItems = []
-                var opciones = [rows[fila][columna]]
-                var itemPrevio = rows[fila][columna]
-                console.log("test");
-                for (let index = fila; index < rows.length; index++) {
-                    
-                    const row = rows[index];
-                    if(row[columna]!=null && !itemStructure(row[columna])){
-                        console.log("itemsErroneos");                            
-                        itemsErroneos.push(
-                            {
-                                item:row[columna],
-                                descripcion:row[columna+1],
-                                fila:index                                    
-                            }                                
-                        )
-                    }
-                    
-                    if(row[columna]){
-                        if(opciones.indexOf(row[columna].toString()) == -1){
-                            // console.log("opciones",opciones);
-                            // console.log("item",row[columna]);
-                            // console.log("indexof",opciones.indexOf(row[columna]));
-                            erroresSecuenciaItems.push(
-                                {
-                                    itemPrevio:itemPrevio,
-                                    itemActual:row[columna]
-                                }
-                            )
-                        }
-                        opciones = predecirItem(row[columna].toString())
-                        itemPrevio = row[columna]
-                    }                        
-                }
-                // console.log("itemsErroneos",itemsErroneos);
-                // console.log("erroresSecuenciaItems",erroresSecuenciaItems);
-                this.setState({
-                    itemsErroneos:itemsErroneos,
-                    erroresSecuenciaItems:erroresSecuenciaItems                       
-                })
-                //--------------------------------------------------------//
-                                
-                function Redondear(data){
-                    data =  Math.round(data * 10000000000) / 10000000000
-                    data =  Math.round(data * 100) / 100
-                    return data
-                }
-                // CREAMOS EL DATA DE PLANILLA DE METRADOS
-                
-                for (let index = fila; index < rows.length; index++) {
-                    temp = rows[index]
-                    var cantcols = 0
-                    
-                    for (let l = 0; l < rows[index].length; l++) {
-                        const celda = rows[index][l];
-                        if(celda !== null ){
-                            cantcols++
-                        }
-                    }
-                    
-                    if((rows[index][columna+6] !== null ||rows[index][columna+7] !== null) && rows[index][columna] !== null ){
-                        tipo = "partida"
-                        // si la columna total tiene un valor
-                        data2.push(obPlanilla)
-                        obPlanilla = {}
-                        obPlanilla.tipo = "partida"
-                        obPlanilla.item =  rows[index][columna]
-                        obPlanilla.descripcion =  rows[index][columna+1]
-                        obPlanilla.actividades = []
-                        obPlanilla.veces = rows[index][columna+2]
-                        obPlanilla.largo = rows[index][columna+3]
-                        obPlanilla.ancho = rows[index][columna+4]
-                        obPlanilla.alto = rows[index][columna+5]
-                        obPlanilla.parcial = rows[index][columna+6]
-                        obPlanilla.metrado = Redondear(rows[index][columna+7])
-                        console.log((rows[index][columna+7]).toString())
-                        console.log(Redondear(rows[index][columna+7]));
-                        
-                    }else if(rows[index][columna] === null && (rows[index][columna+6] !== null)||(rows[index][columna+7] !== null)){
-                        tipo = "actividad subtitulo"
-                        var obActividades = []
-                        // titulo                            
-                        obActividades.push("subtitulo")
-                        // nombre                            
-                        obActividades.push(rows[index][columna+1])
-                        // veces
-                        obActividades.push(rows[index][columna+2])
-                        // largo
-                        obActividades.push(rows[index][columna+3])
-                        // ancho
-                        obActividades.push(rows[index][columna+4])
-                        // alto
-                        obActividades.push(rows[index][columna+5])
-                        // parcial
-                        if(rows[index][columna+7] !== null){
-                            obActividades.push(Redondear(rows[index][columna+7]))
-                        }else{
-                            obActividades.push(Redondear(rows[index][columna+6]))
-                        }               
-    
-                        obPlanilla.actividades.push(obActividades)
-                    }else if(rows[index][columna] !== null&&rows[index][columna+1] !== null){
-                        // TITULOS
-                        tipo = "titulo"
-                        data2.push(obPlanilla)
-                        obPlanilla = {}
-                        obPlanilla.tipo = "titulo"
-                        obPlanilla.item =  rows[index][columna]
-                        obPlanilla.descripcion =  rows[index][columna+1]
-                        obPlanilla.veces = null
-                        obPlanilla.largo = null
-                        obPlanilla.ancho = null
-                        obPlanilla.alto = null
-                        obPlanilla.parcial = null
-                        obPlanilla.metrado = null
-                        obPlanilla.unidad_medida = null
-                        obPlanilla.costo_unitario = null
-                        obPlanilla.equipo = null
-                        obPlanilla.rendimiento = null
-                    }else if(rows[index][columna+1] !== null){
-                        tipo = "actividad titulo"
-                        var obActividades = []
-                        // titulo                            
-                        obActividades.push("titulo")
-                        // nombre                            
-                        obActividades.push(rows[index][columna+1])
-                        // veces
-                        obActividades.push(null)
-                        // largo
-                        obActividades.push(null)
-                        // ancho
-                        obActividades.push(null)
-                        // alto
-                        obActividades.push(null)
-                        // parcial
-                        obActividades.push(null)
-    
-                        obPlanilla.actividades.push(obActividades)
-                    }
-                    
-                }
-                data2.push(obPlanilla)
-                data2 = data2.slice(1,data2.length)
-
-                
-                // insertando actividades unicas
-                for (let j = 0; j < data2.length; j++) {
-                    tipo = "actividades unicas"
-                    if(typeof data2[j].actividades !== 'undefined' && data2[j].actividades.length === 0 ){
-                        var obActividades = []
-                        // convertimos variable si no es null
-                        var veces = data2[j].veces
-                        var largo = data2[j].largo
-                        var alto = data2[j].alto
-                        var ancho = data2[j].ancho
-                        var metrado = data2[j].metrado
-
-                        veces = (veces === null) ? veces  : Number( veces).toFixed(2)
-                        largo = (largo === null )? largo : Number( largo).toFixed(2)
-                        alto = (alto === null )? alto : Number( alto).toFixed(2)
-                        ancho = (ancho === null )? ancho : Number( ancho).toFixed(2)
-                        metrado = (metrado === null )? metrado : Number( metrado.toFixed(2))
-
-                        // console.log('verifica >', typeof veces ,'>' , veces)
-
-                        
-                        obActividades.push("subtitulo")
-                        obActividades.push("Actividad unica")
-                        obActividades.push(veces)
-                        obActividades.push(largo)
-                        obActividades.push(alto)
-                        obActividades.push(ancho)
-                        obActividades.push(metrado)
-
-                        data2[j].actividades.push(obActividades)
-                    }
-                }
-                //revisando sumatorias de actividades
-                var erroresSuma = []
-                for (let index = 0; index < data2.length; index++) {
-                    const partida = data2[index];
-                    var suma = 0; 
-                    if(partida.tipo == "partida"){
-                        
-                        for(let j = 0; j < partida.actividades.length; j++) {
-                            const parcial = partida.actividades[j][6];
-                            suma+= parcial
-                        }
-                        // console.log("comp suma",partida.item,data2[index].metrado,suma.toFixed(2));
-                        
-                        if (data2[index].metrado !=suma.toFixed(2)) {
-                            
-                            erroresSuma.push(
-                                {
-                                    "item":data2[index].item,
-                                    "total":Number(data2[index].metrado),
-                                    "suma":suma.toFixed(2)
-                                }
-                            )
-                        }
-                        
-                    }
-                }
-        
-                this.setState({
-                    Data2:data2,
-                    DataPlanilla:[...data2],
-                    erroresSuma:erroresSuma
-                })
-            
-
-            })
-            .catch((error)=>{
-                console.log("data2",data2);
-                
-                    var DataErrores = []
-                    DataErrores.push(data2[data2.length-1].tipo+ " ? => "+data2[data2.length-1].item +" "+data2[data2.length-1].descripcion, 
-                    obPlanilla.tipo+" ? =>  "+obPlanilla.item+" "+obPlanilla.descripcion, tipo+" ? => "+temp[0]+" ?"+temp[1]+" ? "+temp[2]+" ? "+temp[3])
-            
-
-                alert('algo salió mal')
-                this.setState({DataErrores})
-                console.log(DataErrores);
-                
-            })
-        }else{
-            alert('tipo de archivo no admitido cargue solo archivos con extension .xlsx')
-        }
-    }
-    verificarDatos(){
-        const { Data1, Data2, idComponente, DataPlanilla, idPresupuesto } = this.state
-        
-        var Errores = 0
-        var ErroresArray1 = []
-        var ErroresArray2 = []
-
-
-        // eliminamos los titulo del  array 
-        for (let i = 0; i < Data2.length; i++) {
-            const tipo = Data2[i].tipo;
-            if (tipo === 'titulo') {
-                Data2.splice(i,1)
-                i--
-            }
-        }
-        
-        // verifica que sean del mismo tamaño los datas de Costos unitarios y Planilla de metrados
-
-        if(Data1.length !== Data2.length){
-
-            for (let i = 0; i < Data1.length; i++) {
-                var data = Data1[i]
-                 var encontrado = false
-                for (let j = 0; j < Data2.length; j++) {
-                    if(data.item === Data2[j].item){
-                        console.log('<>>', data[0] === Data2[j][0])
-                        encontrado = true
-                        break
-                    }                   
-                }
-                if (!encontrado){
-                    ErroresArray1.push(data)
-                }
-            }
-            Errores = 'tamaños diferentes'
-        }else{
-
-            for (let index = 0; index < Data1.length; index++) {
-                
-                if(Data1[index].item === Data2[index].item){
-                    // console.log('coincide')
-                }else{
-                    // console.log('algo no coincide')
-                    Errores++
-                    // console.log(Data1[index] ,  Data2[index])
-                    // alert("ACU" +Data1[index].item+" - planilla "+Data2[index].item)
-                    ErroresArray1.push(Data1[index])
-                    ErroresArray2.push(Data2[index])
-
-                    
-                }
-                
-            }
-        }
-        // console.log('errores encontrados', Errores)
-        // uniendo planilla de datos y acu
-
-        if(Errores === 0){
-            
-            var indexData1 = 0
-            for (let i = 0; i < DataPlanilla.length; i++) {
-                if(DataPlanilla[i].tipo === 'partida'){
-                    delete DataPlanilla[i]['nombre']
-                    DataPlanilla[i].item = Data1[indexData1].item
-                    DataPlanilla[i].descripcion = Data1[indexData1].descripcion
-                    DataPlanilla[i].unidad_medida = Data1[indexData1].unidad_medida
-                    DataPlanilla[i].costo_unitario = Data1[indexData1].costo_unitario
-                    DataPlanilla[i].equipo = Data1[indexData1].equipo
-                    DataPlanilla[i].rendimiento = Data1[indexData1].rendimiento
-                    DataPlanilla[i].recursos = Data1[indexData1].recursos
-                    
-                    indexData1++
-                }
-                DataPlanilla[i].componentes_id_componente = idComponente
-                // DataPlanilla[i].presupuestos_id_presupuesto = idPresupuesto
-                
-
-            }
-        }
-        // console.log('data modificada DataPlanilla', DataPlanilla)
-        
-        this.setState(
-            {
-                Errores1: ErroresArray1,
-                Errores2: ErroresArray2,
-                erroresEncontrado:'Errores encontrados : '+Errores,
-                DataFinal: (Errores =='tamaños diferentes'||Errores > 0 )? ErroresArray1:DataPlanilla 
-
-            }
-        )
-    }
-
-
-    EnviarDatos(){  
-       console.log(
-        {
-            "estado":this.state.estadoPartidas,
-            "data": this.state.DataFinal                
-        }
-        );
-       
-        if(confirm('Estas seguro de enviar las partidas !este proceso es irreversible')){
-            axios.post(`${UrlServer}/nuevasPartidas`,
-            {
-                "estado":this.state.estadoPartidas,
-                "data": this.state.DataFinal                
-            }            
-            )
-            .then((res)=>{
-                console.log(res)
-                if(res.status == 204){
-                    alert('errores al ingresar los datos')
-                }else{
-                    alert('exito ')
-                }
-
-            })
-            .catch((err)=>{
-                alert('errores al ingresar los datos')
-                console.log(err)
-            })
-        }
-    }
-
-    clickSelect(idComponente, idPresupuesto){
-        console.log('idComponente>', idComponente, 'idPresupuesto>', idPresupuesto);
-        this.setState({
-            idComponente:idComponente,
-            idPresupuesto:idPresupuesto
-        })
-    }
-    render() {
-        const {ComponentesPartidasIngresadas, Data1, Data2, DataErrores,erroresSuma, DataFinal, DataComponentes, idComponente, IdObra, idPresupuesto,itemsErroneos,erroresSecuenciaItems,recursosErroresTamanyo } = this.state
-        return (
-            <div>
-                <Card>
-                    <CardHeader className="p-2">
-                            Ingreso de Partidas a la obra con id:  
-                            <strong>{ `${IdObra} ID PRESUPUESTO :${ idPresupuesto }`}</strong>
-                            
-                                <hr/>
-                                Componentes Partidas Ingresados
-                                <hr/>
-                                {ComponentesPartidasIngresadas.map((compomente, i)=>
-                                    <div>
-                                       { compomente.numero +" "+  compomente.nombre +" "+ (compomente.recurso_descripcion==null?"sin recursos":"con recursos" )}
-                                    <br/>
-                                    </div>
-                                    
-                                )}
-                                <Button id="PopoverClick" type="button">selecione </Button>
-                                <UncontrolledPopover trigger="legacy" placement="bottom" target="PopoverClick">
-                                    <PopoverBody>
-                                        {DataComponentes.length === undefined ? '': DataComponentes.map((componete,i)=>
-                                            <div key={i}>
-                                                <a href="#" onClick={e=>this.clickSelect(componete.idComponente, componete.idPresupuesto)}>N° Comp( {componete.numero} )</a>
-                                                <div className="divider"></div>
-                                            </div>
-                                        )}
-                                    </PopoverBody>
-                                </UncontrolledPopover>
-                            
-                    </CardHeader>
-                    {idComponente === '' ? <h1 className="text-center ">Seleccione Un compomente</h1>:
-                        <CardBody>
-                            <label> Numero de componete selecionado: { idComponente }</label>
-                            <Row>
-                                <Col sm="4">
-                                    <fieldset>
-                                        <legend><b>cargar datos de Costos unitarios</b></legend>
-                                        <input type="file" id="input1" onChange={this.CostosUnitarios} />
-                                        <Button onClick={this.CostosUnitarios} color="success" size="sm">RECARGAR</Button>
-                                        {recursosErroresTamanyo.map((err, i)=>
-                                            <label className="text-danger">el siguiente recurso tiene errores { err.item +" "+  err.recurso[0]+" "+ err.recurso[1]+" "+  err.recurso[2]}</label>
-                                        )}
-                                        <code>
-                                            <ReactJson src={Data1}  name="Data1" theme="monokai" collapsed={2} displayDataTypes={false}/>
-                                        </code>
-                                        
-                                      
-                                        
-                                    </fieldset>
-                                    
-                                </Col>
-                                <Col sm="4">
-                                    <fieldset>
-                                        <legend><b>cargar datos de Planilla de metrados</b></legend>
-                                        
-                                        <input type="file" id="input2" onChange={this.PlanillaMetrados} />
-                                        <Button onClick={this.PlanillaMetrados} color="success" size="sm">RECARGAR</Button>
-
-                                        {DataErrores.map((err, i)=>
-                                            <label className="text-danger">{ err}</label>
-                                        )}
-                                        <hr/>
-                                        {itemsErroneos.map((err, i)=>
-                                            <label className="text-danger">Item mal escrito {err.item} - {err.descripcion} fila: {err.fila}</label>
-                                        )}
-                                         <hr/>
-                                        {erroresSecuenciaItems.map((err, i)=>
-                                            <label className="text-danger"> {"item previo "+err.itemPrevio+" item actual "+err.itemActual} </label>
-                                        )}
-                                        {erroresSuma.map((err, i)=>
-                                        <div>
-                                            <label className="text-danger">{ err.item +" total partida: "+ err.total+" suma actividades: "+err.suma}</label><br/>
-                                        </div>
-                                            
-                                        )}
-                                        <code className="small">
-                                            <ReactJson src={Data2} name="Data2"  theme="monokai" collapsed={2} displayDataTypes={false}/>
-                                        </code>
-                                    </fieldset>
-                                </Col>
-                                <Col sm="4">
-                                    <fieldset>
-                                        <legend><b>Opciones de manejo de los datos cargados</b></legend>
-                                        <button className="btn btn-outline-warning" onClick={this.verificarDatos}> verificar datos</button>
-                                        <i>{this.state.erroresEncontrado}</i>             
-                                        <button className="btn btn-outline-success" onClick={this.EnviarDatos}> Guardar datos </button>               
-                                        
-                                        <code>
-                                            <ReactJson src={DataFinal}  name="DataFinal"  theme="monokai" collapsed={2} displayDataTypes={false}/>
-                                        </code>
-                                    </fieldset>
-                                </Col>
-                            </Row>
-                                        
-                        </CardBody>
-                    }
-                    <CardFooter>___</CardFooter>
-                </Card>
-            </div>
-        )
-    }
+		if (confirm('Estas seguro de enviar las partidas !este proceso es irreversible')) {
+			axios.post(`${UrlServer}/nuevasPartidas`,
+				data
+			)
+				.then((res) => {
+					console.log(res)
+					this.componentesIngresados()
+				})
+				.catch((err) => {
+					alert('errores al ingresar los datos')
+					console.log(err)
+				})
+		}
+	}
+	render() {
+		const { ComponentesPartidasIngresadas, CostosUnitarios, PlanillaMetrados, DataErrores, erroresSuma, DataFinal, componentes, idComponente, ficha, itemsErroneos, erroresSecuenciaItems, recursosErroresTamanyo, componente } = this.state
+		return (
+			<div>
+				<Card>
+					<CardHeader className="p-2">
+						<strong>{ficha.codigo + " " + ficha.g_meta}</strong>
+						<hr />
+						<strong>Componentes Partidas Ingresados</strong>
+						{ComponentesPartidasIngresadas.map((compomente, i) =>
+							<div key={i}>
+								{compomente.numero + " " + compomente.nombre + " " + (compomente.recurso_descripcion == null ? "sin recursos" : "con recursos")}
+								<br />
+							</div>
+						)}
+						<div className="float-right">
+							<select className="form-control form-control-sm m-0" onChange={e => this.setState({ componente: JSON.parse(e.target.value) })}>
+								<option>Selecione</option>
+								{componentes.map((componente, i) =>
+									<option key={i} value={JSON.stringify(componente)}>{componente.numero}</option>
+								)}
+							</select>
+						</div>
+						<hr />
+						<strong>  COMPONENTE Nro {componente.numero + " " + componente.nombre}</strong>
+					</CardHeader>
+					{!componente.id_componente ? <h1 className="text-center ">Seleccione Un compomente</h1> :
+						<CardBody>
+							<label> Numero de componete selecionado: {idComponente}</label>
+							<Row>
+								<Col sm="4">
+									<fieldset>
+										<legend><b>cargar datos de Costos unitarios</b></legend>
+										<input type="file" id="input1" onChange={this.CostosUnitarios} />
+										<Button onClick={this.CostosUnitarios} color="success" size="sm">RECARGAR</Button>
+										{recursosErroresTamanyo.map((err, i) =>
+											<label key={i} className="text-danger">el siguiente recurso tiene errores {err.item + " " + err.recurso.tipo + " " + err.recurso.descripcion + " " + err.recurso.unidad}</label>
+										)}
+										<code>
+											<ReactJson src={CostosUnitarios} name="CostosUnitarios" theme="monokai" collapsed={2} displayDataTypes={false} />
+										</code>
+									</fieldset>
+								</Col>
+								<Col sm="4">
+									<fieldset>
+										<legend><b>cargar datos de Planilla de metrados</b></legend>
+										<input type="file" id="input2" onChange={this.PlanillaMetrados} />
+										<Button onClick={this.PlanillaMetrados} color="success" size="sm">RECARGAR</Button>
+										{DataErrores.map((err) =>
+											<label className="text-danger">{err}</label>
+										)}
+										<hr />
+										{itemsErroneos.map((err) =>
+											<label className="text-danger">Item mal escrito {err.item} - {err.descripcion} fila: {err.fila}</label>
+										)}
+										<hr />
+										{erroresSecuenciaItems.map((err) =>
+											<label className="text-danger"> {"item previo " + err.itemPrevio + " item actual " + err.itemActual} </label>
+										)}
+										{erroresSuma.map((err) =>
+											<div>
+												<label className="text-danger">{err.item + " total partida: " + err.total + " suma actividades: " + err.suma}</label><br />
+											</div>
+										)}
+										<code className="small">
+											<ReactJson src={PlanillaMetrados} name="PlanillaMetrados" theme="monokai" collapsed={2} displayDataTypes={false} />
+										</code>
+									</fieldset>
+								</Col>
+								<Col sm="4">
+									<fieldset>
+										<legend><b>Opciones de manejo de los datos cargados</b></legend>
+										<button className="btn btn-outline-warning" onClick={this.verificarDatos}> verificar datos</button>
+										<i>{this.state.erroresEncontrado}</i>
+										<button className="btn btn-outline-success" onClick={this.EnviarDatos}> Guardar datos </button>
+										<code>
+											<ReactJson src={DataFinal} name="DataFinal" theme="monokai" collapsed={2} displayDataTypes={false} />
+										</code>
+									</fieldset>
+								</Col>
+							</Row>
+						</CardBody>
+					}
+					<CardFooter>___</CardFooter>
+				</Card>
+			</div>
+		)
+	}
 }
 export default PartidasNuevas;
