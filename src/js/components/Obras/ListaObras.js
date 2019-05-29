@@ -2,10 +2,8 @@ import React, { Component } from 'react';
 import axios from 'axios'
 import { Card, Button, CardHeader, FormGroup, CardBody, Input, Label, Table, Modal, Form, ModalBody, ModalFooter } from 'reactstrap';
 import { UrlServer } from '../Utils/ServerUrlConfig'
-console.log("UrlServersdfs",UrlServer);
-
+console.log("UrlServersdfs", UrlServer);
 class ListaObras extends Component {
-
 	constructor() {
 		super()
 		this.state = {
@@ -18,7 +16,7 @@ class ListaObras extends Component {
 			idUser: '',
 			Componentes: [],
 			modalPersonal: false,
-			DataPersonal: []
+			DataPersonal: [],
 		}
 		this.Modal = this.Modal.bind(this)
 		this.CapturarIdObra = this.CapturarIdObra.bind(this)
@@ -29,6 +27,7 @@ class ListaObras extends Component {
 		this.VerificacionValorizacion = this.VerificacionValorizacion.bind(this)
 		this.PersonalObra = this.PersonalObra.bind(this)
 		this.CompletarPartidas = this.CompletarPartidas.bind(this)
+		this.RevisarPresupuesto = this.RevisarPresupuesto.bind(this)
 	}
 	componentWillMount() {
 		axios.get(`${UrlServer}/listaObras`)
@@ -39,9 +38,9 @@ class ListaObras extends Component {
 				})
 			})
 			.catch((error) => {
-				console.log('algo salió mal al tratar de listar las obras error es: ', error);
+				console.log('ERROR', error);
+				alert('algo ha salido mal')
 			})
-
 	}
 	Modal() {
 		this.setState(prevState => ({
@@ -49,28 +48,25 @@ class ListaObras extends Component {
 		}));
 	}
 	CapturarIdObra(id_ficha) {
-		// LISTA DE USUARIOS
 		axios.post(`${UrlServer}/getUsuariosConAcceso`,
 			{
-
 				id_ficha: id_ficha
 			}
 		)
 			.then((res) => {
-				console.log(res);
 				this.setState({
 					DataUsuarios: res.data
 				})
 			})
 			.catch((error) => {
-				console.log('algo salió mal al tratar de listar los usuarios error es: ', error);
+				console.log('ERROR', error);
+				alert('algo ha salido mal')
 			})
 		this.setState({
 			IdObra: id_ficha
 		})
 		this.Modal()
 	}
-	//listar componentes
 	ModalComponentes() {
 		this.setState(prevState => ({
 			modal2: !prevState.modal2
@@ -86,7 +82,6 @@ class ListaObras extends Component {
 		sessionStorage.setItem('estado', 'oficial')
 		window.location.href = "/PartidasNuevas";
 	}
-	
 	PersonalObra(id_ficha) {
 		if (this.state.modalPersonal == false) {
 			axios.post(`${UrlServer}/getPersonalObra`,
@@ -101,7 +96,8 @@ class ListaObras extends Component {
 					})
 				})
 				.catch((error) => {
-					console.log('algo salió mal al tratar de listar los usuarios error es: ', error);
+					console.log('ERROR', error);
+					alert('algo ha salido mal')
 				})
 		}
 		this.setState(prevState => ({
@@ -109,64 +105,53 @@ class ListaObras extends Component {
 		}));
 	}
 	apiComponentes(id_ficha) {
-		//lista de componentes
 		axios.post(`${UrlServer}/listaComponentesPorId`, {
 			"id_ficha": id_ficha
 		})
 			.then((res) => {
-				// console.log(res.data);
 				this.setState({
 					Componentes: res.data
 				})
 				console.log("componentes", res.data);
 			})
 			.catch((error) => {
-				console.log('algo salió mal al tratar de listar los usuarios error es: ', error);
+				alert("ERROR")
+				console.log(error);
 			})
 	}
 	ingresarComponentes(id_ficha, g_meta) {
 		sessionStorage.setItem('idFicha', id_ficha)
-		console.log("idficha", id_ficha);
-		sessionStorage.setItem('g_meta', g_meta)
 		window.location.href = "/ComponentesNuevos";
 	}
 	IngresarCuadroMetrados(id_ficha, g_meta) {
 		sessionStorage.setItem('idFicha', id_ficha)
-		console.log("idficha", id_ficha);
-		sessionStorage.setItem('g_meta', g_meta)
 		window.location.href = "/IngresoCudroMetradosEjecutados";
 	}
-	VerificacionValorizacion(id_ficha, g_meta) {
+	VerificacionValorizacion(id_ficha) {
 		sessionStorage.setItem('idFicha', id_ficha)
-		console.log("idficha", id_ficha);
-		sessionStorage.setItem('g_meta', g_meta)
 		window.location.href = "/VerificacionValorizacion";
 	}
-	HistorialObra(id_ficha, g_meta) {
+	HistorialObra(id_ficha) {
 		sessionStorage.setItem('idFicha', id_ficha)
-		sessionStorage.setItem('g_meta', g_meta)
 		window.location.href = "/HistorialObra";
 	}
-	///////////////////////////////////////
-	GuardarDatos(event) {
-		// event.preventDefault()
-		console.log(this.state.idUser, this.state.IdObra);
+	GuardarDatos() {
 		axios.post(`${UrlServer}/asignarObra`, {
 			Accesos_id_acceso: this.state.idUser,
 			Fichas_id_ficha: this.state.IdObra
 		})
 			.then((res) => {
-				if (res.status == 400) {
-					alert('algo ha salido mal')
-				} else {
-					alert('exito ')
-				}
+				alert('exito ')
 			})
 			.catch((error) => {
-				console.log('algo salió mal al tratar de listar los usuarios error es: ', error);
+				console.log('ERROR', error);
 				alert('algo ha salido mal')
 			})
 		this.Modal()
+	}
+	RevisarPresupuesto(id_ficha) {
+		sessionStorage.setItem('idFicha', id_ficha)
+		window.location.href = "/RevisarPresupuesto";
 	}
 	render() {
 		const { listaObras, DataUsuarios, Componentes, DataPersonal } = this.state
@@ -176,9 +161,6 @@ class ListaObras extends Component {
 					<thead>
 						<tr>
 							<th>Codigo</th>
-							<th>Nombre </th>
-							<th>Presupuesto </th>
-							<th>g_local_dist </th>
 							<th>Asignar Acceso a usuario</th>
 							<th>Partidas nuevas</th>
 							<th>Componentes nuevos</th>
@@ -187,38 +169,39 @@ class ListaObras extends Component {
 							<th>valorizacion</th>
 							<th>Crear historial</th>
 							<th>Personal de la obra</th>
+							<th>Revisar Presupuesto</th>
 						</tr>
 					</thead>
 					<tbody>
 						{listaObras === undefined ? 'cargando' : listaObras.map((obra, index) =>
 							<tr key={index}>
 								<td>{obra.codigo}</td>
-								<td>{obra.g_sector}</td>
-								<td>{obra.g_total_presu}</td>
-								<td>{obra.g_local_dist}</td>
 								<td>
-									<button className="btn btn-outline-success" onClick={(e) => this.CapturarIdObra(obra.id_ficha)}> Dar acceso</button>
+									<button className="btn btn-outline-success" onClick={(e) => this.CapturarIdObra(obra.id_ficha)}>acceso</button>
 								</td>
 								<td>
-									<button className="btn btn-outline-success" onClick={(e) => this.ListarComponentesPorId(obra.id_ficha)}> P. nuevas</button>
+									<button className="btn btn-outline-success" onClick={(e) => this.ListarComponentesPorId(obra.id_ficha)}> P.N.</button>
 								</td>
 								<td>
-									<button className="btn btn-outline-success" onClick={(e) => this.ingresarComponentes(obra.id_ficha, obra.g_meta)}> C. nuevos</button>
+									<button className="btn btn-outline-success" onClick={(e) => this.ingresarComponentes(obra.id_ficha)}> C.N.</button>
 								</td>
 								<td>
-									<button className="btn btn-outline-success" onClick={(e) => this.CompletarPartidas(obra.id_ficha, obra.g_meta)}> Completar Pa.</button>
+									<button className="btn btn-outline-success" onClick={(e) => this.CompletarPartidas(obra.id_ficha)}> Comp Pa.</button>
 								</td>
 								<td>
-									<button className="btn btn-outline-success" onClick={(e) => this.IngresarCuadroMetrados(obra.id_ficha, obra.g_meta)}>Metrados</button>
+									<button className="btn btn-outline-success" onClick={(e) => this.IngresarCuadroMetrados(obra.id_ficha)}>M</button>
 								</td>
 								<td>
-									<button className="btn btn-outline-success" onClick={(e) => this.VerificacionValorizacion(obra.id_ficha, obra.g_meta)}>valorizacion</button>
+									<button className="btn btn-outline-success" onClick={(e) => this.VerificacionValorizacion(obra.id_ficha)}>val</button>
 								</td>
 								<td>
-									<button className="btn btn-outline-success" onClick={(e) => this.HistorialObra(obra.id_ficha, obra.g_meta)}>Crear Historial</button>
+									<button className="btn btn-outline-success" onClick={(e) => this.HistorialObra(obra.id_ficha)}>Hist</button>
 								</td>
 								<td>
-									<button className="btn btn-outline-success" onClick={() => this.PersonalObra(obra.id_ficha, obra.id_usuario)}>Personal Obra</button>
+									<button className="btn btn-outline-success" onClick={() => this.PersonalObra(obra.id_ficha)}>Pers</button>
+								</td>
+								<td>
+									<button className="btn btn-outline-success" onClick={() => this.RevisarPresupuesto(obra.id_ficha)}>Rev presu.</button>
 								</td>
 							</tr>
 						)}
