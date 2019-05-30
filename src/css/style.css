@@ -69,9 +69,12 @@ body {
 /* nav  angerman  */
 
 .navbarExpland {
-  position: inherit;
   -webkit-transition: width 0.5s;
   transition: width 0.5s;
+  flex: 0 0 16.666667%;
+    max-width: 16.666667%;
+    width: 16.666667%;
+
 }
 
 .navbarCollapse {
@@ -81,15 +84,17 @@ body {
   transition: width 0.5s
 }
 
-@media only screen and (min-width: 10px) {
+@media only screen and (max-width: 750px){
   .navbarExpland {
-    width: 50px;
-    position: inherit;
+    position: absolute;
+    width: 45%;
     -webkit-transition: width 0.5s;
     transition: 3s;
+    max-width: 50%;
+    background: #000000;
   }
 
-  .navbarCollapse .col-md-2 {
+  .navbarCollapse{
     width: 50px;
     position: inherit;
     -webkit-transition: width 0.5s;
