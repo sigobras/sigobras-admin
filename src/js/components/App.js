@@ -64,7 +64,7 @@ class AppAng extends Component {
                     </nav>
                     <div className="container-fluid">
                         <div className="row">
-                            <nav className={JSON.parse(localStorage.getItem('opcionBtnToogle')) ? 'col-md-2 navbarExpland d-none d-md-block bg-light sidebar' : "navbarCollapse bg-light sidebar"}>
+                            <nav className={JSON.parse(localStorage.getItem('opcionBtnToogle')) ? 'navbarExpland  bg-light sidebar': "navbarCollapse bg-light sidebar"}>
                                 <div className="sidebar-sticky">
                                     <ul className="nav flex-column ull">
                                         <li className="lii border-top">
@@ -110,7 +110,8 @@ class AppAng extends Component {
                                     </ul>
                                 </div>
                             </nav>
-                            <main role="main" className="col ml-sm-auto col-lg px-2">
+
+                            <main role="main" className="col px-2">
                                 <div className="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                                     <h6 className="">
                                         BIENVENIDO HOY ES : {this.YearActual()}
