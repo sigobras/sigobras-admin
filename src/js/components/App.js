@@ -22,6 +22,8 @@ import IngresoCuardoMetrados from '../components/Obras/IngresoCuardoMetrados'
 import VerificacionValorizacion from '../components/Obras/VerificacionValorizacion'
 import HistorialObra from '../components/Obras/HistorialObra'
 import RevisarPresupuesto from '../components/Obras/RevisarPresupuesto'
+import clasificadorGastos from '../components/Otros/clasificadorGastos'
+
 class AppAng extends Component {
     constructor() {
         super();
@@ -64,7 +66,7 @@ class AppAng extends Component {
                     </nav>
                     <div className="container-fluid">
                         <div className="row">
-                            <nav className={JSON.parse(localStorage.getItem('opcionBtnToogle')) ? 'navbarExpland  bg-light sidebar': "navbarCollapse bg-light sidebar"}>
+                            <nav className={JSON.parse(localStorage.getItem('opcionBtnToogle')) ? 'navbarExpland  bg-light sidebar' : "navbarCollapse bg-light sidebar"}>
                                 <div className="sidebar-sticky">
                                     <ul className="nav flex-column ull">
                                         <li className="lii border-top">
@@ -80,6 +82,16 @@ class AppAng extends Component {
                                                     </li>
                                                     <li className="lii">
                                                         <Link to="ObraNueva" className="nav-link"><FaLinode /> Obra nueva</Link>
+                                                    </li>
+                                                </ul>
+                                            </UncontrolledCollapse>
+                                        </li>
+                                        <li className="lii">
+                                            <a className="nav-link" href="#OTROS" id="OTROS"><FaSuperscript /><span> OTROS <div className="float-right"><FaPlus /></div> </span> </a>
+                                            <UncontrolledCollapse toggler="#OTROS">
+                                                <ul className="nav flex-column ull">
+                                                    <li className="lii">
+                                                        <Link to="clasificadorGastos" className="nav-link"><FaPeopleCarry /> Clasificador de gastos</Link>
                                                     </li>
                                                 </ul>
                                             </UncontrolledCollapse>
@@ -141,6 +153,7 @@ class AppAng extends Component {
                                     <Route path="/VerificacionValorizacion" component={VerificacionValorizacion} />
                                     <Route path="/HistorialObra" component={HistorialObra} />
                                     <Route path="/RevisarPresupuesto" component={RevisarPresupuesto} />
+                                    <Route path="/clasificadorGastos" component={clasificadorGastos} />
                                 </div>
                             </main>
                         </div>
