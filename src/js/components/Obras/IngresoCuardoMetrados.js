@@ -20,8 +20,8 @@ class IngresoCuardoMetrados extends Component {
             avanceActividades:[],
             dataExcelPartidasOriginial:[],
             repetidos:[],
-            titulosMetrados:[]
-            
+            titulosMetrados:[],
+            ficha:{}
         }
         this.CargaDatosExcelComponentes = this.CargaDatosExcelComponentes.bind(this)
         
@@ -218,14 +218,9 @@ class IngresoCuardoMetrados extends Component {
 
     componentWillMount(){
         var idFicha  = sessionStorage.getItem("idFicha")
-        console.log("idficha",idFicha);
-        
-        var g_meta  = sessionStorage.getItem("g_meta")
         this.setState({
-            idFicha:idFicha,
-            g_meta:g_meta
+            idFicha:idFicha
         })
-
         axios.post(`${UrlServer}/getPartidasPorObra`,{
          "id_ficha":sessionStorage.getItem("idFicha")
         })
@@ -240,14 +235,26 @@ class IngresoCuardoMetrados extends Component {
         .catch((error)=>{
             console.log('algo salió mal al tratar de listar los usuarios error es: ', error);
         })
-
-
+        var id_ficha = sessionStorage.getItem("idFicha")
+		//cargando datos de obra
+		axios.post(`${UrlServer}/getObra`,
+			{
+				"id_ficha": id_ficha
+			}
+		)
+			.then((res) => {
+				console.log(res.data);
+				this.setState({
+					ficha: res.data
+				})
+			})
+			.catch((error) => {
+				alert("ALGO SALIO MAN AL cargar los datos  DE LA OBRA")
+				console.error('ALGO SALIO MAN AL INGRESAR LOS DATOS DE LA OBRA', error);
+			});
     }
-
     guardarMetrados(e){
         // e.preventDefault()
-        
-                                   
         if (confirm('estas seguro de guardar los metrados de la obra?')) {
             axios.post(`${UrlServer}/postAvanceActividadPorObra`,
                this.state.avanceActividades
@@ -258,22 +265,23 @@ class IngresoCuardoMetrados extends Component {
                     mensajeConfirmacion: res.data.message,
                     AvisoError: res.data
                 })
+                alert("exito")
+                location.reload();
             })
             .catch((error)=>{
-                console.log(error);
-                
+                console.log("ERROR",error);
             })
         }
     }
 
     render() {
-        const { MetradosEjecutados,repetidos,dataExcelPartidasOriginial,titulosMetrados} = this.state
+        const { MetradosEjecutados,repetidos,dataExcelPartidasOriginial,titulosMetrados,ficha} = this.state
         return (
             <div>
              
                 <Card>
                   
-                    <CardHeader>{this.state.idFicha+" "+this.state.g_meta}</CardHeader>
+                    <CardHeader>{this.state.idFicha+" "+this.state.ficha.g_meta}</CardHeader>
                         <CardBody>
                             <fieldset>
                                 <legend><b>Cuadro de metrados ejecutados</b></legend>
