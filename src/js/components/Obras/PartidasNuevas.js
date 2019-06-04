@@ -562,6 +562,7 @@ class PartidasNuevas extends Component {
 				.then((res) => {
 					console.log(res)
 					this.componentesIngresados()
+					alert("exito")
 				})
 				.catch((err) => {
 					alert('errores al ingresar los datos')
