@@ -61,20 +61,20 @@ class RevisarPresupuesto extends Component {
 			//buscamos la palabra item
 			var row = 0
 			var col = 0
-			for (let i = 0; i < rows.length; i++) {
-				const fila = rows[i];
-				for (let j = 0; j < fila.length; j++) {
-					const celda = fila[j];
-					if ((String(celda)).toUpperCase() == "ITEM") {
-						row = i
-						col = j
-						break
-					}
-				}
-			}
-			console.log("ITEM", row, col);
+			// for (let i = 0; i < rows.length; i++) {
+			// 	const fila = rows[i];
+			// 	for (let j = 0; j < fila.length; j++) {
+			// 		const celda = fila[j];
+			// 		if ((String(celda)).toUpperCase() == "ITEM") {
+			// 			row = i
+			// 			col = j
+			// 			break
+			// 		}
+			// 	}
+			// }
+			// console.log("ITEM", row, col);
 			var partidasPresupuesto = []
-			for (let i = row + 1; i < rows.length; i++) {
+			for (let i = row; i < rows.length; i++) {
 				const fila = rows[i];
 
 				//cargar los primeros 2 datos de cada fila
@@ -124,16 +124,20 @@ class RevisarPresupuesto extends Component {
 
 			for (let i = 0; i < partidasSistema.length; i++) {
 				var igualdadPartidasTemp = {
+					item:false,
 					metrado: false,
 					costo_unitario: false,
 					parcial: false,
 				}
 				const partidaSistema = partidasSistema[i];
-				if (partidaSistema.item == partidasPresupuesto[i].item) {
+				console.log(partidaSistema.item,partidasPresupuesto[i].item);				
 					if (partidaSistema.tipo == "titulo") {
 						partidasPresupuesto[i].metrado = "-"
 						partidasPresupuesto[i].costo_unitario = "-"
 						partidasPresupuesto[i].parcial = "-"
+					}
+					if(partidaSistema.item == partidasPresupuesto[i].item){
+						igualdadPartidasTemp.item = true
 					}
 					if(partidaSistema.metrado == partidasPresupuesto[i].metrado){
 						igualdadPartidasTemp.metrado = true
@@ -145,10 +149,12 @@ class RevisarPresupuesto extends Component {
 						igualdadPartidasTemp.parcial = true
 					}
 					igualdadPartidas.push(igualdadPartidasTemp)
-				} else {
-					alert("error data no coincide")
-					break
-				}
+				// } 
+				// else {
+				// 	igualdadPartidasTemp.metrado = true
+				// 	alert("error data no coincide")
+				// 	break
+				// }
 				
 			}
 			console.log("igualdadPartidas",igualdadPartidas);
@@ -189,7 +195,9 @@ class RevisarPresupuesto extends Component {
 					<tbody>
 						{partidas.map((partida, index) =>
 							<tr key={index}>
-								<td>{partida.item}</td>
+									<td className={igualdadPartidas[index]&&igualdadPartidas[index].item?"":"bg-danger text-white"}>
+								{partida.item}
+								</td>
 								<td>{partida.descripcion}</td>
 								<td>{partida.unidad_medida}</td>
 								<td className={igualdadPartidas[index]&&igualdadPartidas[index].metrado?"":"bg-danger text-white"}>
