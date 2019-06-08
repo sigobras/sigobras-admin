@@ -23,6 +23,7 @@ import VerificacionValorizacion from '../components/Obras/VerificacionValorizaci
 import HistorialObra from '../components/Obras/HistorialObra'
 import RevisarPresupuesto from '../components/Obras/RevisarPresupuesto'
 import clasificadorGastos from '../components/Otros/clasificadorGastos'
+import IngresoAnalitico from '../components/Obras/IngresoAnalitico'
 
 class AppAng extends Component {
     constructor() {
@@ -154,6 +155,7 @@ class AppAng extends Component {
                                     <Route path="/HistorialObra" component={HistorialObra} />
                                     <Route path="/RevisarPresupuesto" component={RevisarPresupuesto} />
                                     <Route path="/clasificadorGastos" component={clasificadorGastos} />
+                                    <Route path="/IngresoAnalitico" component={IngresoAnalitico} />
                                 </div>
                             </main>
                         </div>

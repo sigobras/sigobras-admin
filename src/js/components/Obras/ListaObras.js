@@ -28,6 +28,8 @@ class ListaObras extends Component {
 		this.PersonalObra = this.PersonalObra.bind(this)
 		this.CompletarPartidas = this.CompletarPartidas.bind(this)
 		this.RevisarPresupuesto = this.RevisarPresupuesto.bind(this)
+		this.IngresoAnalitico = this.IngresoAnalitico.bind(this)
+		
 	}
 	componentWillMount() {
 		axios.get(`${UrlServer}/listaObras`)
@@ -153,6 +155,10 @@ class ListaObras extends Component {
 		sessionStorage.setItem('idFicha', id_ficha)
 		window.location.href = "/RevisarPresupuesto";
 	}
+	IngresoAnalitico(id_ficha) {
+		sessionStorage.setItem('idFicha', id_ficha)
+		window.location.href = "/IngresoAnalitico";
+	}
 	render() {
 		const { listaObras, DataUsuarios, Componentes, DataPersonal } = this.state
 		return (
@@ -202,6 +208,9 @@ class ListaObras extends Component {
 								</td>
 								<td>
 									<button className="btn btn-outline-success" onClick={() => this.RevisarPresupuesto(obra.id_ficha)}>Rev presu.</button>
+								</td>
+								<td>
+									<button className="btn btn-outline-success" onClick={() => this.IngresoAnalitico(obra.id_ficha)}>Ingreso de analitico</button>
 								</td>
 							</tr>
 						)}

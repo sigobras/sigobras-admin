@@ -42,4 +42,9 @@ userModel.Redondear =(data) =>{
     data = Math.round(data * 10000) / 10000
     return data
 }
+userModel.fechaLargaCorta = (MyDate)=>{
+	var MyDateString;
+	MyDateString = (MyDate.getFullYear()+'-'+('0' + (MyDate.getMonth()+1)).slice(-2)+'-'+('0' + MyDate.getDate()).slice(-2))
+	return MyDateString
+}
 module.exports = userModel;
