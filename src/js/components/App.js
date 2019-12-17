@@ -23,6 +23,7 @@ import HistorialObra from '../components/Obras/HistorialObra'
 import RevisarPresupuesto from '../components/Obras/RevisarPresupuesto'
 import clasificadorGastos from '../components/Otros/clasificadorGastos'
 import IngresoAnalitico from '../components/Obras/IngresoAnalitico'
+import HistorialMetrados from '../components/Obras/HistorialMetrados'
 class AppAng extends Component {
     constructor() {
         super();
@@ -72,6 +73,9 @@ class AppAng extends Component {
                                                     <li className="lii">
                                                         <Link to="ObraNueva" className="nav-link"><FaLinode /> Obra nueva</Link>
                                                     </li>
+                                                    <li className="lii">
+                                                        <Link to="HistorialMetrados" className="nav-link"><FaLinode /> Eliminar historial</Link>
+                                                    </li>
                                                 </ul>
                                             </UncontrolledCollapse>
                                         </li>
@@ -109,18 +113,6 @@ class AppAng extends Component {
                                 </div>
                             </nav>
                             <main role="main" className="col px-2">
-                                <div className="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                                    <div className="btn-toolbar mb-2 mb-md-0">
-                                        <div className="btn-group mr-2">
-                                            <button type="button" className="btn btn-sm btn-outline-secondary">Exportar</button>
-                                            <button type="button" className="btn btn-sm btn-outline-secondary">PDF</button>
-                                        </div>
-                                        <button type="button" className="btn btn-sm btn-outline-secondary dropdown-toggle">
-                                            <span data-feather="calendar"></span>
-                                            OPCIONES
-                                        </button>
-                                    </div>
-                                </div>
                                 <div className="px-1 table-responsive">
                                     <Route path="/Inicio" component={Inicio} />
                                     <Route path="/ObraNueva" component={ObraNueva} />
@@ -135,6 +127,7 @@ class AppAng extends Component {
                                     <Route path="/RevisarPresupuesto" component={RevisarPresupuesto} />
                                     <Route path="/clasificadorGastos" component={clasificadorGastos} />
                                     <Route path="/IngresoAnalitico" component={IngresoAnalitico} />
+                                    <Route path="/HistorialMetrados" component={HistorialMetrados} />
                                 </div>
                             </main>
                         </div>

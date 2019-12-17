@@ -203,7 +203,7 @@ class ListaUsuarios extends Component {
     console.log("index", i);
 
     axios
-      .delete(`${UrlServer}/deleteEliminarUsuario`, {
+      .delete(`${UrlServer}/Historial`, {
         data: {
           id_usuario: i
         }
