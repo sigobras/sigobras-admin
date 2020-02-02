@@ -58,6 +58,7 @@ class HistorialMetrados extends Component {
                         <label>Seleccione el anio</label>
                         <select className="form-control" value={this.state.anio} id="anio" onChange={this.handleChange}>
                             <option value="0">todos</option>
+                            <option value="2020">2020</option>
                             <option value="2019">2019</option>
                             <option value="2018">2018</option>
                             <option value="2017">2017</option>
