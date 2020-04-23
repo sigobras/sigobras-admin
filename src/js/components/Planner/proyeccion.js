@@ -12,7 +12,7 @@ class Proyeccion extends Component {
 		
 		return (
 			<div>
-				<legend><b>menu de prueba</b></legend>
+				<legend><b>menu de prueba CON BACKEND</b></legend>
 			</div>
 		);
 	}
