@@ -24,6 +24,7 @@ import RevisarPresupuesto from '../components/Obras/RevisarPresupuesto'
 import clasificadorGastos from '../components/Otros/clasificadorGastos'
 import IngresoAnalitico from '../components/Obras/IngresoAnalitico'
 import HistorialMetrados from '../components/Obras/HistorialMetrados'
+import RutaProyeccion from '../components/Planner/proyeccion'
 class AppAng extends Component {
     constructor() {
         super();
@@ -109,6 +110,9 @@ class AppAng extends Component {
                                                 </ul>
                                             </UncontrolledCollapse>
                                         </li>
+                                        <li className="lii">
+                                            <Link to="proyeccion" className="nav-link"><FaPeopleCarry /> proyeccion</Link>
+                                        </li>
                                     </ul>
                                 </div>
                             </nav>
@@ -128,6 +132,7 @@ class AppAng extends Component {
                                     <Route path="/clasificadorGastos" component={clasificadorGastos} />
                                     <Route path="/IngresoAnalitico" component={IngresoAnalitico} />
                                     <Route path="/HistorialMetrados" component={HistorialMetrados} />
+                                    <Route path="/proyeccion" component={RutaProyeccion} />
                                 </div>
                             </main>
                         </div>
