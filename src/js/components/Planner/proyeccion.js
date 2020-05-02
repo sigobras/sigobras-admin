@@ -26,18 +26,14 @@ class Proyeccion extends Component {
             valMesesData: [],
             listaobrasData: [],
             cajaidficha: 0,
-            componentes: [
-                {
-                    M1: 0, M2: 0, M3: 0, M4: 0, M5: 0, M6: 0, M7: 0, M8: 0, M9: 0, M10: 0, M11: 0, M12: 0,
-                    MEXPT1: 0, MEXPT2: 0, MEXPT3: 0, MEXPT4: 0, MEXPT5: 0, MEXPT6: 0, MEXPT7: 0, MEXPT8: 0, MEXPT9: 0, MEXPT10: 0, MEXPT11: 0, MEXPT12: 0,
-                    MPROVAR1: 0, MPROVAR2: 0, MPROVAR3: 0, MPROVAR4: 0, MPROVAR5: 0, MPROVAR6: 0, MPROVAR7: 0, MPROVAR8: 0, MPROVAR9: 0, MPROVAR10: 0, MPROVAR11: 0, MPROVAR12: 0
-                }
-            ],
+            componentes: [],
             cajaproyeccionexp: 0,
             cajaanyo: 0,
             cajaproyeccionvar: 0,
             debounceTimeout: 600,
-            chart_data: 0
+            chart_data: 0,
+            cajalistacomponente: [],
+            activatorinput : -1
 
 
         };
@@ -54,15 +50,17 @@ class Proyeccion extends Component {
 
         this.formatmoney = this.formatmoney.bind(this);
         this.get_chart_data = this.get_chart_data.bind(this);
+        this.activarEdicion = this.activarEdicion.bind(this);
+        this.guardarproyeccioncomp = this.guardarproyeccioncomp.bind(this);
+        this.prueba = this.prueba.bind(this);
 
-
-
+       
     }
     componentWillMount() {
         console.log("SE CARGA COMPONENTWILLMOUNT");
-        
+
         axios.post(`${UrlServer}/listaobras`,
-           
+
         )          //axios es una libreria de javascript para llamar al API (poner la ruta del API)
             .then((res) => {    //que va a suceder cuando nos devuelva los resultados de forma correcta
                 console.log("ESTA ES LA DATA lista obras", res.data);
@@ -144,13 +142,32 @@ class Proyeccion extends Component {
 
     }
     //setState es una funcion asincrona
-    capturaInputProyeccionExp(evento) {
-        console.log(evento.target.value, "evento");
-        this.setState({
+    async capturaInputProyeccionExp(evento, mes, index_comp) {
+
+        var value_temp = parseFloat(evento.target.value)   //parseFloat se convierte el texto a numero
+        var componentes_temp = this.state.componentes
+
+        // componentes_temp[0].MEXPT1 = evento.target.value
+
+        componentes_temp[index_comp]["MEXPT" + mes] = value_temp
+
+        await this.setState({
             cajaproyeccionexp: evento.target.value,
+            componentes: componentes_temp
+
             // SE ESTA GUARDANDO EN ESTA VARIABLE cajaproyeccionexp
         })
-        console.log("bien!", this.state.cajaproyeccionexp);
+        //ACTUALIZANDO componente de edicion
+        var componentecopia = this.state.cajalistacomponente
+        //modificación a la copia el primer cero accede a la fila el segundo al primer elemento
+        componentecopia[mes - 1][0] = evento.target.value
+        console.log('componente copia', componentecopia);
+
+        await this.setState({
+            //se esta guardando la copia ya modificada lo esta reemplazando al original
+            cajalistacomponente: componentecopia,
+
+        })
 
     }
 
@@ -185,14 +202,31 @@ class Proyeccion extends Component {
     }
 
 
-    capturaInputProyeccionVar(evento) {
-        console.log(evento.target.value, "evento");
-        this.setState({
-            cajaproyeccionvar: evento.target.value,
+    async capturaInputProyeccionVar(evento, mes, index_comp) {
+        var value_temp = parseFloat(evento.target.value)   //parseFloat se convierte el texto a numero
+        var componentes_temp = this.state.componentes
+
+        // componentes_temp[0].MEXPT1 = evento.target.value
+
+        componentes_temp[index_comp]["MPROVAR" + mes] = value_temp
+
+        await this.setState({
+            componentes: componentes_temp
+
             // SE ESTA GUARDANDO EN ESTA VARIABLE cajaproyeccionexp
         })
-        console.log(this.state.cajaproyeccionexp);
 
+        //ACTUALIZANDO componente de edicion
+        var componentecopia = this.state.cajalistacomponente
+        //modificación a la copia el primer cero accede a la fila el segundo al primer elemento
+        componentecopia[mes - 1][1] = evento.target.value
+        console.log('componente copia', componentecopia);
+
+        await this.setState({
+            //se esta guardando la copia ya modificada lo esta reemplazando al original
+            cajalistacomponente: componentecopia,
+
+        })
     }
 
     async guardarProyeccionVar(id_componente, mes) {
@@ -220,7 +254,7 @@ class Proyeccion extends Component {
             })
 
         this.getComponentes(this.state.cajaanyo)
-            this.get_chart_data(id_componente)   // PARA QUE CAMBIE EN TIEMPO REAL LAS BARRAS
+        this.get_chart_data(id_componente)   // PARA QUE CAMBIE EN TIEMPO REAL LAS BARRAS
 
     }
     //creando funcion de chart
@@ -240,15 +274,96 @@ class Proyeccion extends Component {
                     chart_data: respuesta.data     // se declara en el constructor "es cualquier nombre"    (sabemmos que se esta guardando numero anyo inicial)
                 })
             })
-            .catch((error) => { //para ver un error
+            .catch((error) => {
                 console.log('algo salió mal al tratar de listar las obras error es: ', error);
             })
     }
 
+    activarEdicion(index) { //index de componentes - solo se puede mandar los datos que esten en la interfaz dentro de la tabla, son datos que se pueden pasar de la tabla hacia esta funcion activarrEdicion
+
+
+        var componenteTemp = this.state.componentes[index]
+        //preparación del componente para formato lista
+        var componenteslista = [
+            // [
+            //     respuesta.data[0].MEXPT1,
+            //     respuesta.data[0].MPROVAR1,
+            //     anyo + '-' + '01' + '-' + '01',
+            //     respuesta.data[0].id_componente
+            // ],
+            // [
+            //     respuesta.data[0].MEXPT2,
+            //     respuesta.data[0].MPROVAR2,
+            //     anyo + '-' + '02' + '-' + '01',
+            //     respuesta.data[0].id_componente
+            // ]
+
+        ]
+        // componenteslista.push(
+        // [
+        //     respuesta.data[0].MEXPT3,
+        //     respuesta.data[0].MPROVAR3,
+        //     anyo + '-' + '03' + '-' + '01',
+        //     respuesta.data[0].id_componente
+        // ]
+
+        // )
+        for (let i = 1; i <= 12; i++) {
+            componenteslista.push(
+                [
+                    componenteTemp['MEXPT' + i],
+                    componenteTemp['MPROVAR' + i],
+                    this.state.cajaanyo + '-' + i + '-' + '01',
+                    componenteTemp.id_componente
+                ]
+
+            )
+
+        }
+        console.log('componentes lista', componenteslista);
+        this.setState(
+            {
+                cajalistacomponente: componenteslista,
+                activatorinput: index
+            }
+        )
+
+    }
+
+    guardarproyeccioncomp() {
+
+        axios.post(`${UrlServer}/putproyecciones`,
+
+            this.state.cajalistacomponente
+        )
+            .then((respuesta) => {
+                console.log("guardado", respuesta.data);
+
+            })
+            .catch((error) => {
+                console.log('algo salió mal al tratar de listar las obras error es: ', error);
+            })
+
+            this.setState(
+            {
+                activatorinput: -1
+            }
+        )
+    }
+
+
+
+    prueba (){
+
+        console.log("PRUEBA!!!!");
+        
+    }
+
+
     render() {//es todo lo que se imprime en la pantalla render es una funcion del propio react
         var { debounceTimeout } = this.state //PARA HACER MAS RAPIDO EL IMPUT
-        var {cajaanyo} = this.state //SE USO PARA PONER EL AÑO EN EL CHART TITULO
-        
+        var { cajaanyo } = this.state //SE USO PARA PONER EL AÑO EN EL CHART TITULO
+
         const options = {
             chart: {
                 type: 'column'
@@ -286,9 +401,9 @@ class Proyeccion extends Component {
                 }
             },
             tooltip: {
-                headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                headerFormat: '<span style="font-size:20px">{point.key}</span><table>',
                 pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                    '<td style="padding:0"><b>{point.y:.1f} mm</b></td></tr>',
+                    '<td style="padding:0"><b>{point.y:.1f} soles</b></td></tr>',
                 footerFormat: '</table>',
                 shared: true,
                 useHTML: true
@@ -309,7 +424,7 @@ class Proyeccion extends Component {
                     data: this.state.chart_data.exptec
 
                 }, {
-                    name: 'Proyección variable',
+                    name: 'Proyección Mensual',
                     data: this.state.chart_data.proyvar
 
                 }]
@@ -350,10 +465,10 @@ class Proyeccion extends Component {
 
 
 
-                <Table bordered dark>
+                <Table bordered>
 
                     <thead>
-                        <tr className = 'fixed_headers'>
+                        <tr className='fixed_headers'>
                             <th>N°</th>
                             <th>COMPONENTE</th>
                             <th>DESCRIPCION</th>
@@ -374,13 +489,20 @@ class Proyeccion extends Component {
 
 
 
-                    {this.state.componentes.map((componente) =>
+                    {this.state.componentes.map((componente, index) =>
+
                         <tbody>
                             <tr>
                                 <td rowSpan="3" >
 
                                     <Button color="primary" id={"toggler" + componente.numero} onClick={() => this.get_chart_data(componente.id_componente)} >
                                         {componente.numero}
+                                    </Button>
+                                    <Button color="success" onClick={() => this.activarEdicion(index)} >
+                                        Editar
+                                    </Button>
+                                    <Button color="primary" onClick={() => this.guardarproyeccioncomp(index)} >
+                                        guardar
                                     </Button>
 
                                 </td>
@@ -403,252 +525,46 @@ class Proyeccion extends Component {
 
                             <tr>
                                 <td>Proy. Exp. Tec.</td>
-                                <td>{this.formatmoney(componente.MEXPT1)}</td>
+                                <td> 
+                                {/* <input onBlur={evento => this.prueba()}/> */}
 
-                                <td>{this.formatmoney(componente.MEXPT2)}</td>
-                                <td>{this.formatmoney(componente.MEXPT3)}</td>
-                                <td>{this.formatmoney(componente.MEXPT4)}</td>
-                                <td>{this.formatmoney(componente.MEXPT5)}</td>
-                                <td>{this.formatmoney(componente.MEXPT6)}</td>
-                                <td>{this.formatmoney(componente.MEXPT7)}</td>
-                                <td>{this.formatmoney(componente.MEXPT8)}</td>
-                                <td>{this.formatmoney(componente.MEXPT9)}</td>
-                                <td>{this.formatmoney(componente.MEXPT10)}</td>
-                                <td>{this.formatmoney(componente.MEXPT11)}</td>
-                                <td>{this.formatmoney(componente.MEXPT12)}</td>
+                                <DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionExp(evento, 1, index)} value={componente.MEXPT1} disabled = {(this.state.activatorinput == index)? "" : "disabled"}  /></td>
+
+                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionExp(evento, 2, index)} value={componente.MEXPT2} /></td>
+                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionExp(evento, 3, index)} value={componente.MEXPT3} /></td>
+                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionExp(evento, 4, index)} value={componente.MEXPT4} /></td>
+                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionExp(evento, 5, index)} value={componente.MEXPT5} /></td>
+                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionExp(evento, 6, index)} value={componente.MEXPT6} /></td>
+                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionExp(evento, 7, index)} value={componente.MEXPT7} /></td>
+                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionExp(evento, 8, index)} value={componente.MEXPT8} /></td>
+                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionExp(evento, 9, index)} value={componente.MEXPT9} /></td>
+                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionExp(evento, 10, index)} value={componente.MEXPT10} /></td>
+                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionExp(evento, 11, index)} value={componente.MEXPT11} /></td>
+                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionExp(evento, 12, index)} value={componente.MEXPT12} /></td>
                             </tr>
                             <tr>
                                 <td>Proy. Mensual</td>
-                                <td>{this.formatmoney(componente.MPROVAR1)}</td>
-                                <td>{this.formatmoney(componente.MPROVAR2)}</td>
-                                <td>{this.formatmoney(componente.MPROVAR3)}</td>
-                                <td>{this.formatmoney(componente.MPROVAR4)}</td>
-                                <td>{this.formatmoney(componente.MPROVAR5)}</td>
-                                <td>{this.formatmoney(componente.MPROVAR6)}</td>
-                                <td>{this.formatmoney(componente.MPROVAR7)}</td>
-                                <td>{this.formatmoney(componente.MPROVAR8)}</td>
-                                <td>{this.formatmoney(componente.MPROVAR9)}</td>
-                                <td>{this.formatmoney(componente.MPROVAR10)}</td>
-                                <td>{this.formatmoney(componente.MPROVAR11)}</td>
-                                <td>{this.formatmoney(componente.MPROVAR12)}</td>
+                                <td><DebounceInput placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionVar(evento, 1, index)} value={componente.MPROVAR1} disabled = {(this.state.activatorinput == index)? "" : "disabled"} /></td>
+                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionVar(evento, 2, index)} value={componente.MPROVAR2} /></td>
+                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionVar(evento, 3, index)} value={componente.MPROVAR3} /></td>
+                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionVar(evento, 4, index)} value={componente.MPROVAR4} /></td>
+                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionVar(evento, 5, index)} value={componente.MPROVAR5} /></td>
+                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionVar(evento, 6, index)} value={componente.MPROVAR6} /></td>
+                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionVar(evento, 7, index)} value={componente.MPROVAR7} /></td>
+                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionVar(evento, 8, index)} value={componente.MPROVAR8} /></td>
+                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionVar(evento, 9, index)} value={componente.MPROVAR9} /></td>
+                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionVar(evento, 10, index)} value={componente.MPROVAR10} /></td>
+                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionVar(evento, 11, index)} value={componente.MPROVAR11} /></td>
+                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionVar(evento, 12, index)} value={componente.MPROVAR12} /></td>
                             </tr>
 
 
                             <td colSpan="15" className="">
                                 {/* se puede hacer propio el collaps con una variable de cambio como el componente.numero que es  una variable */}
                                 <UncontrolledCollapse toggler={"#toggler" + componente.numero}>
-                                    <Card body inverse style={{ backgroundColor: '#333', borderColor: '#333' }}>
-                                        <CardBody>
 
-                                            <h8>TABLA DE INGRESO DE PROYECCIONES MENSUALES Y CRONOGRAMA VALORIZADO SEGUN EXPEDIENTE TECNICO</h8>
-                                            <tr>
-                                                <th>N°</th>
-                                                <th>COMPONENTE</th>
-                                                <th>DESCRIPCION</th>
-                                                <th>ENERO</th>
-                                                <th>FEBRERO</th>
-                                                <th>MARZO</th>
-                                                <th>ABRIL</th>
-                                                <th>MAYO</th>
-                                                <th>JUNIO</th>
-                                                <th>JULIO</th>
-                                                <th>AGOSTO</th>
-                                                <th>SETIEMBRE</th>
-                                                <th>OCTUBRE</th>
-                                                <th>NOVIEMBRE</th>
-                                                <th>DICIEMBRE</th>
-                                            </tr>
+                                    <HighchartsReact
 
-
-                                            <tr>
-                                                <td rowSpan="2" >
-                                                    {componente.numero}</td>
-                                                <td rowSpan="2">{componente.nombre}</td>
-                                                <td>Proy. Exp. Tec.</td>
-                                                <td>
-                                                    <DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" onChange={evento => this.capturaInputProyeccionExp(evento)} />
-
-                                                    <InputGroupAddon addonType="append">
-                                                        <Button color="danger" onClick={() => this.guardarProyeccionExp(componente.id_componente, 1)}> <MdSave />
-
-                                                        </Button>
-                                                    </InputGroupAddon>
-
-                                                </td>
-                                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionExp(evento)} />
-
-                                                    <InputGroupAddon addonType="append">
-                                                        <Button color="danger" onClick={() => this.guardarProyeccionExp(componente.id_componente, 2)}>
-                                                            <MdSave />
-                                                        </Button>
-                                                    </InputGroupAddon></td>
-                                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionExp(evento)} />
-
-                                                    <InputGroupAddon addonType="append">
-                                                        <Button color="danger" onClick={() => this.guardarProyeccionExp(componente.id_componente, 3)}>
-                                                            <MdSave />
-                                                        </Button>
-                                                    </InputGroupAddon></td>
-                                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionExp(evento)} />
-
-                                                    <InputGroupAddon addonType="append">
-                                                        <Button color="danger" onClick={() => this.guardarProyeccionExp(componente.id_componente, 4)}>
-                                                            <MdSave />
-                                                        </Button>
-                                                    </InputGroupAddon></td>
-                                                <td><DebounceInput min={0} max={100} type="number" debounceTimeout={debounceTimeout} placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionExp(evento)} />
-
-                                                    <InputGroupAddon addonType="append">
-                                                        <Button color="danger" onClick={() => this.guardarProyeccionExp(componente.id_componente, 5)}>
-                                                            <MdSave />
-                                                        </Button>
-                                                    </InputGroupAddon></td>
-                                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionExp(evento)} />
-
-                                                    <InputGroupAddon addonType="append">
-                                                        <Button color="danger" onClick={() => this.guardarProyeccionExp(componente.id_componente, 6)}>
-                                                            <MdSave />
-                                                        </Button>
-                                                    </InputGroupAddon></td>
-                                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionExp(evento)} />
-
-                                                    <InputGroupAddon addonType="append">
-                                                        <Button color="danger" onClick={() => this.guardarProyeccionExp(componente.id_componente, 7)}>
-                                                            <MdSave />
-                                                        </Button>
-                                                    </InputGroupAddon></td>
-                                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionExp(evento)} />
-
-                                                    <InputGroupAddon addonType="append">
-                                                        <Button color="danger" onClick={() => this.guardarProyeccionExp(componente.id_componente, 8)}>
-                                                            <MdSave />
-                                                        </Button>
-                                                    </InputGroupAddon></td>
-                                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionExp(evento)} />
-
-                                                    <InputGroupAddon addonType="append">
-                                                        <Button color="danger" onClick={() => this.guardarProyeccionExp(componente.id_componente, 9)}>
-                                                            <MdSave />
-                                                        </Button>
-                                                    </InputGroupAddon></td>
-                                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionExp(evento)} />
-
-                                                    <InputGroupAddon addonType="append">
-                                                        <Button color="danger" onClick={() => this.guardarProyeccionExp(componente.id_componente, 10)}>
-                                                            <MdSave />
-                                                        </Button>
-                                                    </InputGroupAddon></td>
-                                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionExp(evento)} />
-
-                                                    <InputGroupAddon addonType="append">
-                                                        <Button color="danger" onClick={() => this.guardarProyeccionExp(componente.id_componente, 11)}>
-                                                            <MdSave />
-                                                        </Button>
-                                                    </InputGroupAddon></td>
-                                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionExp(evento)} />
-
-                                                    <InputGroupAddon addonType="append">
-                                                        <Button color="danger" onClick={() => this.guardarProyeccionExp(componente.id_componente, 12)}>
-                                                            <MdSave />
-                                                        </Button>
-                                                    </InputGroupAddon></td>
-                                            </tr>
-                                            {/* ----------------------------------------------------------- */}
-                                            <tr>
-                                                <td>Proy. Mensual</td>
-                                                <td> <DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionVar(evento)} />
-
-                                                    <InputGroupAddon addonType="append">
-                                                        <Button color="danger" onClick={() => this.guardarProyeccionVar(componente.id_componente, 1)}>
-                                                            <MdSave />
-
-                                                        </Button>
-                                                    </InputGroupAddon></td>
-                                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionVar(evento)} />
-
-                                                    <InputGroupAddon addonType="append">
-                                                        <Button color="danger" onClick={() => this.guardarProyeccionVar(componente.id_componente, 2)}> <MdSave />
-
-                                                        </Button>
-                                                    </InputGroupAddon></td>
-                                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionVar(evento)} />
-
-                                                    <InputGroupAddon addonType="append">
-                                                        <Button color="danger" onClick={() => this.guardarProyeccionVar(componente.id_componente, 3)}> <MdSave />
-
-                                                        </Button>
-                                                    </InputGroupAddon></td>
-                                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionVar(evento)} />
-
-                                                    <InputGroupAddon addonType="append">
-                                                        <Button color="danger" onClick={() => this.guardarProyeccionVar(componente.id_componente, 4)}> <MdSave />
-
-                                                        </Button>
-                                                    </InputGroupAddon></td>
-                                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionVar(evento)} />
-
-                                                    <InputGroupAddon addonType="append">
-                                                        <Button color="danger" onClick={() => this.guardarProyeccionVar(componente.id_componente, 5)}> <MdSave />
-
-                                                        </Button>
-                                                    </InputGroupAddon></td>
-                                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionVar(evento)} />
-
-                                                    <InputGroupAddon addonType="append">
-                                                        <Button color="danger" onClick={() => this.guardarProyeccionVar(componente.id_componente, 6)}> <MdSave />
-
-                                                        </Button>
-                                                    </InputGroupAddon></td>
-                                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionVar(evento)} />
-
-                                                    <InputGroupAddon addonType="append">
-                                                        <Button color="danger" onClick={() => this.guardarProyeccionVar(componente.id_componente, 7)}> <MdSave />
-
-                                                        </Button>
-                                                    </InputGroupAddon></td>
-                                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionVar(evento)} />
-
-                                                    <InputGroupAddon addonType="append">
-                                                        <Button color="danger" onClick={() => this.guardarProyeccionVar(componente.id_componente, 8)}> <MdSave />
-
-                                                        </Button>
-                                                    </InputGroupAddon></td>
-                                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionVar(evento)} />
-
-                                                    <InputGroupAddon addonType="append">
-                                                        <Button color="danger" onClick={() => this.guardarProyeccionVar(componente.id_componente, 9)}> <MdSave />
-
-                                                        </Button>
-                                                    </InputGroupAddon></td>
-                                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionVar(evento)} />
-
-                                                    <InputGroupAddon addonType="append">
-                                                        <Button color="danger" onClick={() => this.guardarProyeccionVar(componente.id_componente, 10)}> <MdSave />
-
-                                                        </Button>
-                                                    </InputGroupAddon></td>
-                                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionVar(evento)} />
-
-                                                    <InputGroupAddon addonType="append">
-                                                        <Button color="danger" onClick={() => this.guardarProyeccionVar(componente.id_componente, 11)}> <MdSave />
-
-                                                        </Button>
-                                                    </InputGroupAddon></td>
-                                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionVar(evento)} />
-
-                                                    <InputGroupAddon addonType="append">
-                                                        <Button color="danger" onClick={() => this.guardarProyeccionVar(componente.id_componente, 12)}> <MdSave />
-
-                                                        </Button>
-                                                    </InputGroupAddon></td>
-                                            </tr>
-
-
-                                        </CardBody>
-                                    </Card>
-
-                                    <HighchartsReact 
-                                          
                                         highcharts={Highcharts}
                                         options={options}
                                     />
