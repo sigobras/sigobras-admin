@@ -24,7 +24,9 @@ import RevisarPresupuesto from '../components/Obras/RevisarPresupuesto'
 import clasificadorGastos from '../components/Otros/clasificadorGastos'
 import IngresoAnalitico from '../components/Obras/IngresoAnalitico'
 import HistorialMetrados from '../components/Obras/HistorialMetrados'
+
 import RutaProyeccion from '../components/Planner/proyeccion'
+
 class AppAng extends Component {
     constructor() {
         super();

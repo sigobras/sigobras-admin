@@ -1,22 +1,11 @@
 import React, { Component } from "react";
-import { MdSave, MdFlashOn } from "react-icons/md";
-import { Table, Button, InputGroup, InputGroupAddon, InputGroupText, Input, UncontrolledCollapse, CardBody, Card, Navbar, Spinner } from 'reactstrap';
-import { DebounceInput } from 'react-debounce-input';
+import { Table, Button, Input, UncontrolledCollapse } from 'reactstrap';
 import axios from 'axios';
 import { UrlServer } from '../Utils/ServerUrlConfig';
-// import './val.css'
-
 import Highcharts from 'highcharts'
 import HighchartsReact from 'highcharts-react-official'
 
-// CHART
-// import Highcharts from 'highcharts'
-// import HighchartsReact from 'highcharts-react-official'
-
 //https://reactstrap.github.io/components/tables/ para aprender reactstrap
-
-//import { array } from "prop-types";
-
 class Proyeccion extends Component {
     constructor() {
         super();
@@ -33,7 +22,8 @@ class Proyeccion extends Component {
             debounceTimeout: 600,
             chart_data: 0,
             cajalistacomponente: [],
-            activatorinput : -1
+            activatorinput: -1,
+            mesesfor: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 
 
         };
@@ -54,7 +44,7 @@ class Proyeccion extends Component {
         this.guardarproyeccioncomp = this.guardarproyeccioncomp.bind(this);
         this.prueba = this.prueba.bind(this);
 
-       
+
     }
     componentWillMount() {
         console.log("SE CARGA COMPONENTWILLMOUNT");
@@ -143,8 +133,8 @@ class Proyeccion extends Component {
     }
     //setState es una funcion asincrona
     async capturaInputProyeccionExp(evento, mes, index_comp) {
-
-        var value_temp = parseFloat(evento.target.value)   //parseFloat se convierte el texto a numero
+        evento.persist();
+        var value_temp = parseFloat(evento.target.value) || 0     //parseFloat se convierte el texto a numero
         var componentes_temp = this.state.componentes
 
         // componentes_temp[0].MEXPT1 = evento.target.value
@@ -203,7 +193,8 @@ class Proyeccion extends Component {
 
 
     async capturaInputProyeccionVar(evento, mes, index_comp) {
-        var value_temp = parseFloat(evento.target.value)   //parseFloat se convierte el texto a numero
+        evento.persist();
+        var value_temp = parseFloat(evento.target.value) || 0    //parseFloat se convierte el texto a numero
         var componentes_temp = this.state.componentes
 
         // componentes_temp[0].MEXPT1 = evento.target.value
@@ -337,31 +328,32 @@ class Proyeccion extends Component {
             this.state.cajalistacomponente
         )
             .then((respuesta) => {
-                console.log("guardado", respuesta.data);
+                alert("data guardada")
 
             })
             .catch((error) => {
-                console.log('algo salió mal al tratar de listar las obras error es: ', error);
+                alert("no se ha guardado la data")
             })
 
-            this.setState(
+        this.setState(
             {
                 activatorinput: -1
             }
         )
+        document.getElementById("create-course-form").reset();
     }
 
 
 
-    prueba (){
+    prueba() {
 
         console.log("PRUEBA!!!!");
-        
+
     }
 
 
     render() {//es todo lo que se imprime en la pantalla render es una funcion del propio react
-        var { debounceTimeout } = this.state //PARA HACER MAS RAPIDO EL IMPUT
+        
         var { cajaanyo } = this.state //SE USO PARA PONER EL AÑO EN EL CHART TITULO
 
         const options = {
@@ -439,11 +431,7 @@ class Proyeccion extends Component {
             // dentro del render solo puede haber un elemento (div)
             // dentro del return solo va JSX 
 
-            <div className="container-fluid  mt-5"> <MdFlashOn size={20} className="text-warning" />
-
-
-
-
+            <div className="container-fluid  mt-5">
                 <select onChange={event => this.selectObra(event.target.value)}>
                     <option>Seleccione la obra</option>
                     {this.state.listaobrasData.map((lista, index) =>     //HACE INTERACCION CON UN SOLO ELEMENTO
@@ -464,120 +452,112 @@ class Proyeccion extends Component {
                 </select>
 
 
+                <form id="create-course-form">
+                    <Table bordered>
 
-                <Table bordered>
-
-                    <thead>
-                        <tr className='fixed_headers'>
-                            <th>N°</th>
-                            <th>COMPONENTE</th>
-                            <th>DESCRIPCION</th>
-                            <th>ENERO</th>
-                            <th>FEBRERO</th>
-                            <th>MARZO</th>
-                            <th>ABRIL</th>
-                            <th>MAYO</th>
-                            <th>JUNIO</th>
-                            <th>JULIO</th>
-                            <th>AGOSTO</th>
-                            <th>SETIEMBRE</th>
-                            <th>OCTUBRE</th>
-                            <th>NOVIEMBRE</th>
-                            <th>DICIEMBRE</th>
-                        </tr>
-                    </thead>
-
-
-
-                    {this.state.componentes.map((componente, index) =>
-
-                        <tbody>
-                            <tr>
-                                <td rowSpan="3" >
-
-                                    <Button color="primary" id={"toggler" + componente.numero} onClick={() => this.get_chart_data(componente.id_componente)} >
-                                        {componente.numero}
-                                    </Button>
-                                    <Button color="success" onClick={() => this.activarEdicion(index)} >
-                                        Editar
-                                    </Button>
-                                    <Button color="primary" onClick={() => this.guardarproyeccioncomp(index)} >
-                                        guardar
-                                    </Button>
-
-                                </td>
-                                <td rowSpan="3">{componente.nombre}</td>
-                                <td>Avance Del Mes</td>
-                                <td>{this.formatmoney(componente.M1)}</td>
-                                <td>{this.formatmoney(componente.M2)}</td>
-                                <td>{this.formatmoney(componente.M3)}</td>
-                                <td>{this.formatmoney(componente.M4)}</td>
-                                <td>{this.formatmoney(componente.M5)}</td>
-                                <td>{this.formatmoney(componente.M6)}</td>
-                                <td>{this.formatmoney(componente.M7)}</td>
-                                <td>{this.formatmoney(componente.M8)}</td>
-                                <td>{this.formatmoney(componente.M9)}</td>
-                                <td>{this.formatmoney(componente.M10)}</td>
-                                <td>{this.formatmoney(componente.M11)}</td>
-                                <td>{this.formatmoney(componente.M12)}</td>
+                        <thead>
+                            <tr className='fixed_headers'>
+                                <th>N°</th>
+                                <th>COMPONENTE</th>
+                                <th>DESCRIPCION</th>
+                                <th>ENERO</th>
+                                <th>FEBRERO</th>
+                                <th>MARZO</th>
+                                <th>ABRIL</th>
+                                <th>MAYO</th>
+                                <th>JUNIO</th>
+                                <th>JULIO</th>
+                                <th>AGOSTO</th>
+                                <th>SETIEMBRE</th>
+                                <th>OCTUBRE</th>
+                                <th>NOVIEMBRE</th>
+                                <th>DICIEMBRE</th>
                             </tr>
+                        </thead>
 
 
-                            <tr>
-                                <td>Proy. Exp. Tec.</td>
-                                <td> 
-                                {/* <input onBlur={evento => this.prueba()}/> */}
 
-                                <DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionExp(evento, 1, index)} value={componente.MEXPT1} disabled = {(this.state.activatorinput == index)? "" : "disabled"}  /></td>
+                        {this.state.componentes.map((componente, index) =>
 
-                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionExp(evento, 2, index)} value={componente.MEXPT2} /></td>
-                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionExp(evento, 3, index)} value={componente.MEXPT3} /></td>
-                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionExp(evento, 4, index)} value={componente.MEXPT4} /></td>
-                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionExp(evento, 5, index)} value={componente.MEXPT5} /></td>
-                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionExp(evento, 6, index)} value={componente.MEXPT6} /></td>
-                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionExp(evento, 7, index)} value={componente.MEXPT7} /></td>
-                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionExp(evento, 8, index)} value={componente.MEXPT8} /></td>
-                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionExp(evento, 9, index)} value={componente.MEXPT9} /></td>
-                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionExp(evento, 10, index)} value={componente.MEXPT10} /></td>
-                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionExp(evento, 11, index)} value={componente.MEXPT11} /></td>
-                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionExp(evento, 12, index)} value={componente.MEXPT12} /></td>
-                            </tr>
-                            <tr>
-                                <td>Proy. Mensual</td>
-                                <td><DebounceInput placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionVar(evento, 1, index)} value={componente.MPROVAR1} disabled = {(this.state.activatorinput == index)? "" : "disabled"} /></td>
-                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionVar(evento, 2, index)} value={componente.MPROVAR2} /></td>
-                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionVar(evento, 3, index)} value={componente.MPROVAR3} /></td>
-                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionVar(evento, 4, index)} value={componente.MPROVAR4} /></td>
-                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionVar(evento, 5, index)} value={componente.MPROVAR5} /></td>
-                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionVar(evento, 6, index)} value={componente.MPROVAR6} /></td>
-                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionVar(evento, 7, index)} value={componente.MPROVAR7} /></td>
-                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionVar(evento, 8, index)} value={componente.MPROVAR8} /></td>
-                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionVar(evento, 9, index)} value={componente.MPROVAR9} /></td>
-                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionVar(evento, 10, index)} value={componente.MPROVAR10} /></td>
-                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionVar(evento, 11, index)} value={componente.MPROVAR11} /></td>
-                                <td><DebounceInput debounceTimeout={debounceTimeout} min={0} max={100} type="number" placeholder="ET" size="sm" onChange={evento => this.capturaInputProyeccionVar(evento, 12, index)} value={componente.MPROVAR12} /></td>
-                            </tr>
+                            <tbody key={index}>
+                                <tr>
+                                    <td rowSpan="3" >
+
+                                        <Button color="primary" id={"toggler" + componente.numero} onClick={() => this.get_chart_data(componente.id_componente)} >
+                                            {componente.numero}
+                                        </Button>
+                                        <Button color="success" onClick={() => this.activarEdicion(index)} >
+                                            Editar
+                                    </Button>
+                                        <Button color="primary" onClick={() => this.guardarproyeccioncomp(index)} >
+                                            guardar
+                                    </Button>
+
+                                    </td>
+                                    <td rowSpan="3">{componente.nombre}</td>
+                                    <td>Avance Del Mes</td>
+
+                                    {this.state.mesesfor.map((mes) =>
+
+                                        <td>{this.formatmoney(componente['M' + mes])}</td>
+                                        )}
+                                    
+                                </tr>
 
 
-                            <td colSpan="15" className="">
-                                {/* se puede hacer propio el collaps con una variable de cambio como el componente.numero que es  una variable */}
-                                <UncontrolledCollapse toggler={"#toggler" + componente.numero}>
+                                <tr>
 
-                                    <HighchartsReact
+                                    <td>Proy. Exp. Tec.</td>
+                                    {this.state.mesesfor.map((mes) =>
+                                        <td>
 
-                                        highcharts={Highcharts}
-                                        options={options}
-                                    />
-                                </UncontrolledCollapse>
-                            </td>
-                        </tbody>
-                    )}
-                </Table>
+                                            <input
+                                                onBlur={evento => this.capturaInputProyeccionExp(evento, mes, index)}
+                                                placeholder={this.formatmoney(componente['MEXPT' + mes])}
+                                                disabled={(this.state.activatorinput == index) ? "" : "disabled"}
+                                                size="sm"
+                                            />
+                                        </td>
+                                    )}
+                                </tr>
 
+                                <tr>
+                                    <td>Proy. Mensual</td>
+                                    {this.state.mesesfor.map((mes) =>
+
+                                        <td>
+
+                                            <input
+                                                onBlur={evento => this.capturaInputProyeccionVar(evento, mes, index)}
+                                                placeholder={this.formatmoney(componente['MPROVAR' + mes])}
+                                                disabled={(this.state.activatorinput == index) ? "" : "disabled"}
+                                                size="sm"
+                                            />
+                                        </td>
+                                    )}
+
+                                </tr>
+
+                                <tr>
+                                    <td colSpan="15" className="">
+                                        {/* se puede hacer propio el collaps con una variable de cambio como el componente.numero que es  una variable */}
+                                        <UncontrolledCollapse toggler={"#toggler" + componente.numero}>
+
+                                            <HighchartsReact
+
+                                                highcharts={Highcharts}
+                                                options={options}
+                                            />
+                                        </UncontrolledCollapse>
+                                    </td>
+                                </tr>
+
+                            </tbody>
+                        )}
+
+                    </Table>
+                </form>
             </div>
-
-
-
 
         );
     }
