@@ -30,6 +30,8 @@ class PartidasNuevas extends Component {
 			componente: { numero: "", nombre: "" }
 		}
 		this.CostosUnitarios = this.CostosUnitarios.bind(this)
+		this.CostosUnitariosDelphi = this.CostosUnitariosDelphi.bind(this)
+
 		this.PlanillaMetrados = this.PlanillaMetrados.bind(this)
 		this.verificarDatos = this.verificarDatos.bind(this)
 		this.EnviarDatos = this.EnviarDatos.bind(this)
@@ -219,6 +221,65 @@ class PartidasNuevas extends Component {
 			this.setState({
 				CostosUnitarios,
 				recursosErroresTamanyo
+			})
+		})
+			.catch((error) => {
+				alert('algo salió mal')
+				console.log(error);
+			})
+	}
+	CostosUnitariosDelphi() {
+		const input = document.getElementById('input1')
+		readXlsxFile(input.files[0]).then((rows) => {
+			var CostosUnitarios = []
+			var partida = {}
+			for (let index = 0; index < rows.length; index++) {
+				const row = rows[index];
+				if (row[0] == "Partida:") {
+					CostosUnitarios.push(partida)
+					partida = {}
+					partida.recursos = []
+					partida.item = row[1]
+					partida.descripcion = row[3]
+					partida.rendimiento = row[8].replace('Rendimiento:','')
+					partida.unidad_medida = rows[index + 1][8].replace('Costo unitario por ','')
+					partida.costo_unitario = rows[index + 1][12]
+					partida.equipo = 1
+				} else if (row[0] === "Código") {
+					//zona de recursos
+					index++
+					var tipo = "inicio"
+					while (index < rows.length) {
+						
+						if (rows[index][0] == "Partida:") {
+							index--;
+							break
+						}
+						if(typeof rows[index][0] == "string"){
+							tipo = rows[index][0]
+							
+						}else if(typeof rows[index][0] == "number"){
+							var recurso = {
+								tipo:tipo,
+								codigo:rows[index][0],
+								descripcion:rows[index][2],
+								unidad:rows[index][6],
+								cuadrilla:rows[index][7],
+								cantidad:rows[index][9],
+								precio:rows[index][10],
+								parcial:rows[index][11]
+							}
+							partida.recursos.push(recurso)
+						}
+						index++
+					}
+				}
+			}
+			CostosUnitarios.push(partida)
+			CostosUnitarios = CostosUnitarios.slice(1, CostosUnitarios.length)
+			console.log('CostosUnitarios > ', CostosUnitarios)
+			this.setState({
+				CostosUnitarios,
 			})
 		})
 			.catch((error) => {
@@ -487,21 +548,40 @@ class PartidasNuevas extends Component {
 				i--
 			}
 		}
+		console.log(CostosUnitarios,PlanillaMetrados);
 		// verifica que sean del mismo tamaño los datas de Costos unitarios y Planilla de metrados 
 		if (CostosUnitarios.length !== PlanillaMetrados.length) {
-			for (let i = 0; i < CostosUnitarios.length; i++) {
-				var data = CostosUnitarios[i]
-				var encontrado = false
-				for (let j = 0; j < PlanillaMetrados.length; j++) {
-					if (data.item === PlanillaMetrados[j].item) {
-						encontrado = true
-						break
+			if(CostosUnitarios.length >= PlanillaMetrados.length){
+				for (let i = 0; i < CostosUnitarios.length; i++) {
+					var data = CostosUnitarios[i]
+					var encontrado = false
+					for (let j = 0; j < PlanillaMetrados.length; j++) {
+						if (data.item === PlanillaMetrados[j].item) {
+							encontrado = true
+							break
+						}
+					}
+					if (!encontrado) {
+						ErroresArray1.push(data)
 					}
 				}
-				if (!encontrado) {
-					ErroresArray1.push(data)
+			}else{
+				for (let i = 0; i < PlanillaMetrados.length; i++) {
+					var data = PlanillaMetrados[i]
+					var encontrado = false
+					for (let j = 0; j < CostosUnitarios.length; j++) {
+						if (data.item === CostosUnitarios[j].item) {
+							encontrado = true
+							break
+						}
+					}
+					if (!encontrado) {
+						ErroresArray1.push(data)
+					}
 				}
+
 			}
+			
 			Errores = 'tamaños diferentes'
 		} else {
 			for (let index = 0; index < CostosUnitarios.length; index++) {
@@ -603,8 +683,9 @@ class PartidasNuevas extends Component {
 								<Col sm="4">
 									<fieldset>
 										<legend><b>cargar datos de Costos unitarios</b></legend>
-										<input type="file" id="input1" onChange={this.CostosUnitarios} />
-										<Button onClick={this.CostosUnitarios} color="success" size="sm">RECARGAR</Button>
+										<input type="file" id="input1"/>
+										<Button onClick={this.CostosUnitarios} color="success" size="sm">FORMATO CLASICO</Button>
+										<Button onClick={this.CostosUnitariosDelphi} color="success" size="sm">FORMATO DELPHI</Button>
 										{recursosErroresTamanyo.map((err, i) =>
 											<label key={i} className="text-danger">el siguiente recurso tiene errores {err.item + " " + err.recurso.tipo + " " + err.recurso.descripcion + " " + err.recurso.unidad}</label>
 										)}
