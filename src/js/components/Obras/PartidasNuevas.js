@@ -33,6 +33,7 @@ class PartidasNuevas extends Component {
 		this.CostosUnitariosDelphi = this.CostosUnitariosDelphi.bind(this)
 
 		this.PlanillaMetrados = this.PlanillaMetrados.bind(this)
+		this.PlanillaMetradosDelphi = this.PlanillaMetradosDelphi.bind(this)
 		this.verificarDatos = this.verificarDatos.bind(this)
 		this.EnviarDatos = this.EnviarDatos.bind(this)
 		this.componentesIngresados = this.componentesIngresados.bind(this)
@@ -241,33 +242,43 @@ class PartidasNuevas extends Component {
 					partida.recursos = []
 					partida.item = row[1]
 					partida.descripcion = row[3]
-					partida.rendimiento = row[8].replace('Rendimiento:','')
-					partida.unidad_medida = rows[index + 1][8].replace('Costo unitario por ','')
+
+					var rendimiento = row[8].replace('Rendimiento:', '')
+					rendimiento = rendimiento.trim()
+					rendimiento = rendimiento.split(" ")
+					if (rendimiento.length == 2) {
+						rendimiento = rendimiento[0]
+					} else {
+						rendimiento = 1
+					}
+					partida.rendimiento = rendimiento
+					var unidad_medida = rows[index + 1][8].replace('Costo unitario por ', '')
+					partida.unidad_medida = unidad_medida.trim()
 					partida.costo_unitario = rows[index + 1][12]
-					partida.equipo = 1
+					partida.equipo = rendimiento
 				} else if (row[0] === "Código") {
 					//zona de recursos
 					index++
 					var tipo = "inicio"
 					while (index < rows.length) {
-						
+
 						if (rows[index][0] == "Partida:") {
 							index--;
 							break
 						}
-						if(typeof rows[index][0] == "string"){
+						if (typeof rows[index][0] == "string") {
 							tipo = rows[index][0]
-							
-						}else if(typeof rows[index][0] == "number"){
+
+						} else if (typeof rows[index][0] == "number") {
 							var recurso = {
-								tipo:tipo,
-								codigo:rows[index][0],
-								descripcion:rows[index][2],
-								unidad:rows[index][6],
-								cuadrilla:rows[index][7],
-								cantidad:rows[index][9],
-								precio:rows[index][10],
-								parcial:rows[index][11]
+								tipo: tipo,
+								codigo: rows[index][0],
+								descripcion: rows[index][2],
+								unidad: rows[index][6],
+								cuadrilla: rows[index][7],
+								cantidad: rows[index][9],
+								precio: rows[index][10],
+								parcial: rows[index][11]
 							}
 							partida.recursos.push(recurso)
 						}
@@ -535,6 +546,243 @@ class PartidasNuevas extends Component {
 			alert('tipo de archivo no admitido cargue solo archivos con extension .xlsx')
 		}
 	}
+	PlanillaMetradosDelphi() {
+		const input = document.getElementById('input2')
+		var temp = 0
+		var PlanillaMetrados = []
+		var tipo = ""
+		var obPlanilla = {}
+		if (input.files[0].type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+			readXlsxFile(input.files[0]).then((rows) => {
+				var fila = 0
+				var columna = 0
+				// UBICANDO LA POSICION DE LA PALABRA ITEM
+				var itemEncontrado = false
+				for (let index = 0; index < rows.length; index++) {
+					if (!itemEncontrado) {
+						for (let i = 0; i < rows[index].length; i++) {
+							var item = rows[index][i]
+							if (typeof item === 'string') {
+								item = item.toLowerCase()
+							}
+							if (item === 'item' || item === 'Partida') {
+								columna = i
+								itemEncontrado = true
+								console.log('palabra item fila : %s columna %s', index + 1, columna + 1)
+								break
+							}
+						}
+					} else {
+						if (rows[index][columna] != null) {
+							fila = index
+							console.log('primer dato fila: %s columna %s', fila + 1, columna + 1)
+							break;
+						}
+					}
+				}
+				//revisando items bien estructurados y secuencia de items
+				function itemStructure(data) {
+					data = data.toString();
+					var regla = /^\d{1,2}(\.\d{1,2})*$/
+					return data.match(regla)
+				}
+				function predecirItem(data) {
+					var listaNumeros = data.split(".")
+					var opciones = []
+					var numTemp = ""
+					for (let i = 0; i < listaNumeros.length; i++) {
+						const numero = listaNumeros[i];
+						var last2 = Number(numero)
+						last2++
+						var numTemp2 = numTemp + "." + last2
+						if (i == 0) {
+							numTemp2 = numTemp2.substr(1);
+							numTemp = Number(numero)
+						} else {
+							numTemp += "." + Number(numero)
+						}
+						opciones.push(numTemp2)
+					}
+					numTemp += ".1"
+					opciones.push(numTemp)
+					return opciones
+				}
+				var itemsErroneos = []
+				var erroresSecuenciaItems = []
+				var opciones = [rows[fila][columna].toString()]
+				var itemPrevio = rows[fila][columna]
+				for (let index = fila; index < rows.length; index++) {
+					const row = rows[index];
+					if (row[columna] != null && !itemStructure(row[columna])) {
+						itemsErroneos.push(
+							{
+								item: row[columna],
+								descripcion: row[columna + 1],
+								fila: index
+							}
+						)
+					}
+					if (row[columna]) {
+						if (opciones.indexOf(row[columna].toString()) == -1) {
+							erroresSecuenciaItems.push(
+								{
+									itemPrevio: itemPrevio,
+									itemActual: row[columna]
+								}
+							)
+						}
+						opciones = predecirItem(row[columna].toString())
+						itemPrevio = row[columna]
+					}
+				}
+				this.setState({
+					itemsErroneos: itemsErroneos,
+					erroresSecuenciaItems: erroresSecuenciaItems
+				})
+				//--------------------------------------------------------// 
+				function Redondear(data) {
+					data = Math.round(data * 10000000000) / 10000000000
+					data = Math.round(data * 100) / 100
+					return data
+				}
+				// CREAMOS EL DATA DE PLANILLA DE METRADOS 
+				var obActividades = {}
+				for (let index = fila; index < rows.length; index++) {
+					temp = rows[index]
+					if ((rows[index][columna + 6] !== null || rows[index][columna + 7] !== null) && rows[index][columna] !== null) {
+						tipo = "partida"
+						// si la columna total tiene un valor
+						PlanillaMetrados.push(obPlanilla)
+						obPlanilla = {}
+						obPlanilla.tipo = "partida"
+						obPlanilla.item = rows[index][columna]
+						obPlanilla.descripcion = rows[index][columna + 1]
+						obPlanilla.actividades = []
+						obPlanilla.veces = rows[index][columna + 2]
+						obPlanilla.largo = rows[index][columna + 3]
+						obPlanilla.ancho = rows[index][columna + 4]
+						obPlanilla.alto = rows[index][columna + 5]
+						// obPlanilla.parcial = rows[index][columna + 6]
+						obPlanilla.metrado = Redondear(rows[index][columna + 7])
+					} else if (rows[index][columna] === null && (rows[index][columna + 6] !== null) || (rows[index][columna + 7] !== null)) {
+						tipo = "actividad subtitulo"
+						var obActividades = {}
+						// titulo                            
+						obActividades.tipo = "subtitulo"
+						// nombre                            
+						obActividades.nombre = rows[index][columna + 1]
+						// veces
+						obActividades.veces = rows[index][columna + 2]
+						// largo
+						obActividades.largo = rows[index][columna + 3]
+						// ancho
+						obActividades.ancho = rows[index][columna + 4]
+						// alto
+						obActividades.alto = rows[index][columna + 5]
+						// parcial
+						if (rows[index][columna + 7] !== null) {
+							obActividades.parcial = Redondear(rows[index][columna + 7])
+						} else {
+							obActividades.parcial = Redondear(rows[index][columna + 6])
+						}
+
+						obPlanilla.actividades.push(obActividades)
+					} else if (rows[index][columna] !== null && rows[index][columna + 1] !== null) {
+						// TITULOS
+						tipo = "titulo"
+						PlanillaMetrados.push(obPlanilla)
+						obPlanilla = {}
+						obPlanilla.tipo = "titulo"
+						obPlanilla.item = rows[index][columna]
+						obPlanilla.descripcion = rows[index][columna + 1]
+					} else if (rows[index][columna + 1] !== null) {
+						tipo = "actividad titulo"
+						var obActividades = {}
+						// titulo                            
+						obActividades.tipo = "titulo"
+						// nombre                            
+						obActividades.nombre = rows[index][columna + 1]
+						obPlanilla.actividades.push(obActividades)
+					}
+				}
+				PlanillaMetrados.push(obPlanilla)
+				PlanillaMetrados = PlanillaMetrados.slice(1, PlanillaMetrados.length)
+				// insertando actividades unicas
+				for (let j = 0; j < PlanillaMetrados.length; j++) {
+					tipo = "actividades unicas"
+					if (typeof PlanillaMetrados[j].actividades !== 'undefined' && PlanillaMetrados[j].actividades.length === 0) {
+						var obActividades = {}
+						// convertimos variable si no es null
+						var veces = PlanillaMetrados[j].veces
+						var largo = PlanillaMetrados[j].largo
+						var alto = PlanillaMetrados[j].alto
+						var ancho = PlanillaMetrados[j].ancho
+						var metrado = PlanillaMetrados[j].metrado
+						// veces = (veces === null) ? veces : Number(veces).toFixed(2)
+						// largo = (largo === null) ? largo : Number(largo).toFixed(2)
+						// alto = (alto === null) ? alto : Number(alto).toFixed(2)
+						// ancho = (ancho === null) ? ancho : Number(ancho).toFixed(2)
+						// metrado = (metrado === null) ? metrado : Number(metrado.toFixed(2)) 
+						// console.log('verifica >', typeof veces ,'>' , veces) 
+						obActividades.tipo = "subtitulo"
+						obActividades.nombre = "Actividad unica"
+						obActividades.veces = veces
+						obActividades.largo = largo
+						obActividades.ancho = ancho
+						obActividades.alto = alto
+						obActividades.parcial = metrado
+						PlanillaMetrados[j].actividades.push(obActividades)
+					}
+					delete PlanillaMetrados[j].veces
+					delete PlanillaMetrados[j].largo
+					delete PlanillaMetrados[j].alto
+					delete PlanillaMetrados[j].ancho
+				}
+
+				//revisando sumatorias de actividades
+				var erroresSuma = []
+				for (let index = 0; index < PlanillaMetrados.length; index++) {
+					const partida = PlanillaMetrados[index];
+					var suma = 0;
+					if (partida.tipo == "partida") {
+						for (let j = 0; j < partida.actividades.length; j++) {
+							const parcial = partida.actividades[j].parcial;
+							if (parcial) {
+								suma += parcial
+							}
+						}
+						if (PlanillaMetrados[index].metrado != suma.toFixed(2)) {
+							erroresSuma.push(
+								{
+									"item": PlanillaMetrados[index].item,
+									"total": Number(PlanillaMetrados[index].metrado),
+									"suma": suma.toFixed(2)
+								}
+							)
+						}
+					}
+				}
+				this.setState({
+					PlanillaMetrados: PlanillaMetrados,
+					DataPlanilla: [...PlanillaMetrados],
+					erroresSuma: erroresSuma
+				})
+			})
+				.catch((error) => {
+					alert('algo salió mal')
+					console.log(error);
+					console.log("PlanillaMetrados", PlanillaMetrados);
+					var DataErrores = []
+					DataErrores.push(PlanillaMetrados[PlanillaMetrados.length - 1].tipo + " ? => " + PlanillaMetrados[PlanillaMetrados.length - 1].item + " " + PlanillaMetrados[PlanillaMetrados.length - 1].descripcion,
+						obPlanilla.tipo + " ? =>  " + obPlanilla.item + " " + obPlanilla.descripcion, tipo + " ? => " + temp[0] + " ?" + temp[1] + " ? " + temp[2] + " ? " + temp[3])
+					alert('algo salió mal')
+					this.setState({ DataErrores })
+					console.log(DataErrores);
+				})
+		} else {
+			alert('tipo de archivo no admitido cargue solo archivos con extension .xlsx')
+		}
+	}
 	verificarDatos() {
 		const { CostosUnitarios, PlanillaMetrados, componente, DataPlanilla } = this.state
 		var Errores = 0
@@ -548,10 +796,10 @@ class PartidasNuevas extends Component {
 				i--
 			}
 		}
-		console.log(CostosUnitarios,PlanillaMetrados);
+		console.log(CostosUnitarios, PlanillaMetrados);
 		// verifica que sean del mismo tamaño los datas de Costos unitarios y Planilla de metrados 
 		if (CostosUnitarios.length !== PlanillaMetrados.length) {
-			if(CostosUnitarios.length >= PlanillaMetrados.length){
+			if (CostosUnitarios.length >= PlanillaMetrados.length) {
 				for (let i = 0; i < CostosUnitarios.length; i++) {
 					var data = CostosUnitarios[i]
 					var encontrado = false
@@ -565,7 +813,7 @@ class PartidasNuevas extends Component {
 						ErroresArray1.push(data)
 					}
 				}
-			}else{
+			} else {
 				for (let i = 0; i < PlanillaMetrados.length; i++) {
 					var data = PlanillaMetrados[i]
 					var encontrado = false
@@ -581,7 +829,7 @@ class PartidasNuevas extends Component {
 				}
 
 			}
-			
+
 			Errores = 'tamaños diferentes'
 		} else {
 			for (let index = 0; index < CostosUnitarios.length; index++) {
@@ -683,8 +931,8 @@ class PartidasNuevas extends Component {
 								<Col sm="4">
 									<fieldset>
 										<legend><b>cargar datos de Costos unitarios</b></legend>
-										<input type="file" id="input1"/>
-										<Button onClick={this.CostosUnitarios} color="success" size="sm">FORMATO CLASICO</Button>
+										<input type="file" id="input1" />
+										<Button onClick={this.CostosUnitarios} color="success" size="sm">FORMATO S10</Button>
 										<Button onClick={this.CostosUnitariosDelphi} color="success" size="sm">FORMATO DELPHI</Button>
 										{recursosErroresTamanyo.map((err, i) =>
 											<label key={i} className="text-danger">el siguiente recurso tiene errores {err.item + " " + err.recurso.tipo + " " + err.recurso.descripcion + " " + err.recurso.unidad}</label>
@@ -697,8 +945,9 @@ class PartidasNuevas extends Component {
 								<Col sm="4">
 									<fieldset>
 										<legend><b>cargar datos de Planilla de metrados</b></legend>
-										<input type="file" id="input2" onChange={this.PlanillaMetrados} />
-										<Button onClick={this.PlanillaMetrados} color="success" size="sm">RECARGAR</Button>
+										<input type="file" id="input2" />
+										<Button onClick={this.PlanillaMetrados} color="success" size="sm">FORMATO S10</Button>
+										<Button onClick={this.PlanillaMetradosDelphi} color="success" size="sm">FORMATO DELPHI</Button>
 										{DataErrores.map((err) =>
 											<label className="text-danger">{err}</label>
 										)}
