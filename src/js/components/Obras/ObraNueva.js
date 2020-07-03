@@ -89,7 +89,7 @@ class ObraNueva extends Component {
 			datosObra.f_entidad_finan = rows[18][1]
 			datosObra.f_entidad_ejec = rows[19][1]
 			datosObra.tiempo_ejec = rows[20][1]
-			datosObra.modalidad_ejec = rows[21][1]
+			datosObra.modalidad_ejecutora = 1
 			//fecha final
 			datosObra.plazoEjecucion = {
 				"FechaEjecucion": this.formatDate(rows[2][1])
