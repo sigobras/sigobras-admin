@@ -242,7 +242,11 @@ class PartidasNuevas extends Component {
 					partida.recursos = []
 					partida.item = row[1]
 					partida.descripcion = row[3]
-
+					if(row[8] ==null){
+						console.log(row);
+						row[8]=row[6]
+					}
+						
 					var rendimiento = row[8].replace('Rendimiento:', '')
 					rendimiento = rendimiento.trim()
 					rendimiento = rendimiento.split(" ")
@@ -252,7 +256,12 @@ class PartidasNuevas extends Component {
 						rendimiento = 1
 					}
 					partida.rendimiento = rendimiento
-					var unidad_medida = rows[index + 1][8].replace('Costo unitario por ', '')
+					if(rows[index + 1][8] ==null){
+						console.log(rows[index + 1]);
+						rows[index + 1][8]=rows[index + 1][6]
+					}
+						
+					var unidad_medida = rows[index + 1][8].replace('Costo unitario por', '')
 					partida.unidad_medida = unidad_medida.trim()
 					partida.costo_unitario = rows[index + 1][12]
 					partida.equipo = rendimiento
