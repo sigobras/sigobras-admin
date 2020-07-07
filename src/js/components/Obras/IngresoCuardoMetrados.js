@@ -81,15 +81,7 @@ class IngresoCuardoMetrados extends Component {
 
                 for (var k in sheets) {
                     await readXlsxFile(input.files[0], { sheet: k }).then((rows) => {
-                        // console.log("hoja",k);
-
-
-
-
-
                         //buscando posicion de ITEM          
-
-
                         var row = 0
                         var col = 0
                         loop1:
@@ -112,9 +104,20 @@ class IngresoCuardoMetrados extends Component {
 
 
                         //verificar listadeitems
-
+                        console.log("listaPartidas",listaPartidas);
+                        console.log("rows",rows);
                         for (let i = 0; i < listaPartidas.length; i++) {
+                            
+                            
+                            // console.log("fila",fila);
+                            // console.log("index",i,row,i+row);
+                            if(i+row+1 >rows.length){
+                                console.log("limit");
+                                alert("las partidas del excel estan incompletas")
+                                break;
+                            }
                             const fila = rows[i + row];
+                            
                             if (fila[col - 2] != listaPartidas[i].item) {
                                 console.log("diferente: ", fila[col - 2], listaPartidas[i].item);
                                 dataExcelPartidasOriginial.push(
@@ -214,6 +217,10 @@ class IngresoCuardoMetrados extends Component {
 
                 })
             })
+            .catch((error) => {
+				alert('algo salió mal')
+				console.log(error);
+			})
 
 
         })
