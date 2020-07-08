@@ -289,6 +289,9 @@ class PartidasNuevas extends Component {
 								precio: rows[index][10],
 								parcial: rows[index][11]
 							}
+							if(recurso.descripcion == ''||recurso.descripcion == ' '||recurso.descripcion == null){
+								console.log("vacio",rows[index])
+							}
 							partida.recursos.push(recurso)
 						}
 						index++
