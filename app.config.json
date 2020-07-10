@@ -2,7 +2,7 @@
 	"apps": [
 		{
 			"name": "your-app",
-			"script": "start"
+			"script": "webpack-dev-server --mode development"
 		}
 	]
 }
