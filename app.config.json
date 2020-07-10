@@ -1,7 +1,7 @@
 {
 	"apps": [
 		{
-			"name": "your-app",
+			"name": "admin",
 			"script": "npm start"
 		}
 	]
