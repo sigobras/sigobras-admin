@@ -112,9 +112,17 @@ class PartidasNuevas extends Component {
 					partida.item = rows[index][1]
 					partida.descripcion = rows[index][3]
 				} else if (rows[index][0] === "Rendimiento") {
+					console.log(rows[index]);
 					// busca unidad de medida, eq y costo unitario
 					partida.unidad_medida = rows[index][1]
-					partida.costo_unitario = rows[index][7]
+					if(rows[index][6] == null){
+						partida.costo_unitario = rows[index][8]
+					}else{
+						partida.costo_unitario = rows[index][7]
+					}
+
+					
+
 					for (let i = 0; i < rows[index].length; i++) {
 						if (rows[index][i] === "EQ.") {
 							if (rows[index][i + 1] === null) {
