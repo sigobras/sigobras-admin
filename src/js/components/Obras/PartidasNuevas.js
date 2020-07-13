@@ -248,13 +248,16 @@ class PartidasNuevas extends Component {
 					CostosUnitarios.push(partida)
 					partida = {}
 					partida.recursos = []
-					partida.item = row[1]
+					if(partida.item == null){
+						partida.item = row[2]
+					}else{
+						partida.item = row[1]
+					}
+					
 					partida.descripcion = row[3]
 					if(row[8] ==null){
-						console.log(row);
 						row[8]=row[6]
 					}
-						
 					var rendimiento = row[8].replace('Rendimiento:', '')
 					rendimiento = rendimiento.trim()
 					rendimiento = rendimiento.split(" ")
