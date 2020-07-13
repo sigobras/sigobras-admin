@@ -276,7 +276,7 @@ class PartidasNuevas extends Component {
 					partida.unidad_medida = unidad_medida.trim()
 					partida.costo_unitario = rows[index + 1][rows[index + 1].length-1]
 					partida.equipo = rendimiento
-				} else if (row[0] === "Código") {
+				} else if (row[0] == "Código" || row[0] =="Ind.") {
 					//zona de recursos
 					index++
 					var tipo = "inicio"
