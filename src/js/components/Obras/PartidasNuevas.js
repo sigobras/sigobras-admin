@@ -293,7 +293,7 @@ class PartidasNuevas extends Component {
 							var recurso = {
 								tipo: tipo,
 								codigo: rows[index][0],
-								descripcion: rows[index][2],
+								descripcion: rows[index][2]||rows[index][1],
 								unidad: rows[index][6],
 								cuadrilla: rows[index][7],
 								cantidad: rows[index][9],
