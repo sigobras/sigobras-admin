@@ -274,7 +274,8 @@ class PartidasNuevas extends Component {
 						
 					var unidad_medida = rows[index + 1][8].replace('Costo unitario por', '')
 					partida.unidad_medida = unidad_medida.trim()
-					partida.costo_unitario = rows[index + 1][rows[index + 1].length-1]
+					console.log("costo unitario",rows[index + 1]);
+					partida.costo_unitario = rows[index + 1][rows[index + 1].length-1] ||rows[index + 1][rows[index + 1].length-2]
 					partida.equipo = rendimiento
 				} else if (row[0] == "Código" || row[0] =="Ind.") {
 					//zona de recursos
