@@ -166,6 +166,7 @@ class ListaObras extends Component {
 				<table className="table table-bordered table-hover table-sm">
 					<thead>
 						<tr>
+							<th>ID</th>
 							<th>Codigo</th>
 							<th>Asignar Acceso a usuario</th>
 							<th>Partidas nuevas</th>
@@ -181,6 +182,7 @@ class ListaObras extends Component {
 					<tbody>
 						{listaObras === undefined ? 'cargando' : listaObras.map((obra, index) =>
 							<tr key={index}>
+								<td>{obra.id_ficha}</td>	
 								<td>{obra.codigo}</td>
 								<td>
 									<button className="btn btn-outline-success" onClick={(e) => this.CapturarIdObra(obra.id_ficha)}>acceso</button>
