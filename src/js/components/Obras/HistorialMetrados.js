@@ -147,15 +147,16 @@ class HistorialMetrados extends Component {
                     </div>
 
                 </div>
-                <button type="text" className="btn btn-success" onClick={this.getHistorial}>historial</button>
+                <button type="text" className="btn btn-success" onClick={this.getHistorial}>Avances</button>
                 <table className="table table-bordered table-hover table-sm">
                     <thead>
                         <tr>
-                            <th></th>
+                            <th>Eliminar</th>
+                            <th>Item</th>
                             <th>fecha</th>
                             <th>valor</th>
-                            <th>descripcion</th>
-                            <th>observacion</th>
+                            <th>descripción</th>
+                            <th>observación</th>
                         </tr>
                     </thead>
                     <tbody >
@@ -166,6 +167,7 @@ class HistorialMetrados extends Component {
                                         Eliminar
                                     </button>
                                 </td>
+                                <td>{avance.item}</td>
                                 <td>{avance.fecha}</td>
                                 <td>{avance.valor}</td>
                                 <td>{avance.descripcion}</td>
