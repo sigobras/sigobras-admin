@@ -51,6 +51,7 @@ module.exports = {
     compress: true,
     port: PORT,
     historyApiFallback: true,
+    disableHostCheck: true,
   },
   plugins: [
     new HtmlWebPackPlugin({
