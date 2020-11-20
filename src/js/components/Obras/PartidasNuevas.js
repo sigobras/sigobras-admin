@@ -857,13 +857,15 @@ class PartidasNuevas extends Component {
 			Errores = 'tamaños diferentes'
 		} else {
 			for (let index = 0; index < CostosUnitarios.length; index++) {
-				if (CostosUnitarios[index].item === PlanillaMetrados[index].item) {
+				var CostosUnitariosTemp = CostosUnitarios[index].item||CostosUnitarios[index].item.trim()
+				var PlanillaMetradosTemp = PlanillaMetrados[index].item||PlanillaMetrados[index].item.trim()
+				if (CostosUnitariosTemp == PlanillaMetradosTemp) {
 					// console.log('coincide')
 				} else {
-					// console.log('algo no coincide')
+					console.log('algo no coincide')
 					Errores++
 					// console.log(CostosUnitarios[index] ,  PlanillaMetrados[index])
-					// alert("ACU" +CostosUnitarios[index].item+" - planilla "+PlanillaMetrados[index].item)
+					alert("ACU" +CostosUnitarios[index].item+" - planilla "+PlanillaMetrados[index].item)
 					ErroresArray1.push(CostosUnitarios[index])
 					ErroresArray2.push(PlanillaMetrados[index])
 				}
