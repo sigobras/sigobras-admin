@@ -29,18 +29,22 @@ class ListaObras extends Component {
 		this.CompletarPartidas = this.CompletarPartidas.bind(this)
 		this.RevisarPresupuesto = this.RevisarPresupuesto.bind(this)
 		this.IngresoAnalitico = this.IngresoAnalitico.bind(this)
-		
+
 	}
 	componentWillMount() {
-		axios.get(`${UrlServer}/listaObras`)
+		axios.post(`${UrlServer}/listaObras`,
+			{
+				"id_tipoObra": 0
+			}
+		)
 			.then((res) => {
-				// console.log(res.data);
+				console.log("listaObras",res.data);
 				this.setState({
 					listaObras: res.data
 				})
 			})
 			.catch((error) => {
-				console.log('ERROR', error);
+				console.log('ERROR', error.response);
 				alert('algo ha salido mal')
 			})
 	}
@@ -182,7 +186,7 @@ class ListaObras extends Component {
 					<tbody>
 						{listaObras === undefined ? 'cargando' : listaObras.map((obra, index) =>
 							<tr key={index}>
-								<td>{obra.id_ficha}</td>	
+								<td>{obra.id_ficha}</td>
 								<td>{obra.codigo}</td>
 								<td>
 									<button className="btn btn-outline-success" onClick={(e) => this.CapturarIdObra(obra.id_ficha)}>acceso</button>

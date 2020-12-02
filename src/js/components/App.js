@@ -1,147 +1,191 @@
-// libraris
-import React, { Component } from 'react';
-import { FaAlignJustify, FaPlus, FaHouseDamage, FaPeopleCarry, FaLinode, FaSuperscript } from 'react-icons/fa';
-import { UncontrolledCollapse } from 'reactstrap';
-import { BrowserRouter as Router, Route, Link } from "react-router-dom";
-// app assets
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Route, NavLink, Switch, Redirect } from "react-router-dom";
 import LogoSigobras from '../../images/logoSigobras.png';
-// app components
 import UserNav from './Otros/UserNav';
-import NotificacionNav from './Otros/NotificacionNav';
-import MensajeNav from "./Otros/MensajesNav";
-import Inicio from '../components/Inicio/Inicio'
-// components
-import ObraNueva from './Obras/ObraNueva'
-import PartidasNuevas from '../components/Obras/PartidasNuevas'
-import ComponentesNuevos from '../components/Obras/ComponentesNuevos'
-import ListaObras from '../components/Obras/ListaObras'
-import listaCargos from '../components/Cargos/ListaCargos'
-import ListaUsuarios from '../components/Usuarios/ListaUsuarios'
-import IngresoCuardoMetrados from '../components/Obras/IngresoCuardoMetrados'
-import VerificacionValorizacion from '../components/Obras/VerificacionValorizacion'
-import HistorialObra from '../components/Obras/HistorialObra'
-import RevisarPresupuesto from '../components/Obras/RevisarPresupuesto'
-import clasificadorGastos from '../components/Otros/clasificadorGastos'
-import IngresoAnalitico from '../components/Obras/IngresoAnalitico'
-import HistorialMetrados from '../components/Obras/HistorialMetrados'
+import { MdDehaze } from "react-icons/md";
+import { ToastContainer } from "react-toastify";
+import { FaChevronRight, FaChevronUp } from 'react-icons/fa';
+import { Collapse } from 'reactstrap';
+import axios from 'axios';
+import { UrlServer } from './Utils/ServerUrlConfig'
 
-import RutaProyeccion from '../components/Planner/proyeccion'
+import Inicio from "./Inicio/index"
+import Obra from "./Obra/index"
+import Componentes from "./Componentes/index"
+import Partidas from "./Partidas/index"
+import Avances from "./Avances/index"
+import Usuarios from "./Usuarios/index"
+import ListaObras from "./Obras/ListaObras"
+import PartidasNuevas from "./Partidas/PartidasNuevas"
+import PartidasNuevasPorContrato from "./Partidas/PartidasNuevasPorContrato"
+import ListaObrasOld from "./Obras/ListaObras"
 
-class AppAng extends Component {
-    constructor() {
-        super();
-        this.state = {
-            navbarExpland: true
+
+export default () => {
+    useEffect(() => {
+        if (sessionStorage.getItem("idFicha") != null && sessionStorage.getItem("idFicha") != 0) {
+            fetchDatosGenerales(sessionStorage.getItem("idFicha"))
         }
-        this.ButtonToogle = this.ButtonToogle.bind(this);
+        if(sessionStorage.getItem("idFicha") == 0){
+            setDataObra({ id_ficha: 0 ,g_meta:"TODAS LAS OBRAS",codigo:"todos"})
+        }
+    }, []);
+    const [navbarExpland, setnavbarExpland] = useState(false);
+    function ButtonToogle() {
+        setnavbarExpland(!navbarExpland)
+        localStorage.setItem('opcionBtnToogle', navbarExpland);
     }
-    ButtonToogle() {
-        this.setState({
-            navbarExpland: !this.state.navbarExpland
-        });
-        localStorage.setItem('opcionBtnToogle', this.state.navbarExpland);
+    const [collapse, setcollapse] = useState(-1);
+    function CollapseMenu(index) {
+        setcollapse(index != collapse ? index : -1)
     }
-    render() {
-        return (
-            <Router>
-                <div>
-                    <nav className="navbar navbar-dark fixed-top bg-primary flex-md-nowrap p-0 shadow">
-                        <span className="navbar-brand col-sm-3 col-md-2 mr-0">
-                            <img src={LogoSigobras} className="rounded p-0 m-0" alt="logo sigobras" width="30" /> ADMIN SIGOBRAS
-                            <button className="btn btn-link btn-sm m-0 p-0 float-right text-white" onClick={this.ButtonToogle}>
-                                <FaAlignJustify />
-                            </button>
+    //datos generales
+    const [DataObra, setDataObra] = useState([]);
+    async function fetchDatosGenerales(id_ficha) {
+        var res = await axios.post(`${UrlServer}/getDatosGenerales2`, {
+            id_ficha
+        })
+        setDataObra(res.data)
+    }
+    async function recargar(ficha) {
+        await sessionStorage.setItem("idFicha", ficha.id_ficha);
+        await sessionStorage.setItem("codigoObra", ficha.codigo);
+        if(ficha.id_ficha != 0){
+            fetchDatosGenerales(sessionStorage.getItem("idFicha"))
+        }
+        setDataObra(ficha)
+    }
+    return (
+        <Router>
+            <div>
+                <nav className="navbar fixed-top FondoBarra flex-md-nowrap p-1 border-button">
+                    <div>
+                        <img src={LogoSigobras} className="rounded p-0 m-0" alt="logo sigobras" width="45" height="28" />
+                        <span className="textSigobras h5 ml-2"> SIGOBRAS </span>
+                        <i className="small"> V. 1.0</i>
+                    </div>
+                    <div>
+                        <span className="text-white ButtonToogleMenu" onClick={ButtonToogle}>
+                            <MdDehaze size={20} />
                         </span>
-                        <div className="clearfix d-none d-sm-block p-0 m-0">
-                            <div className="float-right"><UserNav /></div>
-                            <div className="float-right"><MensajeNav /></div>
-                            <div className="float-right"><NotificacionNav /></div>
-                        </div>
-                    </nav>
-                    <div className="container-fluid">
-                        <div className="row">
-                            <nav className={JSON.parse(localStorage.getItem('opcionBtnToogle')) ? 'navbarExpland  bg-light sidebar' : "navbarCollapse bg-light sidebar"}>
-                                <div className="sidebar-sticky">
-                                    <ul className="nav flex-column ull">
-                                        <li className="lii border-top">
-                                            <Link to="/Inicio" className="nav-link"> <FaHouseDamage /><span> INICIO</span> </Link>
-                                        </li>
-                                        <li className="lii">
-                                            <a className="nav-link" href="#ADMINS" id="ADMINS"><FaSuperscript /><span> OBRAS <div className="float-right"><FaPlus /></div> </span> </a>
-                                            <UncontrolledCollapse toggler="#ADMINS">
-                                                <ul className="nav flex-column ull">
-                                                    <li className="lii">
-                                                        <Link to="ListaObras" className="nav-link"><FaPeopleCarry /> ListaObras</Link>
-                                                    </li>
-                                                    <li className="lii">
-                                                        <Link to="ObraNueva" className="nav-link"><FaLinode /> Obra nueva</Link>
-                                                    </li>
-                                                    <li className="lii">
-                                                        <Link to="HistorialMetrados" className="nav-link"><FaLinode /> Eliminar historial</Link>
-                                                    </li>
-                                                </ul>
-                                            </UncontrolledCollapse>
-                                        </li>
-                                        <li className="lii">
-                                            <a className="nav-link" href="#OTROS" id="OTROS"><FaSuperscript /><span> OTROS <div className="float-right"><FaPlus /></div> </span> </a>
-                                            <UncontrolledCollapse toggler="#OTROS">
-                                                <ul className="nav flex-column ull">
-                                                    <li className="lii">
-                                                        <Link to="clasificadorGastos" className="nav-link"><FaPeopleCarry /> Clasificador de gastos</Link>
-                                                    </li>
-                                                </ul>
-                                            </UncontrolledCollapse>
-                                        </li>
-                                        <li className="lii">
-                                            <a className="nav-link" href="#CARGOS" id="CARGOS"><FaSuperscript /><span> CARGOS <div className="float-right"><FaPlus /></div> </span> </a>
-                                            <UncontrolledCollapse toggler="#CARGOS">
-                                                <ul className="nav flex-column ull">
-                                                    <li className="lii">
-                                                        <Link to="listaCargos" className="nav-link"><FaPeopleCarry /> lista Cargos</Link>
-                                                    </li>
-                                                </ul>
-                                            </UncontrolledCollapse>
-                                        </li>
-                                        <li className="lii">
-                                            <a className="nav-link" href="#USUARIOS" id="USUARIOS"><FaSuperscript /><span> USUARIOS <div className="float-right"><FaPlus /></div> </span> </a>
-                                            <UncontrolledCollapse toggler="#USUARIOS">
-                                                <ul className="nav flex-column ull">
-                                                    <li className="lii">
-                                                        <Link to="ListaUsuarios" className="nav-link"><FaPeopleCarry /> Lista Usuarios</Link>
-                                                    </li>
-                                                </ul>
-                                            </UncontrolledCollapse>
-                                        </li>
-                                        <li className="lii">
-                                            <Link to="proyeccion" className="nav-link"><FaPeopleCarry /> proyeccion</Link>
-                                        </li>
-                                    </ul>
+                    </div>
+                    <div className="ml-auto">
+                        <div className="float-right"><UserNav /></div>
+                    </div>
+                </nav>
+
+                <div className="container-fluid ">
+                    <ToastContainer
+                        position="bottom-right"
+                        autoClose={1000}
+                        hideProgressBar={false}
+                        newestOnTop={false}
+                        closeOnClick
+                        rtl={false}
+                        pauseOnVisibilityChange
+                        draggable
+                        pauseOnHover
+                    />
+                    <div className="row">
+                        <nav
+                            className={JSON.parse(localStorage.getItem('opcionBtnToogle')) ? 'navbarExplandLeft sidebar' : "navbarCollapseLeft sidebar"}
+                        >
+                            <div className="sidebar-sticky">
+                                <ul className="nav flex-column ull">
+
+                                    <li className="lii">
+                                        <NavLink to="/Inicio" activeclassname="nav-link">
+                                            <span> INICIO</span>
+                                        </NavLink>
+                                    </li>
+                                    <li className="lii">
+                                        <NavLink
+                                            to="/Obra"
+                                            activeclassname="nav-link"
+                                        >
+                                            OBRA
+                                        </NavLink>
+                                    </li>
+                                    <li className="lii">
+                                        <NavLink to="/Componentes" activeclassname="nav-link"> <span> COMPONENTES</span> </NavLink>
+                                    </li>
+                                    <li className="lii">
+                                        <a
+                                            className="nav-link"
+                                            onClick={() => CollapseMenu("Partidas")}
+                                        >
+                                            PARTIDAS
+                                            <div className="float-right">
+                                                {collapse === 1 ? <FaChevronUp /> : <FaChevronRight />}
+                                            </div>
+                                        </a>
+                                        <Collapse isOpen={collapse === "Partidas"}>
+                                            <ul className="nav flex-column ull ">
+                                                <li className="lii pl-3"
+
+                                                >
+                                                    <NavLink
+                                                        to="/PartidasNuevas"
+                                                        activeclassname="nav-link"
+                                                    >
+                                                        Partidas nuevas AD
+                                                    </NavLink>
+                                                </li>
+                                                <li className="lii pl-3"
+
+                                                >
+                                                    <NavLink
+                                                        to="/PartidasNuevasPorContrato"
+                                                        activeclassname="nav-link"
+                                                    >
+                                                        Partidas nuevas PC
+                                                    </NavLink>
+                                                </li>
+                                            </ul>
+                                        </Collapse>
+                                    </li>
+                                    <li className="lii">
+                                        <NavLink to="/Avances" activeclassname="nav-link"> <span> AVANCES</span> </NavLink>
+                                    </li>
+                                    <li className="lii">
+                                        <NavLink to="/Usuarios" activeclassname="nav-link"> <span> USUARIOS</span> </NavLink>
+                                    </li>
+                                </ul>
+                            </div>
+                        </nav>
+                        <main role="main" className="col ml-sm-auto col-lg px-0">
+                            <div className="d-flex mb-0 border-button pt-5 p-1 m-0">
+                                <div>
+                                    <b>
+                                        {DataObra.g_meta &&
+                                            DataObra.codigo + " - " + DataObra.g_meta.toUpperCase()}
+                                    </b>
                                 </div>
-                            </nav>
-                            <main role="main" className="col px-2">
-                                <div className="px-1 table-responsive">
-                                    <Route path="/Inicio" component={Inicio} />
-                                    <Route path="/ObraNueva" component={ObraNueva} />
-                                    <Route path="/PartidasNuevas" component={PartidasNuevas} />
-                                    <Route path="/ComponentesNuevos" component={ComponentesNuevos} />
+                            </div>
+                            <div className="scroll_contenido">
+                                <Switch>
+                                    <Redirect exact from="/" to="Inicio" />
                                     <Route path="/ListaObras" component={ListaObras} />
-                                    <Route path="/listaCargos" component={listaCargos} />
-                                    <Route path="/ListaUsuarios" component={ListaUsuarios} />
-                                    <Route path="/IngresoCudroMetradosEjecutados" component={IngresoCuardoMetrados} />
-                                    <Route path="/VerificacionValorizacion" component={VerificacionValorizacion} />
-                                    <Route path="/HistorialObra" component={HistorialObra} />
-                                    <Route path="/RevisarPresupuesto" component={RevisarPresupuesto} />
-                                    <Route path="/clasificadorGastos" component={clasificadorGastos} />
-                                    <Route path="/IngresoAnalitico" component={IngresoAnalitico} />
-                                    <Route path="/HistorialMetrados" component={HistorialMetrados} />
-                                    <Route path="/proyeccion" component={RutaProyeccion} />
-                                </div>
-                            </main>
-                        </div>
+                                    <Route path="/Inicio"
+                                        render={(props) => (
+                                            <Inicio {...props} recargar={recargar} />
+                                        )}
+                                    />
+                                    <Route path="/Obra" component={Obra} />
+                                    <Route path="/Componentes" component={Componentes} />
+                                    <Route path="/Partidas" component={Partidas} />
+                                    <Route path="/Avances" component={Avances} />
+                                    <Route path="/Usuarios" component={Usuarios} />
+                                    <Route path="/PartidasNuevas" component={PartidasNuevas} />
+                                    <Route path="/PartidasNuevasPorContrato" component={PartidasNuevasPorContrato} />
+                                    <Route path="/ListaObrasOld" component={ListaObrasOld} />
+                                </Switch>
+                            </div>
+                        </main>
                     </div>
                 </div>
-            </Router>
-        );
-    }
+            </div>
+        </Router>
+
+    );
 }
-export default AppAng;
