@@ -19,7 +19,7 @@ class Login extends Component {
   }
   handleSubmit(e) {
     e.preventDefault();
-    axios.post(UrlServer + '/login', {
+    axios.post(UrlServer + '/loginAdmin', {
       usuario: this.state.user,
       password: this.state.pass
     })

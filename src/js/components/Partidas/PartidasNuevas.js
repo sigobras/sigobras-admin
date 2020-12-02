@@ -930,8 +930,6 @@ class PartidasNuevas extends Component {
 			<div>
 				<Card>
 					<CardHeader className="p-2">
-						<strong>{ficha.codigo + " " + ficha.g_meta}</strong>
-						<hr />
 						<strong>Componentes Partidas Ingresados</strong>
 						{ComponentesPartidasIngresadas.map((compomente, i) =>
 							<div key={i}>
