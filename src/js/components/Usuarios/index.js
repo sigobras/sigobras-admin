@@ -14,7 +14,7 @@ export default () => {
 	async function fetchUsuarios() {
 		var request = await axios.post(`${UrlServer}/getUsuariosByCargoAdmin`,
 			{
-				"id_ficha": sessionStorage.getItem('idFicha'),
+				"id_ficha": sessionStorage.getItem('idobra'),
 				"id_cargo": 0,
 				"estado": "",
 				"cargos_tipo_id": 0,
@@ -87,7 +87,7 @@ export default () => {
 			"celular": "",
 			"cpt": "",
 			"id_cargo": "SELECCIONE",
-			"id_ficha": sessionStorage.getItem('idFicha'),
+			"id_ficha": sessionStorage.getItem('idobra'),
 			"usuario": "",
 			"password": ""
 		}
@@ -172,7 +172,7 @@ export default () => {
 						/>
 					</FormGroup>
 				</Col>
-				{sessionStorage.getItem('idFicha') == 0 &&
+				{sessionStorage.getItem('idobra') == 0 &&
 					<Col md={6}>
 						<FormGroup>
 							<Label for="exampleSearch">Search</Label>
@@ -188,7 +188,7 @@ export default () => {
 				}
 			</Row>
 			<div className="row">
-				<div className={sessionStorage.getItem('idFicha') == 0 ? "col-6" : "col-12"} >
+				<div className={sessionStorage.getItem('idobra') == 0 ? "col-6" : "col-12"} >
 					<table className="table table-sm small">
 						<thead>
 							<tr>
@@ -328,7 +328,7 @@ export default () => {
 					</table>
 
 				</div>
-				{sessionStorage.getItem('idFicha') == 0 &&
+				{sessionStorage.getItem('idobra') == 0 &&
 
 					<div className="col-6">
 						<table className="table table-sm small">

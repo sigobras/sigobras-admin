@@ -16,7 +16,7 @@ export default () => {
 	async function fetchObra() {
 		var res = await axios.post(`${UrlServer}/getObra`,
 			{
-				"id_ficha": sessionStorage.getItem('idFicha')
+				"id_ficha": sessionStorage.getItem('idobra')
 			}
 		)
 		setObra(res.data)
@@ -26,7 +26,7 @@ export default () => {
 	async function fetchComponentes() {
 		var res = await axios.post(`${UrlServer}/getComponentes`,
 			{
-				"id_ficha": sessionStorage.getItem('idFicha')
+				"id_ficha": sessionStorage.getItem('idobra')
 			}
 		)
 		setComponentes(res.data)
@@ -36,7 +36,7 @@ export default () => {
 	async function fetchComponentesIngresados() {
 		var res = await axios.post(`${UrlServer}/getComponentesPartidasIngresadas`,
 			{
-				"id_ficha": sessionStorage.getItem('idFicha')
+				"id_ficha": sessionStorage.getItem('idobra')
 			}
 		)
 		setComponentesIngresados(res.data)

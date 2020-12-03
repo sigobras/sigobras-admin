@@ -24,7 +24,7 @@ export default ({ recargar }) => {
             }
         )
         setObras(request.data)
-        if (!sessionStorage.getItem('idFicha')) {
+        if (!sessionStorage.getItem('idobra')) {
             recargar(request.data[0])
         }
     }
@@ -61,8 +61,8 @@ export default ({ recargar }) => {
         <div>
             <ObraNueva />
             <Button
-                outline={sessionStorage.getItem('idFicha') != 0}
-                color={sessionStorage.getItem('idFicha') != 0 ? "success" : "success"}
+                outline={sessionStorage.getItem('idobra') != 0}
+                color={sessionStorage.getItem('idobra') != 0 ? "success" : "success"}
                 onClick={() => recargar({ id_ficha: 0 ,g_meta:"TODAS LAS OBRAS",codigo:"todos"})}
             >
                 TODAS LAS OBRAS
@@ -109,8 +109,8 @@ export default ({ recargar }) => {
                                 </td>
                                 <td>
                                     <Button
-                                        outline={sessionStorage.getItem('idFicha') != item.id_ficha}
-                                        color={sessionStorage.getItem('idFicha') != item.id_ficha ? "secondary" : "primary"}
+                                        outline={sessionStorage.getItem('idobra') != item.id_ficha}
+                                        color={sessionStorage.getItem('idobra') != item.id_ficha ? "secondary" : "primary"}
                                         onClick={() => recargar(item)}
                                         className="text-white"
                                     >
