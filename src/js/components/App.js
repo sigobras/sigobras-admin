@@ -15,19 +15,18 @@ import Componentes from "./Componentes/index"
 import Partidas from "./Partidas/index"
 import Avances from "./Avances/index"
 import Usuarios from "./Usuarios/index"
-import ListaObras from "./Obras/ListaObras"
 import PartidasNuevas from "./Partidas/PartidasNuevas"
 import PartidasNuevasPorContrato from "./Partidas/PartidasNuevasPorContrato"
-import ListaObrasOld from "./Obras/ListaObras"
+import PartidasEdicion from "./Partidas/PartidasEdicion"
 
 
 export default () => {
     useEffect(() => {
-        if (sessionStorage.getItem("idFicha") != null && sessionStorage.getItem("idFicha") != 0) {
-            fetchDatosGenerales(sessionStorage.getItem("idFicha"))
+        if (sessionStorage.getItem("idobra") != null && sessionStorage.getItem("idobra") != 0) {
+            fetchDatosGenerales(sessionStorage.getItem("idobra"))
         }
-        if(sessionStorage.getItem("idFicha") == 0){
-            setDataObra({ id_ficha: 0 ,g_meta:"TODAS LAS OBRAS",codigo:"todos"})
+        if (sessionStorage.getItem("idobra") == 0) {
+            setDataObra({ id_ficha: 0, g_meta: "TODAS LAS OBRAS", codigo: "todos" })
         }
     }, []);
     const [navbarExpland, setnavbarExpland] = useState(false);
@@ -48,10 +47,10 @@ export default () => {
         setDataObra(res.data)
     }
     async function recargar(ficha) {
-        await sessionStorage.setItem("idFicha", ficha.id_ficha);
+        await sessionStorage.setItem("idobra", ficha.id_ficha);
         await sessionStorage.setItem("codigoObra", ficha.codigo);
-        if(ficha.id_ficha != 0){
-            fetchDatosGenerales(sessionStorage.getItem("idFicha"))
+        if (ficha.id_ficha != 0) {
+            fetchDatosGenerales(sessionStorage.getItem("idobra"))
         }
         setDataObra(ficha)
     }
@@ -141,6 +140,16 @@ export default () => {
                                                         Partidas nuevas PC
                                                     </NavLink>
                                                 </li>
+                                                <li className="lii pl-3"
+
+                                                >
+                                                    <NavLink
+                                                        to="/PartidasEdicion"
+                                                        activeclassname="nav-link"
+                                                    >
+                                                        Partidas edicion
+                                                    </NavLink>
+                                                </li>
                                             </ul>
                                         </Collapse>
                                     </li>
@@ -158,14 +167,13 @@ export default () => {
                                 <div>
                                     <b>
                                         {DataObra.g_meta &&
-                                            DataObra.codigo + " - " + DataObra.g_meta.toUpperCase()}
+                                            DataObra.id_ficha + " - " + DataObra.codigo + " - " + DataObra.g_meta.toUpperCase()}
                                     </b>
                                 </div>
                             </div>
                             <div className="scroll_contenido">
                                 <Switch>
                                     <Redirect exact from="/" to="Inicio" />
-                                    <Route path="/ListaObras" component={ListaObras} />
                                     <Route path="/Inicio"
                                         render={(props) => (
                                             <Inicio {...props} recargar={recargar} />
@@ -176,9 +184,10 @@ export default () => {
                                     <Route path="/Partidas" component={Partidas} />
                                     <Route path="/Avances" component={Avances} />
                                     <Route path="/Usuarios" component={Usuarios} />
+                                    {/* partidas */}
                                     <Route path="/PartidasNuevas" component={PartidasNuevas} />
                                     <Route path="/PartidasNuevasPorContrato" component={PartidasNuevasPorContrato} />
-                                    <Route path="/ListaObrasOld" component={ListaObrasOld} />
+                                    <Route path="/PartidasEdicion" component={PartidasEdicion} />
                                 </Switch>
                             </div>
                         </main>

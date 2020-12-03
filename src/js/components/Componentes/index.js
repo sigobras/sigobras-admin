@@ -4,7 +4,7 @@ import { UrlServer } from '../Utils/ServerUrlConfig';
 import { Redondea } from '../Utils/Funciones';
 export default () => {
 	useEffect(() => {
-		fetchComponentes(sessionStorage.getItem('idFicha'))
+		fetchComponentes(sessionStorage.getItem('idobra'))
 	}, []);
 	const [Componentes, setComponentes] = useState([])
 	async function fetchComponentes(id_ficha) {

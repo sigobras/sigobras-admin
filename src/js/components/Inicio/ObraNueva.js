@@ -117,7 +117,7 @@ export default () => {
 			var res = await axios.post(`${UrlServer}/nuevaObra`,
 				datosObra
 			)
-			sessionStorage.setItem("idFicha", res.data)
+			sessionStorage.setItem("idobra", res.data)
 			sessionStorage.setItem('estado', 'oficial')
 			if (TipoAdministracionSeleccionado == 1) {
 				window.location.href = "/PartidasNuevas";
