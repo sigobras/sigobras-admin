@@ -383,7 +383,6 @@ export default () => {
 
 								</UncontrolledPopover>
 							</th>
-							<th></th>
 							<th>id_partida</th>
 							<th>ITEM</th>
 							<th>DESCRIPCIÓN</th>
