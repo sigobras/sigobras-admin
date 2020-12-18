@@ -181,7 +181,7 @@ export default () => {
 					tipo: "partida",
 					item: item.numero,
 					descripcion: item.nombre,
-					unidad_medida: "un",
+					unidad_medida: "unidad",
 					metrado: item.presupuesto,
 					costo_unitario: 1,
 					actividades:
