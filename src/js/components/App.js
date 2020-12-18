@@ -11,6 +11,7 @@ import { UrlServer } from './Utils/ServerUrlConfig'
 
 import Inicio from "./Inicio/index"
 import Obra from "./Obra/index"
+import HistorialEstados from "./Obra/HistorialEstados"
 import Componentes from "./Componentes/index"
 import Partidas from "./Partidas/index"
 import Avances from "./Avances/index"
@@ -98,12 +99,41 @@ export default () => {
                                         </NavLink>
                                     </li>
                                     <li className="lii">
-                                        <NavLink
-                                            to="/Obra"
-                                            activeclassname="nav-link"
+                                        <a
+                                            className="nav-link"
+                                            onClick={() => CollapseMenu("Obra")}
                                         >
-                                            OBRA
-                                        </NavLink>
+                                            OBRAS
+                                            <div className="float-right">
+                                                {collapse === 1 ? <FaChevronUp /> : <FaChevronRight />}
+                                            </div>
+                                        </a>
+                                        <Collapse isOpen={collapse === "Obra"}>
+                                            <ul className="nav flex-column ull ">
+                                                <li className="lii pl-3"
+
+                                                >
+                                                    <NavLink
+                                                        to="/DatosObra"
+                                                        activeclassname="nav-link"
+                                                    >
+                                                        EDICION OBRA
+                                                    </NavLink>
+                                                </li>
+                                                <li className="lii pl-3"
+
+                                                >
+                                                    <NavLink
+                                                        to="/HistorialEstados"
+                                                        activeclassname="nav-link"
+                                                    >
+                                                        HISTORIAL DE ESTADOS
+                                                    </NavLink>
+                                                </li>
+
+                                            </ul>
+                                        </Collapse>
+
                                     </li>
                                     <li className="lii">
                                         <NavLink to="/Componentes" activeclassname="nav-link"> <span> COMPONENTES</span> </NavLink>
@@ -179,7 +209,10 @@ export default () => {
                                             <Inicio {...props} recargar={recargar} />
                                         )}
                                     />
-                                    <Route path="/Obra" component={Obra} />
+                                    {/* obras */}
+                                    <Route path="/DatosObra" component={Obra} />
+                                    <Route path="/HistorialEstados" component={HistorialEstados} />
+                                    
                                     <Route path="/Componentes" component={Componentes} />
                                     <Route path="/Partidas" component={Partidas} />
                                     <Route path="/Avances" component={Avances} />
