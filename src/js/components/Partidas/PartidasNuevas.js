@@ -1175,6 +1175,9 @@ export default () => {
 		}
 		var ErroresArray1 = []
 		function removeLeadingZeros(item) {
+			if(typeof item != "string"){
+				item = item.toString();
+			}
 			var itemArray = item.split(".")
 			itemArray.forEach((item, i) => {
 				itemArray[i] = Number(item)
