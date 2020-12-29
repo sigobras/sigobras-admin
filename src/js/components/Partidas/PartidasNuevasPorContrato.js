@@ -44,10 +44,14 @@ export default () => {
 	//funciones
 	function itemStructure(data) {
 		data = data.toString();
-		var regla = /^\d{2}(\.\d{2})*$/
+		var regla = /^\d{1,2}(\.\d{1,2})*$/
 		return data.match(regla)
 	}
 	function esPartida(item) {
+		// console.log(item);
+		// console.log(" item != null", item != null);
+		// console.log("  item.length > 2", item.length > 2);
+		// console.log("  itemStructure(item)", itemStructure(item));
 		return item != null && item.length > 2 && itemStructure(item)
 	}
 	//procesamiento de excel
@@ -56,6 +60,7 @@ export default () => {
 	async function CargarPartidasExcel() {
 		const input = document.getElementById('PartidasExcel')
 		var rows = await readXlsxFile(input.files[0])
+		console.log("rows", rows);
 		//encontramos item
 		var rowIndex = 0
 		var colIndex = 0
@@ -77,10 +82,11 @@ export default () => {
 		} catch (error) {
 			console.log(error);
 		}
-		// console.log(rowIndex, colIndex);
+		// console.log("item", rowIndex, colIndex);
 		var componentesNoEncontrados = []
 		var partidas = []
 		for (let i = rowIndex + 1; i < rows.length; i++) {
+			// console.log("row", row);
 			const row = rows[i];
 			var item = row[colIndex]
 			var tipo = row[colIndex + 2] ? "partida" : "titulo"
@@ -89,7 +95,11 @@ export default () => {
 			var metrado = row[colIndex + 3]
 			var costo_unitario = row[colIndex + 4]
 			var componentes_presupuesto_calculado = []
+			if(typeof item == "number"){
+				item = item.toString()
+			}
 			if (esPartida(item)) {
+				// console.log(item, "es partida");
 				var componente = item.substring(0, item.indexOf("."));
 				var CompontenteSeleccionado = Componentes.find(
 					(item) => Number(item.numero) == Number(componente)
@@ -126,6 +136,8 @@ export default () => {
 						}
 					)
 				}
+			}else{
+				console.log("no es partida",item);
 			}
 		}
 		//calculando presupuesto de componente
@@ -135,21 +147,21 @@ export default () => {
 				var indexComponente = Componentes.findIndex(
 					(item2) => item2.id_componente == partida.componentes_id_componente
 				)
-				console.log("indexComponente", indexComponente);
+				// console.log("indexComponente", indexComponente);
 				if (cloneComponentes[indexComponente].presupuesto_calculado != undefined) {
-					console.log("existe");
+					// console.log("existe");
 					cloneComponentes[indexComponente].presupuesto_calculado += (partida.metrado * partida.costo_unitario)
 					// cloneComponentes[indexComponente].presupuesto_calculado += 10
 				} else {
-					console.log("NO existe");
+					// console.log("NO existe");
 					cloneComponentes[indexComponente].presupuesto_calculado = (partida.metrado * partida.costo_unitario)
 				}
-				console.log("presupuesto_calculado", cloneComponentes[indexComponente].presupuesto_calculado);
+				// console.log("presupuesto_calculado", cloneComponentes[indexComponente].presupuesto_calculado);
 			}
 		});
-		console.log("cloneComponentes", cloneComponentes);
-		console.log("componentesNoEncontrados", componentesNoEncontrados);
-		console.log("partidas", partidas);
+		// console.log("cloneComponentes", cloneComponentes);
+		// console.log("componentesNoEncontrados", componentesNoEncontrados);
+		// console.log("partidas", partidas);
 		setComponentesNoEncontrados(componentesNoEncontrados)
 		setPartidas(partidas)
 	}
@@ -171,7 +183,7 @@ export default () => {
 	//generar partidas
 	const [PartidasGeneradas, setPartidasGeneradas] = useState([])
 	function generarPartidasByComponente() {
-		console.log("se activa funcion");
+		// console.log("se activa funcion");
 		var partidas = []
 		for (let i = 0; i < Componentes.length; i++) {
 			const item = Componentes[i];
@@ -236,10 +248,10 @@ export default () => {
 								nombre
 							</th>
 							<th>
-								presupuesto
+								presupuesto costo directo
 							</th>
 							<th>
-								presupuesto (calculado)
+								presupuesto (CU*METRADO)
 							</th>
 							<th>
 								diferencia (calculado)
@@ -253,7 +265,7 @@ export default () => {
 								<td>{item.nombre}</td>
 								<td>{item.presupuesto}</td>
 								<td>{item.presupuesto_calculado}</td>
-								<td>{(item.presupuesto- item.presupuesto_calculado)||""}</td>
+								<td>{(item.presupuesto - (item.presupuesto_calculado?item.presupuesto_calculado.toFixed(7):0) ) || ""}</td>
 							</tr>
 						)}
 					</tbody>

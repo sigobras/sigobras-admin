@@ -284,7 +284,7 @@ export default () => {
 			</CardHeader>
 			<CardBody>
 				<table
-					className="table table-sm"
+					className="table table-sm table-hover"
 					style={!TogglePartidasEstilo ?
 						{
 							opacity: 0,

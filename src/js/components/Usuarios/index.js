@@ -21,7 +21,7 @@ export default () => {
 				"textoBuscado": UsuarioBuscado
 			}
 		)
-		console.log("cargando usuarios",request.data);
+		console.log("cargando usuarios", request.data);
 		setUsuarios(request.data)
 	}
 	/// search box
@@ -188,7 +188,12 @@ export default () => {
 				}
 			</Row>
 			<div className="row">
-				<div className={sessionStorage.getItem('idobra') == 0 ? "col-6" : "col-12"} >
+				<div className={sessionStorage.getItem('idobra') == 0 ? "col-6" : "col-12"}
+					style={{
+						overflowY: "auto",
+						height: "500px"
+					}}
+				>
 					<table className="table table-sm small">
 						<thead>
 							<tr>
@@ -330,7 +335,13 @@ export default () => {
 				</div>
 				{sessionStorage.getItem('idobra') == 0 &&
 
-					<div className="col-6">
+					<div className="col-6"
+						style={{
+							overflowY: "auto",
+							height: "500px"
+						}}
+					>
+
 						<table className="table table-sm small">
 							<thead>
 								<tr>
