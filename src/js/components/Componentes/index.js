@@ -22,48 +22,121 @@ export default () => {
 			>
 				<thead>
 					<tr>
+						<th>id</th>
 						<th>N°</th>
 						<th>COMPONENTE</th>
 						<th>PRESUPUESTO CD</th>
 						<th>PARTIDAS</th>
+						<th>PRESUPUESTO CALCULADO</th>
+						<th>DIFERENCIA</th>
 					</tr>
 				</thead>
 				<tbody style={{ backgroundColor: '#333333' }}>
 					{
-						Componentes.map((item) =>
+						Componentes.map((item, i) =>
 
-							<tr key={item.id_componente} >
-								<td>{item.numero}</td>
+							[
+								<tr key={item.id_componente} >
+									<td>{item.id_componente}</td>
+									<td>{item.numero}</td>
+									<td style={{ fontSize: '0.75rem', color: '#8caeda' }}
+									>{item.nombre}</td>
+									<td> S/. {Redondea(item.presupuesto)}</td>
+									<td> {item.partidas_total}</td>
+									<td >{Redondea(item.presupuesto_calculado, 4)}</td>
+									<td >{Redondea(item.diferencia, 4)}</td>
+									<ComponentePartidasTotal
+										index={i}
+										Componentes={[...Componentes]}
+										setComponentes={setComponentes}
+									/>
+								</tr>,
+								// <tr key={"2-"+item.id_componente}>
+								// 	<td colSpan="8">
+								// 		<div style={{ width: "100%" }}>
+								// 			<table>
+								// 				<thead>
+								// 					<tr>
+								// 						<th>titulo1</th>
+								// 						<th>titulo2</th>
+								// 						<th>titulo3</th>
+								// 						<th>titulo4</th>
+								// 						<th>titulo5</th>
+								// 					</tr>
+								// 				</thead>
+								// 				<tbody>
+								// 					<tr>
+								// 						<td>contenido1</td>
+								// 						<td>contenido2</td>
+								// 						<td>contenido3</td>
+								// 						<td>contenido4</td>
+								// 						<td>contenido5</td>
+								// 					</tr>
+								// 				</tbody>
+								// 			</table>
+								// 		</div>
 
-								<td style={{ fontSize: '0.75rem', color: '#8caeda' }}
-								>{item.nombre}</td>
+								// 	</td>
 
-								<td> S/. {Redondea(item.presupuesto)}</td>
-								<td>
-									<ComponentePartidasTotal Id_componente={item.id_componente} />
-								</td>
-							</tr>
-						)}
+								// </tr>
+
+						]
+						)
+					}
+					<tr>
+						<td colSpan="3">total</td>
+						<td>
+							{
+								(
+									() => "S/. " + Redondea(Componentes.reduce((acc, item) => acc + item.presupuesto, 0))
+								)()
+							}
+						</td>
+						<td>
+							{
+								(
+									() => Redondea(Componentes.reduce((acc, item) => acc + item.partidas_total, 0))
+								)()
+							}
+
+						</td>
+						<td>
+							{
+								(
+									() => "S/. " + Redondea(Componentes.reduce((acc, item) => acc + item.presupuesto_calculado, 0))
+								)()
+							}
+						</td>
+						<td>
+							{
+								(
+									() => "S/. " + Redondea(Componentes.reduce((acc, item) => acc + item.diferencia, 0))
+								)()
+							}
+						</td>
+					</tr>
 				</tbody>
 			</table>
 
 		</div>
 	);
 }
-function ComponentePartidasTotal({ Id_componente }) {
+function ComponentePartidasTotal({ index, Componentes, setComponentes }) {
 	useEffect(() => {
-		fetchComponentesPartidasTotal()
+		fetchComponentesCalculados()
 	}, []);
-	const [ComponentesPartidasTotal, setComponentesPartidasTotal] = useState(0)
-	async function fetchComponentesPartidasTotal() {
-		var request = await axios.post(`${UrlServer}/getComponentesPartidasTotal`, {
-			id_componente: Id_componente
+	const [ComponentesCalculados, setComponentesCalculados] = useState(0)
+	async function fetchComponentesCalculados() {
+		var res = await axios.post(`${UrlServer}/getComponentesPartidasTotal`, {
+			id_componente: Componentes[index].id_componente
 		})
-		setComponentesPartidasTotal(request.data.partidas_total)
+		setComponentesCalculados(res.data)
+		Componentes[index].presupuesto_calculado = res.data.presupuesto
+		Componentes[index].diferencia = Componentes[index].presupuesto - res.data.presupuesto
+		Componentes[index].partidas_total = res.data.partidas_total
+		setComponentes(Componentes)
 	}
 	return (
-		<div>
-			{ComponentesPartidasTotal}
-		</div>
+		""
 	);
 }
