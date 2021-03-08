@@ -6,7 +6,7 @@ function Redondea(x, decimales = 2) {
   } else if (x == 0 || isNaN(x)) {
     return "-";
   }
-  if (x < 0.01) {
+  if (Math.abs(x) < 0.0099) {
     return "-";
   }
   return Number.parseFloat(x)
