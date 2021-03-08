@@ -1,0 +1,22 @@
+.table-permisos .rotate {
+  /* Something you can count on */
+  height: 140px;
+  white-space: nowrap;
+}
+.table-permisos .rotate > div {
+  transform:
+    /* Magic Numbers */ translate(16px, 51px)
+    /* 45 is really 360 - 45 */ rotate(315deg);
+  width: 30px;
+}
+.table-permisos .rotate > div > span {
+  border-bottom: 1px solid #ccc;
+  padding: 5px 10px;
+}
+.table-permisos td {
+  border: 1px solid white;
+  white-space: nowrap;
+}
+.table-permisos th {
+  white-space: nowrap;
+}
