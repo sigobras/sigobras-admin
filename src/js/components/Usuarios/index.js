@@ -11,13 +11,9 @@ import { Row, Col, FormGroup, Label, Input } from "reactstrap";
 import { UrlServer } from "../Utils/ServerUrlConfig";
 import FormularioPersonal from "./FormularioPersonal";
 export default () => {
-  useEffect(() => {
-    fetchUsuarios();
-    fetchObras();
-  }, []);
-
   //USUARIOS
   const [Usuarios, setUsuarios] = useState([]);
+  // sessionStorage.getItem("idobra") == 0;
   async function fetchUsuarios(source) {
     var request = await axios.get(
       `${UrlServer}/v1/usuarios`,
@@ -26,6 +22,7 @@ export default () => {
           group_by: "id_acceso",
           sort_by: "-id_acceso",
           textoBuscado: UsuarioBuscado,
+          id_ficha: sessionStorage.getItem("idobra"),
         },
       },
       source ? { cancelToken: source.token } : {}
@@ -46,32 +43,21 @@ export default () => {
   //obras
   const [Obras, setObras] = useState([]);
   async function fetchObras(source) {
-    var request = await axios.post(
-      `${UrlServer}/listaObras`,
+    var res = await axios.get(
+      `${UrlServer}/v1/obras`,
       {
-        id_tipoObra: 0,
-        textoBuscado: ObraBuscada,
+        params: {
+          sort_by: "id_ficha-asc",
+          id_acceso: 0,
+          textoBuscado: ObraBuscada,
+        },
       },
       source ? { cancelToken: source.token } : {}
     );
-    setObras(request.data);
+    setObras(res.data);
   }
   const [ObraBuscada, setObraBuscada] = useState("");
   const [onHoverUsuario, setonHoverUsuario] = useState(0);
-  //asignar obra
-  async function asignarObra(id_acceso, id_ficha, id_cargo) {
-    try {
-      var request = await axios.post(`${UrlServer}/asignarObra`, {
-        Accesos_id_acceso: id_acceso,
-        Fichas_id_ficha: id_ficha,
-        cargos_id_cargo: id_cargo,
-      });
-      alert(request.data.message);
-    } catch (error) {
-      console.log("ERROR", error.response);
-      alert(error.response.data.message);
-    }
-  }
   const FormularioAsignacionRef = useRef();
   useEffect(() => {
     let source = axios.CancelToken.source();
@@ -94,10 +80,13 @@ export default () => {
   }, [UsuarioSeleccionado]);
   return (
     <div>
-      <FormularioPersonal
-        recargar={fetchUsuarios}
-        ref={FormularioAsignacionRef}
-      />
+      {sessionStorage.getItem("idobra") == 0 && (
+        <FormularioPersonal
+          recargar={fetchUsuarios}
+          ref={FormularioAsignacionRef}
+        />
+      )}
+
       <Row form>
         <Col md={6}>
           <FormGroup>
@@ -180,6 +169,9 @@ export default () => {
                         } else {
                           setUsuarioSeleccionado(item.id_acceso);
                         }
+                      }}
+                      style={{
+                        cursor: "pointer",
                       }}
                     >
                       {item.id_acceso}

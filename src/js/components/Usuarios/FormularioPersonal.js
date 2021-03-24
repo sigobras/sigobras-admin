@@ -67,11 +67,12 @@ export default forwardRef(({ recargar }, ref) => {
     } else if (estadoFormulario == "asignando") {
       if (confirm("Esta seguro que desea este usuario a esa obra?")) {
         console.log("DataAsignacion", DataAsignacion);
+        console.log("DataDesignacion", DataDesignacion);
         try {
-          var res = await axios.post(
-            `${UrlServer}/v1/usuarios/asignarObra`,
-            DataAsignacion
-          );
+          var res = await axios.post(`${UrlServer}/v1/accesos/asignarObra`, {
+            ...DataAsignacion,
+            ...DataDesignacion,
+          });
           recargar();
           alert(res.data.message);
           toggleModalFormulario();
@@ -89,6 +90,10 @@ export default forwardRef(({ recargar }, ref) => {
   const [DataAsignacion, setDataAsignacion] = useState({});
   function onChangeInputFormularioAsignacion(e) {
     setDataAsignacion({ ...DataAsignacion, [e.target.name]: e.target.value });
+  }
+  const [DataDesignacion, setDataDesignacion] = useState({});
+  function onChangeInputDesignacion(e) {
+    setDataDesignacion({ ...DataDesignacion, [e.target.name]: e.target.value });
   }
   const [CargosLimitados, setCargosLimitados] = useState([]);
   async function getCargos() {
@@ -267,9 +272,10 @@ export default forwardRef(({ recargar }, ref) => {
                     <FormGroup>
                       <Label for="fecha_inicio">Fecha de inicio</Label>
                       <Input
+                        name="fecha_inicio"
                         type="date"
                         value={DataFormulario.fecha_inicio}
-                        // onChange={onChangeInputFormulario}
+                        onChange={onChangeInputDesignacion}
                         required
                       />
                     </FormGroup>
