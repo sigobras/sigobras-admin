@@ -184,7 +184,6 @@ export default forwardRef(({ recargar }, ref) => {
                         value={DataFormulario.email}
                         onChange={onChangeInputFormulario}
                         name="email"
-                        required
                       />
                     </FormGroup>
                   </Col>
