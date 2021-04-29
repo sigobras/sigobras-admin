@@ -158,7 +158,11 @@ export default ({ PeriodoSeleccionado, Componenteseleccionado }) => {
     ) {
       ordenarEnBaseAlaDataOriginal();
     }
-  }, [ItemBasePosicionSeleccionado, ColumnaCompararSeleccionado]);
+  }, [
+    ItemBasePosicionSeleccionado,
+    ColumnaCompararSeleccionado,
+    JSON.stringify(Partidas),
+  ]);
   return (
     <div className="table-responsive">
       <div
