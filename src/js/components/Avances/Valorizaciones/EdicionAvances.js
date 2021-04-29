@@ -9,12 +9,14 @@ import { Redondea } from "../../Utils/Funciones";
 import CargarExcel from "./CargarExcel";
 import CustomInput from "../../../libs/CustomInput";
 import "./valorizaciones.css";
-export default ({ id_partida }) => {
+export default ({ id_partida, recargar }) => {
   //modal
   const [modal, setModal] = useState(false);
   const toggle = () => {
     if (!modal) {
       cargarAvancesMetrado();
+    } else {
+      recargar();
     }
     setModal(!modal);
   };
@@ -42,7 +44,9 @@ export default ({ id_partida }) => {
   }
   return (
     <div>
-      <Button onClick={toggle}>Avances</Button>
+      <Button onClick={toggle} color="info">
+        Avances
+      </Button>
       <Modal isOpen={modal} toggle={toggle}>
         <ModalHeader toggle={toggle}>Modal title</ModalHeader>
         <ModalBody>

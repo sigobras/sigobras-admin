@@ -2,12 +2,14 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import BigNumber from "bignumber.js";
 import { MdCheck, MdCancel } from "react-icons/md";
+import { Button, CardHeader, Row, Col, Collapse } from "reactstrap";
 
 import { UrlServer } from "../../Utils/ServerUrlConfig";
 import { Redondea } from "../../Utils/Funciones";
 import CargarExcel from "./CargarExcel";
 import "./valorizaciones.css";
 import EdicionAvances from "./EdicionAvances";
+import EdicionPartida from "./EdicionPartida";
 export default ({ PeriodoSeleccionado, Componenteseleccionado }) => {
   useEffect(() => {
     fetchPartidas();
@@ -94,8 +96,69 @@ export default ({ PeriodoSeleccionado, Componenteseleccionado }) => {
         100,
     });
   }
-  const [RedondeoActivado, setRedondeoActivado] = useState(true);
+  const [RedondeoActivado, setRedondeoActivado] = useState(false);
   const [ColumnaComparacion, setColumnaComparacion] = useState("");
+  //excel
+  const [ItemBasePosicion, setItemBasePosicion] = useState({ row: 0, col: 0 });
+  const [
+    ItemBasePosicionSeleccionado,
+    setItemBasePosicionSeleccionado,
+  ] = useState(false);
+  const [ColumnaComparar, setColumnaComparar] = useState({ row: 0, col: 0 });
+  const [
+    ColumnaCompararSeleccionado,
+    setColumnaCompararSeleccionado,
+  ] = useState(false);
+  function seleccionCelda(posicion) {
+    // var clone = [...ExcelRows];
+    if (ItemBasePosicion.row == 0 && ItemBasePosicion.col == 0) {
+      // var cloneSliced = ExcelRows.slice(posicion.row);
+      // setExcelRows(cloneSliced);
+      setItemBasePosicion(posicion);
+      setItemBasePosicionSeleccionado(true);
+      alert("ahora seleccione la columna que se quiere comparar");
+    } else {
+      setColumnaComparar(posicion);
+      setColumnaCompararSeleccionado(true);
+      alert("Selecciona la columna en la valorizacion para comparar");
+    }
+  }
+  const [ExcelRows, setExcelRows] = useState([]);
+  function ordenarEnBaseAlaDataOriginal() {
+    var clonePartidas = [...Partidas];
+    for (let index = 0; index < clonePartidas.length; index++) {
+      const partida = clonePartidas[index];
+      //buscamos el item en el archivo
+      var indexArchivo = -1;
+      for (let j = 0; j < ExcelRows.length; j++) {
+        const excelRow = ExcelRows[j];
+        if (excelRow[ItemBasePosicion.col] === partida.item) {
+          indexArchivo = j;
+          break;
+        }
+      }
+      // si encontramos el item hacemos la comparacion
+      if (indexArchivo != -1) {
+        partida.columna_comparacion =
+          ExcelRows[indexArchivo][ColumnaComparar.col];
+      }
+    }
+    setPartidas(clonePartidas);
+  }
+  function volverSeleccionarArchivo() {
+    setColumnaCompararSeleccionado(false);
+    setColumnaComparar({ row: 0, col: 0 });
+    alert("Selecciona la columna en la valorizacion para comparar");
+  }
+  useEffect(() => {
+    if (
+      ItemBasePosicionSeleccionado &&
+      ColumnaCompararSeleccionado &&
+      Partidas.length
+    ) {
+      ordenarEnBaseAlaDataOriginal();
+    }
+  }, [ItemBasePosicionSeleccionado, ColumnaCompararSeleccionado]);
   return (
     <div className="table-responsive">
       <div
@@ -111,8 +174,28 @@ export default ({ PeriodoSeleccionado, Componenteseleccionado }) => {
       </div>
       <div>
         cargar archivo para comparar
-        <CargarExcel setPartidas={setPartidas} Partidas={Partidas} />
+        <CargarExcel
+          setPartidas={setPartidas}
+          Partidas={Partidas}
+          seleccionCelda={seleccionCelda}
+          ExcelRows={ExcelRows}
+          setExcelRows={setExcelRows}
+          habilitar={
+            !ItemBasePosicionSeleccionado || !ColumnaCompararSeleccionado
+          }
+        />
       </div>
+      <div>
+        <div>
+          posicion de item fila: {ItemBasePosicion.row} columna:
+          {ItemBasePosicion.col}
+        </div>
+        <div>columna para comparar: {ColumnaComparar.col}</div>
+        <Button onClick={() => volverSeleccionarArchivo()} color="success">
+          Volver a seleccionar la columna del archivo
+        </Button>
+      </div>
+
       <table className="table table-bordered table-hover">
         <colgroup>
           <col span="5" />
@@ -458,8 +541,12 @@ export default ({ PeriodoSeleccionado, Componenteseleccionado }) => {
                   {item.columna_comparacion}
                 </td>
               )}
-              <td>
-                <EdicionAvances id_partida={item.id_partida} />
+              <td className="d-flex">
+                <EdicionAvances
+                  id_partida={item.id_partida}
+                  recargar={fetchPartidas}
+                />
+                <EdicionPartida partida={item} recargar={fetchPartidas} />
               </td>
             </tr>
           ))}
