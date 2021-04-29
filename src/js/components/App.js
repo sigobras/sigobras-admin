@@ -26,6 +26,7 @@ import PartidasNuevas from "./Partidas/PartidasNuevas";
 import PartidasNuevasPorContrato from "./Partidas/PartidasNuevasPorContrato";
 import PartidasEdicion from "./Partidas/PartidasEdicion";
 import Permisos from "./Permisos";
+import Valorizaciones from "./Avances/Valorizaciones";
 
 export default () => {
   useEffect(() => {
@@ -195,10 +196,25 @@ export default () => {
                     </Collapse>
                   </li>
                   <li className="lii">
-                    <NavLink to="/Avances" activeclassname="nav-link">
-                      {" "}
-                      <span> AVANCES</span>{" "}
-                    </NavLink>
+                    <a
+                      className="nav-link"
+                      onClick={() => CollapseMenu("Valorizaciones")}
+                    >
+                      AVANCES
+                      <div className="float-right">
+                        {collapse === 1 ? <FaChevronUp /> : <FaChevronRight />}
+                      </div>
+                    </a>
+                    <Collapse isOpen={collapse === "Valorizaciones"}>
+                      <ul className="lii pl-3 ">
+                        <NavLink
+                          to="/Valorizaciones"
+                          activeclassname="nav-link"
+                        >
+                          <span> Valorizacion</span>{" "}
+                        </NavLink>
+                      </ul>
+                    </Collapse>
                   </li>
                   <li className="lii">
                     <NavLink to="/Usuarios" activeclassname="nav-link">
@@ -243,7 +259,6 @@ export default () => {
                     path="/HistorialEstados"
                     component={HistorialEstados}
                   />
-
                   <Route path="/Componentes" component={Componentes} />
                   <Route path="/Partidas" component={Partidas} />
                   <Route path="/Avances" component={Avances} />
@@ -256,6 +271,7 @@ export default () => {
                   />
                   <Route path="/PartidasEdicion" component={PartidasEdicion} />
                   <Route path="/Permisos" component={Permisos} />
+                  <Route path="/Valorizaciones" component={Valorizaciones} />
                 </Switch>
               </div>
             </main>
