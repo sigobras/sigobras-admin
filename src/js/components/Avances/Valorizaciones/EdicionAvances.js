@@ -61,13 +61,13 @@ export default ({ id_partida }) => {
                 <tr>
                   <td>{item.fecha}</td>
                   <td>
-                    {/* <CustomInput
+                    <CustomInput
                       value={item.valor}
                       onBlur={(value) =>
                         actualizarValorAvance(item.id_AvanceActividades, value)
                       }
-                    /> */}
-                    {item.valor}
+                    />
+                    {/* {item.valor} */}
                   </td>
                   <td>{item.descripcion}</td>
                   <td>{item.observacion}</td>
